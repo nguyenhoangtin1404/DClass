@@ -5,7 +5,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
 <title>Lịch sử</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"></head><body>
 <div class="container py-3"><div class="d-flex align-items-center justify-content-between">
-<h5>Lich su giao dich</h5><a href="/public/trang_chinh.php" class="btn btn-secondary btn-sm">← Chấm điểm</a></div>
+<h5>Lịch sử giao dịch</h5><a href="/public/trang_chinh.php" class="btn btn-secondary btn-sm">← Chấm điểm</a></div>
 <div class="table-responsive mt-3"><table class="table table-sm">
 <thead><tr><th>Thời gian</th><th>Học sinh</th><th>Loại</th><th>Thay đổi</th><th>Số dư</th><th>Ghi chú</th></tr></thead>
 <tbody id="tb"></tbody></table></div></div>
@@ -13,8 +13,8 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
 function tenLoai(loai){
   switch(String(loai||'')){
     case 'CONG_DIEM': return 'Cộng Điểm';
-    case 'DOI_DIEM': return 'Đổi điểm';
-    case 'HOAN_TAC': return 'Hoàn tác';
+    case 'DOI_DIEM': return 'Đổi Điểm';
+    case 'HOAN_TAC': return 'Hoàn Tác';
     default: return loai;
   }
 }

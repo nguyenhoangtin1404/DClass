@@ -13,6 +13,14 @@ try {
     $pdo->exec("UPDATE so_cai_diem SET loai='CONG_DIEM' WHERE loai='CONG'");
     $pdo->exec("UPDATE so_cai_diem SET loai='DOI_DIEM' WHERE loai='QUY_DOI'");
   } catch (Throwable $___e) { /* bảng có thể chưa tồn tại ở lần chạy đầu */ }
+  // Bổ sung cột mới cho hoc_sinh nếu thiếu
+  try {
+    $cols = $pdo->query("PRAGMA table_info(hoc_sinh)")->fetchAll();
+    $tenCols = array_map(fn($c) => $c['name'] ?? '', $cols);
+    if (!in_array('gioi_tinh', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN gioi_tinh TEXT"); }
+    if (!in_array('ngay_sinh', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN ngay_sinh TEXT"); }
+    if (!in_array('anh_dai_dien_url', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN anh_dai_dien_url TEXT"); }
+  } catch (Throwable $___e2) { /* ignore */ }
 } catch (Exception $e) { http_response_code(500); echo 'Loi ket noi CSDL'; exit; }
 if ($lan_dau) {
   $luoc_do = file_get_contents(__DIR__ . '/luoc_do.sql');
