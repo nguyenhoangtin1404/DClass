@@ -1,0 +1,204 @@
+QUY TẮC ĐẶT TÊN VÀ CẤU TRÚC (PHP + SQLite)
+
+Mục tiêu: thống nhất tiếng Việt không dấu cho toàn bộ tên bảng/cột, file, biến, khóa, API, JSON. Ưu tiên đơn giản, rõ ràng, dễ tra cứu, phù hợp SQLite 3.
+
+Quy ước chung:
+- Không dấu, chữ thường, snake_case cho tất cả định danh.
+- Danh từ số nhiều cho tên bảng. Cột `id` là khóa chính tự tăng.
+- Cột thời gian: `tao_luc` (created_at), `sua_luc` (updated_at) nếu cần.
+- Khóa: `pk_<bang>`, `fk_<bang_con>_<bang_me>`, chỉ mục: `idx_<bang>_<mo_ta>`.
+- JSON trả về dạng khóa: `ok`, `du_lieu`, `thong_bao`.
+
+---
+
+1) Cấu trúc thư mục và tên file
+
+```
+/config
+  env.php                 # biến môi trường DB
+  csdl.php                # kết nối PDO (SQLite)
+  luoc_do_sqlite.sql      # schema SQLite
+/api
+  dang_nhap.php           # POST ?hanh_dong=dang_nhap | dang_xuat
+  hoc_sinh.php            # GET/POST học sinh
+  diem.php                # POST ?hanh_dong=cong | quy_doi | hoan_tac | GET ?hanh_dong=lich_su
+  ly_do.php               # GET danh sách lý do
+  qua_tang.php            # GET danh sách quà
+/lib
+  tro_giup.php            # json_phan_hoi(), yeu_cau_dang_nhap(), than_json()
+/public
+  dang_nhap.php           # giao diện login
+  trang_chinh.php         # chấm điểm nhanh
+  hoc_sinh_quan_ly.php    # CRUD + import CSV
+  lich_su.php             # bảng lịch sử + export CSV
+/tools
+  cai_dat.php             # tạo bảng + seed dữ liệu
+index.php                 # chuyển hướng /public/dang_nhap.php
+```
+
+---
+
+2) Mẫu lược đồ CSDL (SQLite 3)
+
+Lưu ý:
+- SQLite không có ENGINE/CHARSET; bỏ các mệnh đề đó.
+- Không có ENUM; dùng TEXT + CHECK.
+- TINYINT(1) → INTEGER + CHECK 0/1.
+- AUTO_INCREMENT → `INTEGER PRIMARY KEY AUTOINCREMENT` (hoặc chỉ `INTEGER PRIMARY KEY`).
+- Thời gian dùng `TEXT DEFAULT CURRENT_TIMESTAMP`.
+- Bật ràng buộc khóa ngoại: `PRAGMA foreign_keys = ON;` sau khi kết nối.
+
+```sql
+-- Nên bật khi mở kết nối
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE giao_vien (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ten_dang_nhap TEXT UNIQUE NOT NULL,
+  mat_khau_bam TEXT NOT NULL,
+  tao_luc TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE lop_hoc (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ten TEXT NOT NULL
+);
+
+CREATE TABLE hoc_sinh (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ma TEXT UNIQUE,
+  ho_ten TEXT NOT NULL,
+  lop_hoc_id INTEGER,
+  anh_dai_dien_url TEXT,
+  dang_hoat_dong INTEGER NOT NULL DEFAULT 1 CHECK(dang_hoat_dong IN (0,1)),
+  tao_luc TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (lop_hoc_id) REFERENCES lop_hoc(id)
+);
+
+CREATE TABLE ly_do (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tieu_de TEXT NOT NULL,
+  bien_diem INTEGER NOT NULL,             -- + thưởng, - phạt
+  dang_hoat_dong INTEGER NOT NULL DEFAULT 1 CHECK(dang_hoat_dong IN (0,1))
+);
+
+CREATE TABLE qua_tang (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ten TEXT NOT NULL,
+  gia_diem INTEGER NOT NULL,
+  ton_kho INTEGER NOT NULL DEFAULT 0,     -- -1: không giới hạn
+  dang_hoat_dong INTEGER NOT NULL DEFAULT 1 CHECK(dang_hoat_dong IN (0,1))
+);
+
+CREATE TABLE vi_diem (
+  hoc_sinh_id INTEGER PRIMARY KEY,
+  so_du INTEGER NOT NULL DEFAULT 0,
+  FOREIGN KEY (hoc_sinh_id) REFERENCES hoc_sinh(id) ON DELETE CASCADE
+);
+
+CREATE TABLE so_cai_diem (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  hoc_sinh_id INTEGER NOT NULL,
+  giao_vien_id INTEGER NOT NULL,
+  loai TEXT NOT NULL CHECK(loai IN ('CONG','QUY_DOI','HOAN_TAC')),
+  ly_do_id INTEGER,
+  qua_tang_id INTEGER,
+  bien_diem INTEGER NOT NULL,             -- + cộng, - trừ
+  so_du_sau INTEGER NOT NULL,
+  ghi_chu TEXT,
+  tao_luc TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (hoc_sinh_id) REFERENCES hoc_sinh(id),
+  FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id)
+);
+
+CREATE INDEX idx_so_cai_hoc_sinh_thoi_gian ON so_cai_diem(hoc_sinh_id, tao_luc);
+```
+
+Gợi ý nâng cao (tùy chọn):
+- Nếu cần cập nhật tự động `sua_luc`, dùng TRIGGER `AFTER UPDATE` để set `sua_luc=CURRENT_TIMESTAMP`.
+- Nếu không cần đảm bảo “không tái sử dụng id đã xoá”, ưu tiên `INTEGER PRIMARY KEY` (không AUTOINCREMENT) để hiệu năng tốt hơn.
+
+---
+
+3) API và hợp đồng JSON
+
+Mọi phản hồi: `{ "ok": true|false, "du_lieu": ..., "thong_bao": "..." }`.
+
+- Đăng nhập: `POST /api/dang_nhap.php?hanh_dong=dang_nhap` với JSON `{ten_dang_nhap, mat_khau}`
+- Đăng xuất: `POST /api/dang_nhap.php?hanh_dong=dang_xuat`
+- Học sinh: `GET/POST /api/hoc_sinh.php`
+- Lý do, quà tặng: `GET /api/ly_do.php`, `GET /api/qua_tang.php`
+- Điểm: `POST /api/diem.php?hanh_dong=cong|quy_doi|hoan_tac`, `GET ?hanh_dong=lich_su&hoc_sinh_id=`
+
+---
+
+4) Quy tắc mã PHP (SQLite)
+
+- Đầu file: `declare(strict_types=1);`
+- Biến: tiếng Việt không dấu + snake_case, ví dụ: `$giao_vien_id`, `$hoc_sinh_id`, `$so_du`.
+- PDO SQLite DSN: `new PDO('sqlite:' . $path, null, null, [...])`
+  - Nên cấu hình: `ATTR_ERRMODE => EXCEPTION`, `ATTR_DEFAULT_FETCH_MODE => FETCH_ASSOC`.
+  - Sau khi kết nối: `$pdo->exec('PRAGMA foreign_keys = ON');`
+- Giao dịch cộng/trừ điểm: dùng `BEGIN IMMEDIATE` để khóa ghi sớm, tránh tranh chấp.
+- Tránh `SELECT ... FOR UPDATE` (SQLite không hỗ trợ). Dùng UPSERT và cập nhật nguyên tử.
+
+Ví dụ chuẩn cộng điểm (SQLite-safe):
+
+```php
+function lay_bien_diem(PDO $pdo, int $ly_do_id): int {
+  $st = $pdo->prepare('SELECT bien_diem FROM ly_do WHERE id=? AND dang_hoat_dong=1');
+  $st->execute([$ly_do_id]);
+  $r = $st->fetch();
+  if (!$r) throw new Exception('ly_do_khong_hop_le');
+  return (int)$r['bien_diem'];
+}
+
+function dam_bao_vi(PDO $pdo, int $hoc_sinh_id): void {
+  // Tạo nếu chưa có; SQLite 3.24+ hỗ trợ UPSERT
+  $pdo->prepare(
+    'INSERT INTO vi_diem(hoc_sinh_id, so_du) VALUES(?,0)
+     ON CONFLICT(hoc_sinh_id) DO NOTHING'
+  )->execute([$hoc_sinh_id]);
+}
+
+function cong_diem(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $ly_do_id, string $ghi_chu = ''): array {
+  // Khóa ghi ngay từ đầu để tránh race
+  $pdo->beginTransaction();
+  try {
+    $pdo->exec('BEGIN IMMEDIATE');
+
+    dam_bao_vi($pdo, $hoc_sinh_id);
+    $bien = lay_bien_diem($pdo, $ly_do_id);
+
+    // Cập nhật nguyên tử số dư
+    $stUp = $pdo->prepare('UPDATE vi_diem SET so_du = so_du + ? WHERE hoc_sinh_id = ?');
+    $stUp->execute([$bien, $hoc_sinh_id]);
+
+    // Đọc số dư mới (hoặc dùng RETURNING nếu SQLite >= 3.35: UPDATE ... RETURNING so_du)
+    $st = $pdo->prepare('SELECT so_du FROM vi_diem WHERE hoc_sinh_id = ?');
+    $st->execute([$hoc_sinh_id]);
+    $so_du_moi = (int)$st->fetchColumn();
+
+    $pdo->prepare('INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, ly_do_id, bien_diem, so_du_sau, ghi_chu)
+                   VALUES(?,?,?,?,?,?,?)')
+        ->execute([$hoc_sinh_id, $giao_vien_id, 'CONG', $ly_do_id, $bien, $so_du_moi, $ghi_chu]);
+
+    $pdo->commit();
+    return [true, $so_du_moi];
+  } catch (Throwable $e) {
+    if ($pdo->inTransaction()) { $pdo->rollBack(); }
+    return [false, $e->getMessage()];
+  }
+}
+```
+
+Gợi ý cho quy đổi quà: trừ điểm bằng `UPDATE vi_diem SET so_du = so_du - ? WHERE hoc_sinh_id=? AND so_du >= ?` và kiểm tra số dòng ảnh hưởng > 0 để đảm bảo không âm.
+
+---
+
+5) Quy tắc giao diện và JS
+
+- File giao diện: `trang_chinh.php`, `hoc_sinh_quan_ly.php`, `lich_su.php`.
+- Biến JS tiếng Việt không dấu, camelCase hoặc snake_case; nhất quán trong file.
+- Trải nghiệm ưu tiên tối giản: tìm học sinh + bấm lý do + ghi nhận, tối đa 3 thao tác.
+
