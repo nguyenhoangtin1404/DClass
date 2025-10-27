@@ -8,6 +8,11 @@ try {
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
   $pdo->exec("PRAGMA foreign_keys = ON");
+  // Chuẩn hóa mã loại lịch sử: chuyển mã cũ sang mã mới để code gọn hơn
+  try {
+    $pdo->exec("UPDATE so_cai_diem SET loai='CONG_DIEM' WHERE loai='CONG'");
+    $pdo->exec("UPDATE so_cai_diem SET loai='DOI_DIEM' WHERE loai='QUY_DOI'");
+  } catch (Throwable $___e) { /* bảng có thể chưa tồn tại ở lần chạy đầu */ }
 } catch (Exception $e) { http_response_code(500); echo 'Loi ket noi CSDL'; exit; }
 if ($lan_dau) {
   $luoc_do = file_get_contents(__DIR__ . '/luoc_do.sql');

@@ -100,7 +100,7 @@ CREATE TABLE so_cai_diem (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   hoc_sinh_id INTEGER NOT NULL,
   giao_vien_id INTEGER NOT NULL,
-  loai TEXT NOT NULL CHECK(loai IN ('CONG','QUY_DOI','HOAN_TAC')),
+  loai TEXT NOT NULL CHECK(loai IN ('CONG_DIEM','DOI_DIEM','HOAN_TAC')),
   ly_do_id INTEGER,
   qua_tang_id INTEGER,
   bien_diem INTEGER NOT NULL,             -- + cộng, - trừ
@@ -181,7 +181,7 @@ function cong_diem(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $ly_do_id,
 
     $pdo->prepare('INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, ly_do_id, bien_diem, so_du_sau, ghi_chu)
                    VALUES(?,?,?,?,?,?,?)')
-        ->execute([$hoc_sinh_id, $giao_vien_id, 'CONG', $ly_do_id, $bien, $so_du_moi, $ghi_chu]);
+        ->execute([$hoc_sinh_id, $giao_vien_id, 'CONG_DIEM', $ly_do_id, $bien, $so_du_moi, $ghi_chu]);
 
     $pdo->commit();
     return [true, $so_du_moi];
@@ -201,4 +201,3 @@ Gợi ý cho quy đổi quà: trừ điểm bằng `UPDATE vi_diem SET so_du = s
 - File giao diện: `trang_chinh.php`, `hoc_sinh_quan_ly.php`, `lich_su.php`.
 - Biến JS tiếng Việt không dấu, camelCase hoặc snake_case; nhất quán trong file.
 - Trải nghiệm ưu tiên tối giản: tìm học sinh + bấm lý do + ghi nhận, tối đa 3 thao tác.
-

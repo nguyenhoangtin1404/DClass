@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'cong') {
     $pdo->beginTransaction(); $so_du = dam_bao_vi($pdo, $hs_id); $bien = lay_bien_diem($pdo, $ly_do_id); $so_du_moi = $so_du + $bien;
     $pdo->prepare("UPDATE vi_diem SET so_du=? WHERE hoc_sinh_id=?")->execute([$so_du_moi, $hs_id]);
     $pdo->prepare("INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, ly_do_id, bien_diem, so_du_sau, ghi_chu) VALUES(?,?,?,?,?,?,?)")
-        ->execute([$hs_id, $gv_id, 'CONG', $ly_do_id, $bien, $so_du_moi, $ghi_chu]);
+        ->execute([$hs_id, $gv_id, 'CONG_DIEM', $ly_do_id, $bien, $so_du_moi, $ghi_chu]);
     $pdo->commit(); json_phan_hoi(true, ['so_du'=>$so_du_moi]);
   } catch (Exception $e) { $pdo->rollBack(); json_phan_hoi(false, null, $e->getMessage()); }
 }
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'quy_doi') {
     $so_du_moi = $so_du - $gia; $pdo->prepare("UPDATE vi_diem SET so_du=? WHERE hoc_sinh_id=?")->execute([$so_du_moi, $hs_id]);
     if ($ton >= 0) { $pdo->prepare("UPDATE qua_tang SET ton_kho=ton_kho-1 WHERE id=?")->execute([$qua_id]); }
     $pdo->prepare("INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, qua_tang_id, bien_diem, so_du_sau, ghi_chu) VALUES(?,?,?,?,?,?,?)")
-        ->execute([$hs_id, $gv_id, 'QUY_DOI', $qua_id, -$gia, $so_du_moi, $ghi_chu]);
+        ->execute([$hs_id, $gv_id, 'DOI_DIEM', $qua_id, -$gia, $so_du_moi, $ghi_chu]);
     $pdo->commit(); json_phan_hoi(true, ['so_du'=>$so_du_moi]);
   } catch (Exception $e) { $pdo->rollBack(); json_phan_hoi(false, null, $e->getMessage()); }
 }
