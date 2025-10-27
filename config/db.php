@@ -21,6 +21,12 @@ try {
     if (!in_array('ngay_sinh', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN ngay_sinh TEXT"); }
     if (!in_array('anh_dai_dien_url', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN anh_dai_dien_url TEXT"); }
   } catch (Throwable $___e2) { /* ignore */ }
+  // Bổ sung cột mới cho qua_tang nếu thiếu
+  try {
+    $cols2 = $pdo->query("PRAGMA table_info(qua_tang)")->fetchAll();
+    $tenCols2 = array_map(fn($c) => $c['name'] ?? '', $cols2);
+    if (!in_array('anh_url', $tenCols2, true)) { $pdo->exec("ALTER TABLE qua_tang ADD COLUMN anh_url TEXT"); }
+  } catch (Throwable $___e3) { /* ignore */ }
 } catch (Exception $e) { http_response_code(500); echo 'Loi ket noi CSDL'; exit; }
 if ($lan_dau) {
   $luoc_do = file_get_contents(__DIR__ . '/luoc_do.sql');

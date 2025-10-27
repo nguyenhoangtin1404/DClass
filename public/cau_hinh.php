@@ -39,12 +39,13 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
           <div class="mb-2"><label class="form-label">Tên</label><input id="q_ten" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Giá điểm</label><input id="q_gia" type="number" class="form-control" value="1"></div>
           <div class="mb-2"><label class="form-label">Tồn kho</label><input id="q_ton" type="number" class="form-control" value="0"></div>
+          <div class="mb-2"><label class="form-label">URL ảnh (tùy chọn)</label><input id="q_anh" class="form-control" placeholder="https://..."></div>
           <button class="btn btn-primary btn-sm" id="q_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card"><div class="card-body">
           <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
-            <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tên</th><th>Giá điểm</th><th>Tồn kho</th><th>Trạng thái</th><th></th></tr></thead><tbody id="q_ds"></tbody></table>
+            <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá điểm</th><th>Tồn kho</th><th>Trạng thái</th><th></th></tr></thead><tbody id="q_ds"></tbody></table>
           </div>
         </div></div></div>
       </div>
@@ -156,17 +157,31 @@ async function qNap(){ const j = await jfetch('/api/qua_tang_quan_tri.php'); if(
     tr.dataset.ten = x.ten;
     tr.dataset.gia_diem = x.gia_diem;
     tr.dataset.ton_kho = x.ton_kho;
-    tr.innerHTML = `<td>${x.id}</td><td>${x.ten}</td><td>${x.gia_diem}</td><td>${x.ton_kho}</td><td>${badge(x.dang_hoat_dong)}</td>
+    tr.dataset.anh_url = x.anh_url || '';
+    const av = (x.anh_url && String(x.anh_url).trim()!=='') ? x.anh_url : '/upload/avatar/default.svg';
+    tr.innerHTML = `<td>${x.id}</td><td><img src="${av}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='/upload/avatar/default.svg';"></td><td>${x.ten}</td><td>${x.gia_diem}</td><td>${x.ton_kho}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
       <button class="btn btn-sm btn-outline-primary me-1">Sửa</button>
+      <button class="btn btn-sm btn-outline-info me-1">Ảnh</button>
       <button class="btn btn-sm btn-outline-warning me-1">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
       <button class="btn btn-sm btn-outline-danger">Xóa</button>
     </td>`;
-    const [btnSua, btnToggle, btnXoa] = tr.querySelectorAll('button');
+    const [btnSua, btnAnh, btnToggle, btnXoa] = tr.querySelectorAll('button');
     btnSua.onclick = async()=>{
       const ten = prompt('Tên', x.ten); if(ten===null) return; const gia = prompt('Giá điểm', x.gia_diem); if(gia===null) return; const ton = prompt('Tồn kho', x.ton_kho); if(ton===null) return;
-      const jj = await jfetch('/api/qua_tang_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, ten:ten.trim(), gia_diem:parseInt(gia,10)||0, ton_kho:parseInt(ton,10)||0})});
+      const anh = prompt('URL ảnh (bỏ trống để giữ nguyên)', tr.dataset.anh_url||''); if(anh===null) return;
+      const jj = await jfetch('/api/qua_tang_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, ten:ten.trim(), gia_diem:parseInt(gia,10)||0, ton_kho:parseInt(ton,10)||0, anh_url:String(anh||'')})});
       if(jj.ok) qNap(); else alert(jj.thong_bao||'Lỗi'); };
+    btnAnh.onclick = ()=>{
+      const input = document.createElement('input'); input.type='file'; input.accept='image/*';
+      input.onchange = async()=>{
+        if(!input.files || !input.files[0]) return;
+        const fd = new FormData(); fd.append('qua_tang_id', x.id); fd.append('file', input.files[0]);
+        const r = await fetch('/api/upload_qua.php', { method:'POST', body: fd }); const jj = await r.json();
+        if(jj.ok){ qNap(); } else alert(jj.thong_bao||'Lỗi upload');
+      };
+      input.click();
+    };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('/api/qua_tang_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
       if(jj.ok) qNap(); else alert(jj.thong_bao||'Lỗi'); };
@@ -177,11 +192,7 @@ async function qNap(){ const j = await jfetch('/api/qua_tang_quan_tri.php'); if(
     tb.appendChild(tr);
   });
 }
-document.getElementById('q_them').onclick = async()=>{
-  const ten = document.getElementById('q_ten').value.trim(); const gia = parseInt(document.getElementById('q_gia').value,10)||0; const ton = parseInt(document.getElementById('q_ton').value,10)||0;
-  const j = await jfetch('/api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ten, gia_diem:gia, ton_kho:ton})});
-  if(j.ok){ document.getElementById('q_ten').value=''; qNap(); } else alert(j.thong_bao||'Lỗi');
-};
+document.getElementById('q_them').onclick = async()=>{ const ten = document.getElementById('q_ten').value.trim(); const gia = parseInt(document.getElementById('q_gia').value,10)||0; const ton = parseInt(document.getElementById('q_ton').value,10)||0; const anh = (document.getElementById('q_anh') ? document.getElementById('q_anh').value.trim() : ''); const j = await jfetch('/api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ten, gia_diem:gia, ton_kho:ton, anh_url:anh})}); if(j.ok){ document.getElementById('q_ten').value=''; if(document.getElementById('q_anh')) document.getElementById('q_anh').value=''; qNap(); } else alert(j.thong_bao||'Loi'); };
 
 // Lớp học
 async function lNap(){ const j = await jfetch('/api/lop_hoc_quan_tri.php'); if(!j.ok) return; const tb = document.getElementById('l_ds'); tb.innerHTML='';

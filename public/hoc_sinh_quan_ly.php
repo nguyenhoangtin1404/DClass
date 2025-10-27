@@ -29,7 +29,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
           <input class="form-check-input" type="checkbox" id="hien_tat_ca">
           <label class="form-check-label" for="hien_tat_ca">Hiện cả đã tắt</label>
         </div>
-        <div id="ds" class="list-group" style="max-height:420px;overflow:auto"></div>
+        <div id="ds" class="list-group" style="max-height:60vh;overflow:auto"></div>
       </div></div>
     </div>
     <div class="col-md-7">
@@ -105,12 +105,17 @@ function hienChiTiet(){
   if(!hsDangChon){ noSel.classList.remove('d-none'); sel.classList.add('d-none'); return; }
   noSel.classList.add('d-none'); sel.classList.remove('d-none');
   const ten = document.getElementById('ct_ten');
-  const lopSel = document.getElementById('ct_lop');
+  const lopSel = document.querySelector('select#ct_lop');
   const tt = document.getElementById('ct_trang_thai');
   const av = document.getElementById('ct_avatar');
   if(ten) ten.textContent = hsDangChon.ho_ten || '';
-  if(lopSel && lopSel.tagName === 'SELECT') { if (lopSel.options && lopSel.options.length) { lopSel.value = hsDangChon.lop_hoc_id || ''; } }
-  const lopText = document.getElementById('ct_lop');
+  if(lopSel && lopSel.tagName === 'SELECT') {
+    if (lopSel.options && lopSel.options.length) {
+      const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
+      lopSel.value = v;
+    }
+  }
+  const lopText = document.querySelector('span#ct_lop');
   if(lopText && lopText.tagName !== 'SELECT') { lopText.textContent = 'Lớp: ' + (hsDangChon.ten_lop||''); }
   if(tt) tt.textContent = hsDangChon.dang_hoat_dong? 'Đang bật' : 'Đang tắt';
   if(av) av.src = (hsDangChon.anh_dai_dien_url && hsDangChon.anh_dai_dien_url.trim()!=='') ? hsDangChon.anh_dai_dien_url : '/upload/avatar/default.svg';
@@ -125,7 +130,7 @@ async function nap(){
   j.du_lieu.forEach(s=>{
     const a=document.createElement('a'); a.href='#'; a.className='list-group-item list-group-item-action d-flex justify-content-between align-items-center';
     a.innerHTML = `<span>${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}</span>` + (s.dang_hoat_dong? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-secondary">Tắt</span>');
-    a.onclick = (ev)=>{ ev.preventDefault(); hsDangChon = s; hienChiTiet(); setChiTietInputs(); };
+    a.onclick = (ev)=>{ ev.preventDefault(); hsDangChon = s; hienChiTiet(); setChiTietInputs(); setTimeout(syncLopSelectOnce, 0); };
     box.appendChild(a);
   });
 }
@@ -180,7 +185,8 @@ document.getElementById('nhap_csv').onclick = async()=>{
 // Nạp danh sách lớp và đổ dữ liệu form chi tiết
 async function napLopOptions(){ const sel = document.getElementById('ct_lop'); if(!sel) return; try { const r = await fetch('/api/lop_hoc_quan_tri.php'); const j = await r.json(); if(!j.ok) return; sel.innerHTML=''; const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0); j.du_lieu.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); }); } catch(_e){} }
 napLopOptions();
-function setChiTietInputs(){ const fma=document.getElementById('ct_ma'); const ften=document.getElementById('ct_ho_ten'); const fgioi=document.getElementById('ct_gioi'); const fngay=document.getElementById('ct_ngay'); const flop=document.getElementById('ct_lop'); if(!hsDangChon) return; if(fma) fma.value = hsDangChon.ma || ''; if(ften) ften.value = hsDangChon.ho_ten || ''; if(fgioi) fgioi.value = hsDangChon.gioi_tinh || ''; if(fngay) fngay.value = (hsDangChon.ngay_sinh || '').substring(0,10); if(flop && flop.options && typeof flop.options.length==='number' && flop.options.length){ flop.value = hsDangChon.lop_hoc_id || ''; } }
+syncLopSelectOnce();
+function setChiTietInputs(){ const fma=document.getElementById('ct_ma'); const ften=document.getElementById('ct_ho_ten'); const fgioi=document.getElementById('ct_gioi'); const fngay=document.getElementById('ct_ngay'); const flop=document.querySelector('select#ct_lop'); if(!hsDangChon) return; if(fma) fma.value = hsDangChon.ma || ''; if(ften) ften.value = hsDangChon.ho_ten || ''; if(fgioi) fgioi.value = hsDangChon.gioi_tinh || ''; if(fngay) fngay.value = (hsDangChon.ngay_sinh || '').substring(0,10); if(flop && flop.options && typeof flop.options.length==='number' && flop.options.length){ const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id); flop.value = v; } }
 
 // Lưu thay đổi thông tin
 document.getElementById('btn_luu').onclick = async()=>{
@@ -191,12 +197,29 @@ document.getElementById('btn_luu').onclick = async()=>{
     ho_ten: (document.getElementById('ct_ho_ten')?.value||'').trim(),
     gioi_tinh: document.getElementById('ct_gioi')?.value||'',
     ngay_sinh: document.getElementById('ct_ngay')?.value||'',
-    lop_hoc_id: (document.getElementById('ct_lop')?.value||'')
+    lop_hoc_id: (document.querySelector('select#ct_lop')?.value||'')
   };
   const r = await fetch('/api/hoc_sinh.php?hanh_dong=sua',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
   const j = await r.json(); if(j.ok){ if(msg) msg.textContent='Đã lưu'; await nap(); }
   else { if(msg) msg.textContent=j.thong_bao||'Lỗi lưu'; }
 };
-</script>
+
+function syncLopSelectOnce(){
+  const sel = document.querySelector('select#ct_lop');
+  if(!sel) return;
+  let tries = 0;
+  const h = setInterval(()=>{
+    tries++;
+    if (sel.options && sel.options.length) {
+      if (hsDangChon && typeof hsDangChon==='object') {
+        const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
+        sel.value = v;
+      }
+      clearInterval(h);
+    }
+    if (tries > 30) clearInterval(h);
+  }, 100);
+}
+  </script>
 </body>
 </html>
