@@ -1,0 +1,30 @@
+/* DClass custom accents for headings (Morph theme) */
+:root{
+  --dc-heading-color: var(--bs-primary);
+}
+
+/* Make headings stand out in a friendly way */
+h1, h2, h3, h4, h5, h6{
+  color: var(--dc-heading-color) !important;
+  font-weight: 600;
+}
+
+/* Common title surfaces */
+.card .card-body h6,
+.card-title,
+.card-header,
+.modal-title,
+.navbar-brand{
+  color: var(--dc-heading-color) !important;
+}
+
+/* Table headers feel like section titles */
+.table thead th{
+  color: var(--dc-heading-color) !important;
+}
+
+/* Subtle accent for separators */
+hr{
+  border-top-color: rgba(var(--bs-primary-rgb), .25);
+}
+

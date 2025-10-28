@@ -10,7 +10,10 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chấm điểm nhanh</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="/public/theme.css">
   <style>
     .avatar-xs { width:24px; height:24px; border-radius:6px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; }
     .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
@@ -27,13 +30,13 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
 </nav>
 <div class="container py-3">
   <div class="row g-3">
-    <div class="col-md-6"><div class="card"><div class="card-body">
+    <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
       <h6>Tìm học sinh</h6>
       <input id="tu_khoa" class="form-control" placeholder="Tên hoặc mã">
       <div class="form-text">Dấu ( ... ) sau tên là tên lớp.</div>
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
-    <div class="col-md-6"><div class="card"><div class="card-body">
+    <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
       <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Th&#244;ng tin</h6><button id="btn_qua_da_doi" class="btn btn-outline-secondary btn-sm" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted">Ch&#432;a ch&#7885;n h&#7885;c sinh</div>
       <h6 class="mt-2">Lý do</h6>      <input id="ly_do_loc" class="form-control form-control-sm mb-2" placeholder="Lọc lý do...">
 <div id="ds_ly_do" class="d-flex flex-wrap gap-2"></div>
@@ -41,7 +44,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
 <div id="ds_qua" class="d-flex flex-wrap gap-2"></div>
     </div></div></div>
   </div>
-  <div class="card mt-3"><div class="card-body">
+  <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
     <h6>Lịch sử gần đây</h6><div class="table-responsive"><table class="table table-sm">
       <thead><tr><th>Thời gian</th><th>Học sinh</th><th>Loại</th><th>Thay đổi</th><th>Số dư</th><th>Ghi chú</th></tr></thead>
       <tbody id="bang_lich_su"></tbody></table></div>
@@ -55,6 +58,8 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   </div></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 <div class="modal fade" id="quaModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable modal-sm modal-dialog-centered">
     <div class="modal-content">

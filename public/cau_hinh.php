@@ -3,7 +3,7 @@ require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"></head><body>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"><link rel="stylesheet" href="/public/theme.css"></head><body>
 <div class="container py-3">
   <div class="d-flex align-items-center justify-content-between"><h4 class="mb-0">Cấu hình hệ thống</h4>
     <div class="ms-auto"><a class="btn btn-secondary btn-sm" href="/public/trang_chinh.php">← Chấm điểm</a></div>
@@ -18,13 +18,13 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   <div class="tab-content border border-top-0 p-3">
     <div class="tab-pane fade show active" id="tab-ly-do">
       <div class="row g-3">
-        <div class="col-md-4"><div class="card"><div class="card-body">
+        <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <h6>Thêm lý do</h6>
           <div class="mb-2"><label class="form-label">Tiêu đề</label><input id="ld_tieu_de" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Biến điểm</label><input id="ld_bien_diem" type="number" class="form-control" value="1"></div>
           <button class="btn btn-primary btn-sm" id="ld_them">Thêm</button>
         </div></div></div>
-        <div class="col-md-8"><div class="card"><div class="card-body">
+        <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tiêu đề</th><th>Biến điểm</th><th>Trạng thái</th><th></th></tr></thead><tbody id="ld_ds"></tbody></table>
@@ -34,7 +34,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
     </div>
     <div class="tab-pane fade" id="tab-qua">
       <div class="row g-3">
-        <div class="col-md-4"><div class="card"><div class="card-body">
+        <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <h6>Thêm quà tặng</h6>
           <div class="mb-2"><label class="form-label">Tên</label><input id="q_ten" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Giá điểm</label><input id="q_gia" type="number" class="form-control" value="1"></div>
@@ -42,7 +42,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
           <div class="mb-2"><label class="form-label">URL ảnh (tùy chọn)</label><input id="q_anh" class="form-control" placeholder="https://..."></div>
           <button class="btn btn-primary btn-sm" id="q_them">Thêm</button>
         </div></div></div>
-        <div class="col-md-8"><div class="card"><div class="card-body">
+        <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá điểm</th><th>Tồn kho</th><th>Trạng thái</th><th></th></tr></thead><tbody id="q_ds"></tbody></table>
@@ -52,12 +52,12 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
     </div>
     <div class="tab-pane fade" id="tab-lop">
       <div class="row g-3">
-        <div class="col-md-4"><div class="card"><div class="card-body">
+        <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <h6>Thêm lớp học</h6>
           <div class="mb-2"><label class="form-label">Tên lớp</label><input id="l_ten" class="form-control"></div>
           <button class="btn btn-primary btn-sm" id="l_them">Thêm</button>
         </div></div></div>
-        <div class="col-md-8"><div class="card"><div class="card-body">
+        <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tên</th><th>Trạng thái</th><th></th></tr></thead><tbody id="l_ds"></tbody></table>
@@ -67,7 +67,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
     </div>
     <div class="tab-pane fade" id="tab-tai-khoan">
       <div class="row g-3">
-        <div class="col-md-6"><div class="card"><div class="card-body">
+        <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <h6>Đổi mật khẩu</h6>
           <div class="mb-2"><label class="form-label">Mật khẩu hiện tại</label><input id="gv_mk_cu" type="password" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Mật khẩu mới</label><input id="gv_mk_moi" type="password" class="form-control"></div>
@@ -75,7 +75,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
           <button class="btn btn-primary btn-sm" id="gv_doi">Đổi mật khẩu</button>
           <span id="gv_doi_msg" class="ms-2 small text-muted"></span>
         </div></div></div>
-        <div class="col-md-6"><div class="card"><div class="card-body">
+        <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <h6>Thêm giáo viên mới</h6>
           <div class="mb-2"><label class="form-label">Tên đăng nhập</label><input id="gv_ten" class="form-control" placeholder="vd: gv2"></div>
           <div class="mb-2"><label class="form-label">Mật khẩu</label><input id="gv_mk" type="password" class="form-control"></div>
@@ -348,4 +348,8 @@ document.getElementById('l_ds').addEventListener('click', async (e) => {
 // Load
 ldNap(); qNap(); lNap();
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body></html>
+

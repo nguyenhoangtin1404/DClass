@@ -10,7 +10,10 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Học sinh</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  <link rel="stylesheet" href="/public/theme.css">
   <style>
     .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
   </style>
@@ -23,7 +26,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   </div>
   <div class="row g-3 mt-1">
     <div class="col-md-5">
-      <div class="card"><div class="card-body">
+      <div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
         <div class="mb-2"><input id="tu_khoa" class="form-control" placeholder="Tìm…"></div>
         <div class="form-check mb-2">
           <input class="form-check-input" type="checkbox" id="hien_tat_ca">
@@ -33,7 +36,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
       </div></div>
     </div>
     <div class="col-md-7">
-      <div class="card"><div class="card-body">
+      <div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
         <h6>Thêm học sinh</h6>
         <div class="row g-2">
           <div class="col-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
@@ -221,5 +224,8 @@ function syncLopSelectOnce(){
   }, 100);
 }
   </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body>
 </html>
