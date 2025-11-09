@@ -17,6 +17,12 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   <style>
     .avatar-xs { width:24px; height:24px; border-radius:6px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; }
     .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
+    /* Table polish */
+    .modern-table thead th { position: sticky; top: 0; z-index: 1; background: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color); }
+    .modern-table tbody tr:hover { background-color: var(--bs-tertiary-bg); }
+    .modern-table td, .modern-table th { vertical-align: middle; }
+    .cell-notes { max-width: 260px; }
+    .cell-notes .truncate { display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   </style>
 </head>
 <body><?php include __DIR__ . '/_nav.php'; ?>
@@ -37,7 +43,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
     </div></div></div>
   </div>
   <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
-    <h6>Lịch sử gần đây</h6><div class="table-responsive"><table class="table table-sm">
+    <h6>Lịch sử gần đây</h6><div class="table-responsive"><table class="table table-sm table-hover table-striped align-middle modern-table">
       <thead><tr><th>Thời gian</th><th>Học sinh</th><th>Loại</th><th>Thay đổi</th><th>Số dư</th><th>Ghi chú</th></tr></thead>
       <tbody id="bang_lich_su"></tbody></table></div>
     <div class="d-flex align-items-center justify-content-between mt-2">
@@ -45,6 +51,38 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
       <div class="btn-group btn-group-sm" role="group">
         <button id="ls_prev" type="button" class="btn btn-outline-secondary">Trước</button>
         <button id="ls_next" type="button" class="btn btn-outline-secondary">Sau</button>
+      </div>
+    </div>
+  </div></div>
+  <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
+    <h6>Báo cáo & Thống kê</h6>
+    <div class="row g-3 mt-1">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="text-muted small">Top số dư</div>
+            <button id="tk_refresh" type="button" class="btn btn-outline-secondary btn-sm">Làm mới</button>
+          </div>
+          <div id="tk_top_sodu" class="list-group list-group-flush"></div>
+        </div>
+        <div class="mb-3">
+          <div class="text-muted small">Top cộng điểm</div>
+          <div id="tk_top_cong" class="list-group list-group-flush"></div>
+        </div>
+        <div class="mb-2">
+          <div class="text-muted small">Top đổi điểm</div>
+          <div id="tk_top_doi" class="list-group list-group-flush"></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <div class="text-muted small">Quà được yêu thích</div>
+          <div id="tk_qua_ua_thich" class="list-group list-group-flush"></div>
+        </div>
+        <div class="mb-2">
+          <div class="text-muted small">Tồn kho quà</div>
+          <div id="tk_ton_kho" class="list-group list-group-flush"></div>
+        </div>
       </div>
     </div>
   </div></div>
@@ -64,7 +102,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   </div>
 </div><script>
 let hsHienTai=null;
-let lsData=[]; let lsPage=1; const lsPageSize=10; let lyDoData=[]; let quaData=[];
+let lsData=[]; let lsPage=1; const lsPageSize=10; let lyDoData=[]; let quaData=[]; let thongKe=null;
 function norm(s){ try { return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); } catch(_e){ return String(s||'').toLowerCase(); } }
 function tenLoai(loai){
   switch(String(loai||'')){
@@ -92,7 +130,7 @@ function renderLyDo(){
       b.onclick = async()=>{
         if(!hsHienTai) return alert('Chưa chọn học sinh');
         const res=await fetch('/api/diem.php?hanh_dong=cong',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, ly_do_id:ld.id})});
-        const jj=await res.json(); if(jj.ok){ hsHienTai.so_du=jj.du_lieu.so_du; hienThongTin(); napHocSinh(); napLichSu(); } else alert(jj.thong_bao||'Lỗi');
+        const jj=await res.json(); if(jj.ok){ hsHienTai.so_du=jj.du_lieu.so_du; hienThongTin(); napHocSinh(); napLichSu(); napThongKe(); } else alert(jj.thong_bao||'Lỗi');
       };
       box.appendChild(b);
     });
@@ -117,7 +155,7 @@ function renderLyDo(){
       b.onclick = async()=>{
         if(!hsHienTai) return alert('Chưa chọn học sinh');
         const res=await fetch('/api/diem.php?hanh_dong=quy_doi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, qua_tang_id:q.id})});
-        const jj=await res.json(); if(jj.ok){ hsHienTai.so_du=jj.du_lieu.so_du; hienThongTin(); napHocSinh(); napLichSu(); napQua(); } else alert(jj.thong_bao||'Lỗi');
+        const jj=await res.json(); if(jj.ok){ hsHienTai.so_du=jj.du_lieu.so_du; hienThongTin(); napHocSinh(); napLichSu(); napQua(); napThongKe(); } else alert(jj.thong_bao||'Lỗi');
       };
       box.appendChild(b);
     });
@@ -138,11 +176,77 @@ function renderLichSu(){
   const total = lsData.length; const totalPages = Math.max(1, Math.ceil(total/lsPageSize));
   lsPage = Math.min(Math.max(1, lsPage), totalPages);
   const start = (lsPage-1)*lsPageSize; const rows = lsData.slice(start, start+lsPageSize);
-  rows.forEach(row=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${row.tao_luc}</td><td>${row.ho_ten}</td><td>${tenLoai(row.loai)}</td><td>${row.bien_diem}</td><td>${row.so_du_sau}</td><td>${row.ghi_chu||''}</td>`; tb.appendChild(tr); });
+  rows.forEach(row=>{
+    const loaiHtml = (() => {
+      switch(String(row.loai||'')){
+        case 'CONG_DIEM': return '<span class="badge bg-success-subtle text-success border border-success-subtle">Cộng điểm</span>';
+        case 'DOI_DIEM': return '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Đổi điểm</span>';
+        case 'HOAN_TAC': return '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Hoàn tác</span>';
+        default: return `<span class="badge bg-light text-body-secondary">${tenLoai(row.loai)}</span>`;
+      }
+    })();
+    const delta = Number(row.bien_diem)||0;
+    const deltaHtml = `<span class="fw-semibold ${delta>0?'text-success':'text-danger'}">${delta>0?'+':''}${delta}</span>`;
+    const soDu = Number(row.so_du_sau)||0;
+    const soDuHtml = `<span class="fw-semibold">${new Intl.NumberFormat('vi-VN').format(soDu)}</span>`;
+    const ghiChu = row.ghi_chu||'';
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td class="text-muted small">${row.tao_luc||''}</td>
+      <td>${row.ho_ten||''}</td>
+      <td>${loaiHtml}</td>
+      <td>${deltaHtml}</td>
+      <td>${soDuHtml}</td>
+      <td class="cell-notes"><span class="truncate">${ghiChu}</span></td>`;
+    tb.appendChild(tr);
+  });
   const info=document.getElementById('ls_info'); if(info){ const from=total?start+1:0; const to=Math.min(start+rows.length,total); info.textContent=`Trang ${lsPage}/${totalPages} · ${from}-${to}/${total}`; }
   const prev=document.getElementById('ls_prev'); const next=document.getElementById('ls_next'); if(prev) prev.disabled=(lsPage<=1); if(next) next.disabled=(lsPage>=totalPages);
 }
-function moQuaDaDoi(){
+function renderThongKe(){
+  const F = (n)=> new Intl.NumberFormat('vi-VN').format(Number(n||0));
+  const elSoDu = document.getElementById('tk_top_sodu'); if(elSoDu){ elSoDu.innerHTML='';
+    (thongKe?.top_so_du||[]).slice(0,5).forEach((x,i)=>{
+      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
+      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ho_ten}</span><span class="fw-semibold">${F(x.so_du)}</span>`; elSoDu.appendChild(d);
+    });
+  }
+  const elCong = document.getElementById('tk_top_cong'); if(elCong){ elCong.innerHTML='';
+    (thongKe?.top_cong_diem||[]).slice(0,5).forEach((x,i)=>{
+      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
+      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ho_ten}</span><span class="text-success fw-semibold">+${F(x.tong_cong||0)}</span>`; elCong.appendChild(d);
+    });
+  }
+  const elDoi = document.getElementById('tk_top_doi'); if(elDoi){ elDoi.innerHTML='';
+    (thongKe?.top_doi_diem||[]).slice(0,5).forEach((x,i)=>{
+      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
+      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ho_ten}</span><span class="text-warning fw-semibold">${F(x.so_lan)} lần</span>`; elDoi.appendChild(d);
+    });
+  }
+  const elQua = document.getElementById('tk_qua_ua_thich'); if(elQua){ elQua.innerHTML='';
+    (thongKe?.qua_ua_thich||[]).slice(0,5).forEach((x,i)=>{
+      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
+      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ten}</span><span class="fw-semibold">${F(x.so_lan)} lần</span>`; elQua.appendChild(d);
+    });
+  }
+  const elTon = document.getElementById('tk_ton_kho'); if(elTon){ elTon.innerHTML='';
+    (thongKe?.ton_kho||[]).forEach(q=>{
+      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
+      let badgeClass = 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+      const ton = Number(q.ton_kho);
+      if (ton === 0) badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
+      else if (ton > 0 && ton <= 3) badgeClass = 'bg-warning-subtle text-warning border border-warning-subtle';
+      d.innerHTML = `<span class="text-truncate">${q.ten}</span><span class="badge ${badgeClass}">${ton<0?'∞':F(ton)}</span>`; elTon.appendChild(d);
+    });
+  }
+}
+async function napThongKe(){
+  try{
+    const r = await fetch('/api/diem.php?hanh_dong=thong_ke'); const j = await r.json();
+    thongKe = j.ok ? (j.du_lieu||{}) : {};
+  }catch(_e){ thongKe = {}; }
+  renderThongKe();
+}function moQuaDaDoi(){
   if(!hsHienTai) return;
   const el = document.getElementById('qua_modal_body'); if(el) el.innerHTML = '<div class="text-muted small">Đang tải...</div>';
   (async()=>{
@@ -178,6 +282,7 @@ document.getElementById('tu_khoa').oninput=napHocSinh;
 document.getElementById('dang_xuat').onclick=async()=>{ await fetch('/api/dang_nhap.php?hanh_dong=dang_xuat',{method:'POST'}); location.href='/public/dang_nhap.php'; }; const btnQD = document.getElementById('btn_qua_da_doi'); if(btnQD) btnQD.onclick = moQuaDaDoi;
 if(document.getElementById('ly_do_loc')) document.getElementById('ly_do_loc').oninput = renderLyDo;
 if(document.getElementById('qua_loc')) document.getElementById('qua_loc').oninput = renderQua;
+const tkBtn = document.getElementById('tk_refresh'); if (tkBtn) tkBtn.onclick = napThongKe;
 document.getElementById('ls_prev').onclick=()=>{ lsPage=Math.max(1, lsPage-1); renderLichSu(); };
 document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu(); };
 
@@ -206,7 +311,9 @@ function hienThongTinDep(){
 // Ghi đè hàm mặc định nếu đã có
 try { hienThongTin = hienThongTinDep; } catch(_e) {}
 
-napHocSinh(); napLyDo(); napQua(); napLichSu();
+napHocSinh(); napLyDo(); napQua(); napLichSu(); napThongKe();
 </script>
 </body>
 </html>
+
+
