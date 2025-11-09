@@ -19,16 +19,8 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
     .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
   </style>
 </head>
-<body>
-<nav class="navbar navbar-light bg-light px-3"><span class="navbar-brand">Chấm điểm</span>
-  <div class="ms-auto">
-    <a class="btn btn-outline-secondary btn-sm" href="/public/hoc_sinh_quan_ly.php">Học sinh</a>
-    <a class="btn btn-outline-secondary btn-sm" href="/public/lich_su.php">Lịch sử</a>
-    <a class="btn btn-outline-secondary btn-sm" href="/public/cau_hinh.php">Cấu hình</a>
-    <button class="btn btn-outline-danger btn-sm" id="dang_xuat">Đăng xuất</button>
-  </div>
-</nav>
-<div class="container py-3">
+<body><?php include __DIR__ . '/_nav.php'; ?>
+<div class="container py-3 safe-bottom">
   <div class="row g-3">
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
       <h6>Tìm học sinh</h6>
@@ -95,7 +87,7 @@ function renderLyDo(){
     .filter(ld => !kw || norm(ld.tieu_de).includes(kw))
     .forEach(ld => {
       const b=document.createElement('button');
-      b.className='btn btn-outline-primary btn-sm';
+      b.className='btn btn-outline-primary';
       b.textContent = `${ld.tieu_de} (${ld.bien_diem>0?'+':''}${ld.bien_diem})`;
       b.onclick = async()=>{
         if(!hsHienTai) return alert('Chưa chọn học sinh');
@@ -118,7 +110,7 @@ function renderLyDo(){
     .filter(q => !kw || norm(q.ten).includes(kw))
     .forEach(q => {
       const b=document.createElement('button');
-      b.className='btn btn-outline-success btn-sm d-flex align-items-center gap-2';
+      b.className='btn btn-outline-success d-flex align-items-center gap-2';
       const ton=q.ton_kho<0?'∞':q.ton_kho;
       const av=(q.anh_url && String(q.anh_url).trim()!=='')?q.anh_url:'/upload/avatar/default.svg';
       b.innerHTML = `<img src="${av}" alt="" class="avatar-xs" onerror="this.onerror=null;this.src='/upload/avatar/default.svg';"><span>${q.ten} (${q.gia_diem}) [${ton}]</span>`;

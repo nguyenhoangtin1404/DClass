@@ -19,10 +19,11 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   </style>
 </head>
 <body>
-<div class="container py-3">
+<?php include __DIR__ . '/_nav.php'; ?>
+<div class="container py-3 safe-bottom">
   <div class="d-flex align-items-center justify-content-between">
     <h5>Quản lý học sinh</h5>
-    <a href="/public/trang_chinh.php" class="btn btn-secondary btn-sm">← Chấm điểm</a>
+    
   </div>
   <div class="row g-3 mt-1">
     <div class="col-md-5">
@@ -52,7 +53,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
           </div>
           <div class="col-3 mt-2"><input id="ngay_sinh" type="date" class="form-control" placeholder="Ngày sinh"></div>
         </div>
-        <div class="mt-2"><button id="them" class="btn btn-primary btn-sm">Thêm</button><span id="msg" class="ms-2 small text-muted"></span></div>
+        <div class="mt-2"><button id="them" class="btn btn-primary btn-lg">Thêm</button><span id="msg" class="ms-2 small text-muted"></span></div>
         <hr>
         <div class="d-flex align-items-center gap-2">
           <div class="me-auto" style="max-width:320px;">
@@ -229,3 +230,5 @@ function syncLopSelectOnce(){
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body>
 </html>
+
+

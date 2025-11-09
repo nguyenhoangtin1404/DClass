@@ -28,3 +28,38 @@ hr{
   border-top-color: rgba(var(--bs-primary-rgb), .25);
 }
 
+/* Sticky table headers inside .table-responsive */
+.table-responsive thead th{
+  position: sticky;
+  top: 0;
+  background-color: var(--bs-body-bg);
+  z-index: 1;
+}
+
+/* Safer tap targets for primary actions */
+.btn-lg{ min-height: 44px; }
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-danger,
+.btn-outline-warning,
+.btn-outline-info{ min-height: 44px; }
+
+/* Safe area bottom padding utility */
+.safe-bottom{ padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+
+/* Center navbar buttons' content (icon + text) */
+.navbar .btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+}
+.navbar .btn i{
+  line-height: 1;
+  display: inline-block;
+}
