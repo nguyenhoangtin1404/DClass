@@ -123,9 +123,11 @@ async function ldNap(){ const j = await jfetch('/api/ly_do_quan_tri.php'); if(!j
     tr.dataset.bien_diem = x.bien_diem;
     tr.innerHTML = `<td>${x.id}</td><td>${x.tieu_de}</td><td>${x.bien_diem}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
-      <button class="btn btn-sm btn-outline-primary me-1">Sửa</button>
-      <button class="btn btn-sm btn-outline-warning me-1">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
-      <button class="btn btn-sm btn-outline-danger">Xóa</button>
+      <div class="d-flex flex-wrap justify-content-end gap-2">
+        <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
+        <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
+        <button class="btn btn-outline-danger rounded-pill px-3 py-2">Xóa</button>
+      </div>
     </td>`;
     const [btnSua, btnToggle, btnXoa] = tr.querySelectorAll('button');
     btnSua.onclick = async()=>{
@@ -161,10 +163,12 @@ async function qNap(){ const j = await jfetch('/api/qua_tang_quan_tri.php'); if(
     const av = (x.anh_url && String(x.anh_url).trim()!=='') ? x.anh_url : '/upload/avatar/default.svg';
     tr.innerHTML = `<td>${x.id}</td><td><img src="${av}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='/upload/avatar/default.svg';"></td><td>${x.ten}</td><td>${x.gia_diem}</td><td>${x.ton_kho}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
-      <button class="btn btn-sm btn-outline-primary me-1">Sửa</button>
-      <button class="btn btn-sm btn-outline-info me-1">Ảnh</button>
-      <button class="btn btn-sm btn-outline-warning me-1">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
-      <button class="btn btn-sm btn-outline-danger">Xóa</button>
+      <div class="d-flex flex-wrap justify-content-end gap-2">
+        <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
+        <button class="btn btn-outline-info rounded-pill px-3 py-2">Ảnh</button>
+        <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
+        <button class="btn btn-outline-danger rounded-pill px-3 py-2">Xóa</button>
+      </div>
     </td>`;
     const [btnSua, btnAnh, btnToggle, btnXoa] = tr.querySelectorAll('button');
     btnSua.onclick = async()=>{
@@ -203,9 +207,11 @@ async function lNap(){ const j = await jfetch('/api/lop_hoc_quan_tri.php'); if(!
     tr.dataset.ten = x.ten;
     tr.innerHTML = `<td>${x.id}</td><td>${x.ten}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
-      <button class="btn btn-sm btn-outline-primary me-1">Sửa</button>
-      <button class="btn btn-sm btn-outline-warning me-1">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
-      <button class="btn btn-sm btn-outline-danger">Xóa</button>
+      <div class="d-flex flex-wrap justify-content-end gap-2">
+        <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
+        <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
+        <button class="btn btn-outline-danger rounded-pill px-3 py-2">Xóa</button>
+      </div>
     </td>`;
     const [btnSua, btnToggle, btnXoa] = tr.querySelectorAll('button');
     btnSua.onclick = async()=>{

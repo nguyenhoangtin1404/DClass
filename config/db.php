@@ -2,7 +2,12 @@
 declare(strict_types=1);
 session_start();
 $DB_PATH = __DIR__ . '/../data/ung_dung.db';
+$DB_DIR = dirname($DB_PATH);
 $lan_dau = !file_exists($DB_PATH);
+// Tự tạo thư mục dữ liệu nếu chưa tồn tại để tránh lỗi kết nối SQLite lần đầu
+if (!is_dir($DB_DIR)) {
+  @mkdir($DB_DIR, 0777, true);
+}
 try {
   $pdo = new PDO('sqlite:' . $DB_PATH);
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
