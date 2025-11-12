@@ -7,6 +7,7 @@ $active = basename($_SERVER['PHP_SELF'] ?? '');
   <div class="ms-auto d-flex gap-2">
     <a class="btn btn-outline-secondary btn-sm <?php echo $active==='hoc_sinh_quan_ly.php'?'active':''; ?>" href="/public/hoc_sinh_quan_ly.php"><i class="bi bi-people me-1"></i>Học sinh</a>
     <a class="btn btn-outline-secondary btn-sm <?php echo $active==='lich_su.php'?'active':''; ?>" href="/public/lich_su.php"><i class="bi bi-clock-history me-1"></i>Lịch sử</a>
+    <a class="btn btn-outline-secondary btn-sm <?php echo $active==='bao_cao.php'?'active':''; ?>" href="/public/bao_cao.php"><i class="bi bi-bar-chart me-1"></i>Báo cáo & Thống kê</a>
     <a class="btn btn-outline-secondary btn-sm <?php echo $active==='cau_hinh.php'?'active':''; ?>" href="/public/cau_hinh.php"><i class="bi bi-gear me-1"></i>Cấu hình</a>
     <button class="btn btn-outline-danger btn-sm" id="dang_xuat"><i class="bi bi-box-arrow-right me-1"></i>Đăng xuất</button>
   </div>

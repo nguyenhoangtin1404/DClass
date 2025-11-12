@@ -47,6 +47,7 @@ btn.onclick = async () => {
     var elP = document.getElementById('p');
     var elMsg = document.getElementById('msg');
     if (!elBtn || !elU || !elP) return;
+    }
     // Hỗ trợ phím Enter để gửi form
     try{
       [elU, elP].forEach(function(el){ el.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); elBtn.click(); } }); });

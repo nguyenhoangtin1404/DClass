@@ -32,6 +32,10 @@ try {
     $tenCols2 = array_map(fn($c) => $c['name'] ?? '', $cols2);
     if (!in_array('anh_url', $tenCols2, true)) { $pdo->exec("ALTER TABLE qua_tang ADD COLUMN anh_url TEXT"); }
   } catch (Throwable $___e3) { /* ignore */ }
+  // Bổ sung bảng whitelist reset khóa đăng nhập (nếu chưa có)
+  try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS reset_khoa (ten_dang_nhap TEXT PRIMARY KEY, het_han INTEGER)");
+  } catch (Throwable $___e4) { /* ignore */ }
 } catch (Exception $e) { http_response_code(500); echo 'Loi ket noi CSDL'; exit; }
 if ($lan_dau) {
   $luoc_do = file_get_contents(__DIR__ . '/luoc_do.sql');

@@ -54,38 +54,6 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
       </div>
     </div>
   </div></div>
-  <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
-    <h6>Báo cáo & Thống kê</h6>
-    <div class="row g-3 mt-1">
-      <div class="col-md-6">
-        <div class="mb-3">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="text-muted small">Top số dư</div>
-            <button id="tk_refresh" type="button" class="btn btn-outline-secondary btn-sm">Làm mới</button>
-          </div>
-          <div id="tk_top_sodu" class="list-group list-group-flush"></div>
-        </div>
-        <div class="mb-3">
-          <div class="text-muted small">Top cộng điểm</div>
-          <div id="tk_top_cong" class="list-group list-group-flush"></div>
-        </div>
-        <div class="mb-2">
-          <div class="text-muted small">Top đổi điểm</div>
-          <div id="tk_top_doi" class="list-group list-group-flush"></div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="mb-3">
-          <div class="text-muted small">Quà được yêu thích</div>
-          <div id="tk_qua_ua_thich" class="list-group list-group-flush"></div>
-        </div>
-        <div class="mb-2">
-          <div class="text-muted small">Tồn kho quà</div>
-          <div id="tk_ton_kho" class="list-group list-group-flush"></div>
-        </div>
-      </div>
-    </div>
-  </div></div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
@@ -203,50 +171,7 @@ function renderLichSu(){
   const info=document.getElementById('ls_info'); if(info){ const from=total?start+1:0; const to=Math.min(start+rows.length,total); info.textContent=`Trang ${lsPage}/${totalPages} · ${from}-${to}/${total}`; }
   const prev=document.getElementById('ls_prev'); const next=document.getElementById('ls_next'); if(prev) prev.disabled=(lsPage<=1); if(next) next.disabled=(lsPage>=totalPages);
 }
-function renderThongKe(){
-  const F = (n)=> new Intl.NumberFormat('vi-VN').format(Number(n||0));
-  const elSoDu = document.getElementById('tk_top_sodu'); if(elSoDu){ elSoDu.innerHTML='';
-    (thongKe?.top_so_du||[]).slice(0,5).forEach((x,i)=>{
-      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
-      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ho_ten}</span><span class="fw-semibold">${F(x.so_du)}</span>`; elSoDu.appendChild(d);
-    });
-  }
-  const elCong = document.getElementById('tk_top_cong'); if(elCong){ elCong.innerHTML='';
-    (thongKe?.top_cong_diem||[]).slice(0,5).forEach((x,i)=>{
-      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
-      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ho_ten}</span><span class="text-success fw-semibold">+${F(x.tong_cong||0)}</span>`; elCong.appendChild(d);
-    });
-  }
-  const elDoi = document.getElementById('tk_top_doi'); if(elDoi){ elDoi.innerHTML='';
-    (thongKe?.top_doi_diem||[]).slice(0,5).forEach((x,i)=>{
-      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
-      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ho_ten}</span><span class="text-warning fw-semibold">${F(x.so_lan)} lần</span>`; elDoi.appendChild(d);
-    });
-  }
-  const elQua = document.getElementById('tk_qua_ua_thich'); if(elQua){ elQua.innerHTML='';
-    (thongKe?.qua_ua_thich||[]).slice(0,5).forEach((x,i)=>{
-      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
-      d.innerHTML = `<span class="text-truncate">${i+1}. ${x.ten}</span><span class="fw-semibold">${F(x.so_lan)} lần</span>`; elQua.appendChild(d);
-    });
-  }
-  const elTon = document.getElementById('tk_ton_kho'); if(elTon){ elTon.innerHTML='';
-    (thongKe?.ton_kho||[]).forEach(q=>{
-      const d=document.createElement('div'); d.className='list-group-item d-flex justify-content-between align-items-center';
-      let badgeClass = 'bg-secondary-subtle text-secondary border border-secondary-subtle';
-      const ton = Number(q.ton_kho);
-      if (ton === 0) badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
-      else if (ton > 0 && ton <= 3) badgeClass = 'bg-warning-subtle text-warning border border-warning-subtle';
-      d.innerHTML = `<span class="text-truncate">${q.ten}</span><span class="badge ${badgeClass}">${ton<0?'∞':F(ton)}</span>`; elTon.appendChild(d);
-    });
-  }
-}
-async function napThongKe(){
-  try{
-    const r = await fetch('/api/diem.php?hanh_dong=thong_ke'); const j = await r.json();
-    thongKe = j.ok ? (j.du_lieu||{}) : {};
-  }catch(_e){ thongKe = {}; }
-  renderThongKe();
-}function moQuaDaDoi(){
+function moQuaDaDoi(){
   if(!hsHienTai) return;
   const el = document.getElementById('qua_modal_body'); if(el) el.innerHTML = '<div class="text-muted small">Đang tải...</div>';
   (async()=>{
@@ -282,7 +207,6 @@ document.getElementById('tu_khoa').oninput=napHocSinh;
 document.getElementById('dang_xuat').onclick=async()=>{ await fetch('/api/dang_nhap.php?hanh_dong=dang_xuat',{method:'POST'}); location.href='/public/dang_nhap.php'; }; const btnQD = document.getElementById('btn_qua_da_doi'); if(btnQD) btnQD.onclick = moQuaDaDoi;
 if(document.getElementById('ly_do_loc')) document.getElementById('ly_do_loc').oninput = renderLyDo;
 if(document.getElementById('qua_loc')) document.getElementById('qua_loc').oninput = renderQua;
-const tkBtn = document.getElementById('tk_refresh'); if (tkBtn) tkBtn.onclick = napThongKe;
 document.getElementById('ls_prev').onclick=()=>{ lsPage=Math.max(1, lsPage-1); renderLichSu(); };
 document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu(); };
 
@@ -311,7 +235,7 @@ function hienThongTinDep(){
 // Ghi đè hàm mặc định nếu đã có
 try { hienThongTin = hienThongTinDep; } catch(_e) {}
 
-napHocSinh(); napLyDo(); napQua(); napLichSu(); napThongKe();
+napHocSinh(); napLyDo(); napQua(); napLichSu();
 </script>
 </body>
 </html>
