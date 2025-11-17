@@ -23,6 +23,20 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
     .modern-table td, .modern-table th { vertical-align: middle; }
     .cell-notes { max-width: 260px; }
     .cell-notes .truncate { display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .scratch-card-wrapper { margin-top: 1.5rem; }
+    .scratch-card { text-align: center; }
+    .scratch-card-title { font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    .scratch-card-hint { font-size: .9rem; color: #0b3a69; margin-bottom: 1rem; }
+    .scratch-ticket { position: relative; width: 100%; max-width: 360px; margin: 0 auto 1rem; padding: 1.2rem; border-radius: 16px; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,.2); }
+    .scratch-reward-title { font-size: .8rem; text-transform: uppercase; color: #888; margin-bottom: .2rem; letter-spacing: .05em; }
+    .scratch-reward-value { font-size: 1.4rem; font-weight: 800; margin-bottom: .35rem; }
+    .scratch-reward-note { font-size: .8rem; color: #666; margin-bottom: .5rem; }
+    .scratch-area { position: relative; width: 100%; height: 130px; border-radius: 12px; overflow: hidden; border: 2px solid #c0c0c0; }
+    .scratch-under { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #fffbe6; color: #c46b1c; font-size: 1rem; font-weight: 700; z-index: 0; }
+    #scratchCanvas { position: absolute; inset: 0; z-index: 1; cursor: crosshair; touch-action: none; }
+    .scratch-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+    .scratch-actions .scratch-btn { border-radius: 999px; font-weight: 600; padding: .4rem 1.4rem; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+    .scratch-actions .scratch-btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
   </style>
 </head>
 <body><?php include __DIR__ . '/_nav.php'; ?>
@@ -35,11 +49,25 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Th&#244;ng tin</h6><button id="btn_qua_da_doi" class="btn btn-outline-secondary btn-sm" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted">Ch&#432;a ch&#7885;n h&#7885;c sinh</div>
+      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Thông tin</h6><button id="btn_qua_da_doi" class="btn btn-outline-secondary btn-sm" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
       <h6 class="mt-2">Lý do</h6>      <input id="ly_do_loc" class="form-control form-control-sm mb-2" placeholder="Lọc lý do...">
 <div id="ds_ly_do" class="d-flex flex-wrap gap-2"></div>
-      <hr><h6>Đổi quà</h6>      <input id="qua_loc" class="form-control form-control-sm mb-2" placeholder="Lọc quà...">
-<div id="ds_qua" class="d-flex flex-wrap gap-2"></div>
+      <hr><div class="d-flex align-items-center justify-content-between">
+        <h6 class="mb-0">Thẻ cào</h6>
+        <button type="button" class="btn btn-outline-primary btn-sm" id="btnToggleScratch">Đổi điểm</button>
+      </div>
+      <div id="ds_qua" class="mb-3"></div>
+      <div class="scratch-card d-none" id="scratchSection">
+        <div class="scratch-ticket">
+          <div class="scratch-area">
+            <div class="scratch-under" id="scratchLabel">CÀO TẠI ĐÂY</div>
+            <canvas id="scratchCanvas"></canvas>
+          </div>
+        </div>
+        <div class="scratch-actions">
+          <button class="btn btn-outline-primary scratch-btn d-none" id="scratchBtnNew">Thẻ mới</button>
+        </div>
+      </div>
     </div></div></div>
   </div>
   <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
@@ -111,29 +139,25 @@ function renderLyDo(){
 }function renderQua(){
   const box=document.getElementById('ds_qua'); if(!box) return;
   box.innerHTML='';
-  const kw = norm(document.getElementById('qua_loc')?.value||'');
-  (quaData||[])
-    .filter(q => !kw || norm(q.ten).includes(kw))
-    .forEach(q => {
-      const b=document.createElement('button');
-      b.className='btn btn-outline-success d-flex align-items-center gap-2';
-      const ton=q.ton_kho<0?'∞':q.ton_kho;
-      const av=(q.anh_url && String(q.anh_url).trim()!=='')?q.anh_url:'/upload/avatar/default.svg';
-      b.innerHTML = `<img src="${av}" alt="" class="avatar-xs" onerror="this.onerror=null;this.src='/upload/avatar/default.svg';"><span>${q.ten} (${q.gia_diem}) [${ton}]</span>`;
-      b.onclick = async()=>{
-        if(!hsHienTai) return alert('Chưa chọn học sinh');
-        const res=await fetch('/api/diem.php?hanh_dong=quy_doi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, qua_tang_id:q.id})});
-        const jj=await res.json(); if(jj.ok){ hsHienTai.so_du=jj.du_lieu.so_du; hienThongTin(); napHocSinh(); napLichSu(); napQua(); napThongKe(); } else alert(jj.thong_bao||'Lỗi');
-      };
-      box.appendChild(b);
-    });
-}async function napQua(){
+  const available=(quaData||[]).filter(q=>{
+    const ton=Number(q.ton_kho);
+    return Number.isNaN(ton) || ton!==0;
+  }).length;
+  const info=document.createElement('div');
+  info.className='alert alert-info small mb-0';
+  info.textContent = available
+    ? ('Có ' + available + ' quà sẵn sàng để đổi.')
+    : 'Hiện chưa có quà khả dụng để đổi. Vui lòng thêm quà mới.';
+  box.appendChild(info);
+}
+
+async function napQua(){
   const r=await fetch('/api/qua_tang.php');
   const j=await r.json();
   if(!j.ok){ quaData=[]; renderQua(); return; }
   quaData = Array.isArray(j.du_lieu) ? j.du_lieu : [];
   renderQua();
-}function hienThongTin(){ const el=document.getElementById('thong_tin'); el.textContent = hsHienTai ? `${hsHienTai.ho_ten} · Lớp ${hsHienTai.ten_lop||''} · Điểm: ${hsHienTai.so_du}` : 'Chưa chọn học sinh'; }
+}function hienThongTin(){ const el=document.getElementById('thong_tin'); el.textContent = hsHienTai ? `${hsHienTai.ho_ten} · Lớp ${hsHienTai.ten_lop||''} · Điểm: ${hsHienTai.so_du}` : ''; }
 async function napLichSu(){ const sid=hsHienTai?hsHienTai.id:0; const r=await fetch('/api/diem.php?hanh_dong=lich_su&hoc_sinh_id='+sid);
   const j=await r.json(); if(!j.ok){ lsData=[]; renderLichSu(); return; }
   lsData = Array.isArray(j.du_lieu) ? j.du_lieu : []; lsPage=1; renderLichSu();
@@ -206,7 +230,6 @@ function moQuaDaDoi(){
 document.getElementById('tu_khoa').oninput=napHocSinh;
 document.getElementById('dang_xuat').onclick=async()=>{ await fetch('/api/dang_nhap.php?hanh_dong=dang_xuat',{method:'POST'}); location.href='/public/dang_nhap.php'; }; const btnQD = document.getElementById('btn_qua_da_doi'); if(btnQD) btnQD.onclick = moQuaDaDoi;
 if(document.getElementById('ly_do_loc')) document.getElementById('ly_do_loc').oninput = renderLyDo;
-if(document.getElementById('qua_loc')) document.getElementById('qua_loc').oninput = renderQua;
 document.getElementById('ls_prev').onclick=()=>{ lsPage=Math.max(1, lsPage-1); renderLichSu(); };
 document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu(); };
 
@@ -236,6 +259,224 @@ function hienThongTinDep(){
 try { hienThongTin = hienThongTinDep; } catch(_e) {}
 
 napHocSinh(); napLyDo(); napQua(); napLichSu();
+
+(function initScratchCard(){
+  const SCRATCH_COST = 5;
+  const scratchCanvas=document.getElementById('scratchCanvas');
+  const scratchLabel=document.getElementById('scratchLabel');
+  const btnNew=document.getElementById('scratchBtnNew');
+  const scratchSection=document.getElementById('scratchSection');
+  const btnToggleScratch=document.getElementById('btnToggleScratch');
+  if(!scratchCanvas||!scratchLabel||!btnNew) return;
+
+  if(btnToggleScratch && scratchSection){
+    btnToggleScratch.addEventListener('click',()=>{
+      const wasHidden = scratchSection.classList.contains('d-none');
+      if(wasHidden && !hsHienTai){
+        alert('Chưa chọn học sinh');
+        return;
+      }
+      const isHidden=scratchSection.classList.toggle('d-none');
+      btnToggleScratch.textContent = isHidden ? 'Đổi điểm' : 'Ẩn thẻ cào';
+      if(!isHidden){
+        scratchSection.scrollIntoView({behavior:'smooth', block:'nearest'});
+        setTimeout(()=>prepareScratchCard(), 10);
+      }
+    });
+  }
+
+  const ctx=scratchCanvas.getContext('2d');
+  let isDrawing=false;
+  let lastX=0;
+  let lastY=0;
+  let strokeCounter=0;
+  let isProcessing=false;
+  let scratchComplete=false;
+  let currentReward=null;
+  let hasRedeemedCurrent=false;
+  let revealedRewardText='';
+
+  function availableRewards(){
+    return (quaData||[]).filter(q=>{
+      const ton=Number(q.ton_kho);
+      return Number.isNaN(ton) || ton!==0;
+    });
+  }
+
+  function refreshScratchText(){
+    let text='';
+    if(isProcessing){
+      text='Đang đổi điểm...';
+    } else if(hasRedeemedCurrent && revealedRewardText){
+      text=revealedRewardText;
+    }
+    scratchLabel.textContent=text;
+  }
+
+  function updateRedeemButton(){
+    const show = scratchComplete && !isProcessing;
+    btnNew.classList.toggle('d-none', !show);
+    btnNew.disabled=!show;
+  }
+
+  function markScratchComplete(){
+    if(!scratchComplete){
+      scratchComplete=true;
+      updateRedeemButton();
+      refreshScratchText();
+    }
+  }
+
+  function drawCover(){
+    const w=scratchCanvas.width;
+    const h=scratchCanvas.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.globalCompositeOperation='source-over';
+    const grad=ctx.createLinearGradient(0,0,w,h);
+    grad.addColorStop(0,'#f7f7f7');
+    grad.addColorStop(0.3,'#d0d0d0');
+    grad.addColorStop(0.7,'#f0f0f0');
+    grad.addColorStop(1,'#b8b8b8');
+    ctx.fillStyle=grad;
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='rgba(255,255,255,0.25)';
+    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#555';
+    ctx.font='bold 20px system-ui';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText('THẺ CÀO', w/2, h/2-12);
+    ctx.font='12px system-ui';
+    ctx.fillText('Cào để xem quà', w/2, h/2+10);
+    ctx.globalCompositeOperation='destination-out';
+    strokeCounter=0;
+  }
+
+  function resizeCanvas(){
+    const rect=scratchCanvas.parentElement.getBoundingClientRect();
+    scratchCanvas.width=Math.round(rect.width);
+    scratchCanvas.height=Math.round(rect.height);
+    drawCover();
+  }
+
+  function prepareScratchCard(){
+    if(isProcessing) return;
+    scratchComplete=false;
+    hasRedeemedCurrent=false;
+    currentReward=null;
+    revealedRewardText='';
+    refreshScratchText();
+    updateRedeemButton();
+    resizeCanvas();
+    redeemRandomReward();
+  }
+
+  function revealAll(){
+    ctx.globalCompositeOperation='destination-out';
+    ctx.fillRect(0,0,scratchCanvas.width,scratchCanvas.height);
+    strokeCounter=0;
+    markScratchComplete();
+  }
+
+  function drawStroke(x,y){
+    if(!isDrawing) return;
+    strokeCounter++;
+    ctx.beginPath();
+    ctx.lineJoin='round';
+    ctx.lineCap='round';
+    ctx.lineWidth=26;
+    ctx.moveTo(lastX,lastY);
+    ctx.lineTo(x,y);
+    ctx.stroke();
+    lastX=x; lastY=y;
+    if(strokeCounter>80) revealAll();
+  }
+
+  function pointerPos(e){
+    const rect=scratchCanvas.getBoundingClientRect();
+    return { x: e.clientX-rect.left, y: e.clientY-rect.top };
+  }
+
+  function stopDrawing(e){
+    if(!isDrawing) return;
+    isDrawing=false;
+    if(e && scratchCanvas.releasePointerCapture){
+      try{ scratchCanvas.releasePointerCapture(e.pointerId); }catch(_err){}
+    }
+  }
+
+  scratchCanvas.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    const {x,y}=pointerPos(e);
+    isDrawing=true;
+    lastX=x; lastY=y;
+    if(scratchCanvas.setPointerCapture){
+      try{ scratchCanvas.setPointerCapture(e.pointerId); }catch(_err){}
+    }
+  });
+  scratchCanvas.addEventListener('pointermove',e=>{
+    if(!isDrawing) return;
+    e.preventDefault();
+    const {x,y}=pointerPos(e);
+    drawStroke(x,y);
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(evt=>{
+    scratchCanvas.addEventListener(evt,e=>{
+      e.preventDefault();
+      stopDrawing(e);
+    });
+  });
+
+  async function redeemRandomReward(){
+    if(isProcessing || hasRedeemedCurrent) return;
+    if(!hsHienTai) return alert('Chưa chọn học sinh');
+    const soDuHienTai = Number(hsHienTai.so_du)||0;
+    if(soDuHienTai < SCRATCH_COST){
+      alert(`Học sinh cần ít nhất ${SCRATCH_COST} điểm để cào thẻ.`);
+      return;
+    }
+    const pool=availableRewards();
+    if(!pool.length){ alert('Chưa có quà khả dụng để đổi.'); return; }
+    isProcessing=true;
+    refreshScratchText();
+    updateRedeemButton();
+    const reward=pool[Math.floor(Math.random()*pool.length)];
+    try{
+      const res=await fetch('/api/diem.php?hanh_dong=quy_doi',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({hoc_sinh_id:hsHienTai.id, qua_tang_id:reward.id, scratch_cost:SCRATCH_COST})
+      });
+      const jj=await res.json();
+      if(!jj.ok){
+        alert(jj.thong_bao||'Đổi điểm thất bại');
+        return;
+      }
+      if(jj.du_lieu && typeof jj.du_lieu.so_du!=='undefined'){
+        hsHienTai.so_du=jj.du_lieu.so_du;
+      }
+      currentReward=reward;
+      revealedRewardText = `${reward.ten||'Quà bí mật'} (${reward.gia_diem||0} điểm)`;
+      hasRedeemedCurrent=true;
+      refreshScratchText();
+      hienThongTin(); napHocSinh(); napLichSu(); napQua();
+      if(typeof napThongKe==='function') napThongKe();
+    } catch(err){
+      console.error(err);
+      alert('Lỗi kết nối, vui lòng thử lại.');
+    } finally{
+      isProcessing=false;
+      updateRedeemButton();
+      refreshScratchText();
+    }
+  }
+
+  btnNew.addEventListener('click',prepareScratchCard);
+  window.addEventListener('resize',resizeCanvas);
+
+  prepareScratchCard();
+})();
+
 </script>
 </body>
 </html>

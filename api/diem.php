@@ -26,9 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'cong') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'quy_doi') {
   yeu_cau_dang_nhap(); $gv_id = (int)$_SESSION['giao_vien_id']; $b = than_json();
   $hs_id = (int)($b['hoc_sinh_id'] ?? 0); $qua_id = (int)($b['qua_tang_id'] ?? 0); $ghi_chu = trim($b['ghi_chu'] ?? '');
+  $scratch_cost = isset($b['scratch_cost']) ? (int)$b['scratch_cost'] : null;
+  if ($scratch_cost !== null && $scratch_cost <= 0) $scratch_cost = null;
   if (!$hs_id || !$qua_id) json_phan_hoi(false, null, 'thieu_thong_tin');
   $st = $pdo->prepare("SELECT gia_diem, ton_kho FROM qua_tang WHERE id=? AND dang_hoat_dong=1"); $st->execute([$qua_id]);
-  $q = $st->fetch(); if (!$q) json_phan_hoi(false, null, 'qua_khong_hop_le'); $gia = (int)$q['gia_diem']; $ton = (int)$q['ton_kho'];
+  $q = $st->fetch(); if (!$q) json_phan_hoi(false, null, 'qua_khong_hop_le');
+  $gia_db = (int)$q['gia_diem']; $ton = (int)$q['ton_kho'];
+  $gia = $scratch_cost !== null ? $scratch_cost : $gia_db;
   try {
     $pdo->beginTransaction(); $so_du = dam_bao_vi($pdo, $hs_id);
     if ($so_du < $gia) throw new Exception('Không đủ điểm để đổi'); if ($ton >= 0 and $ton <= 0) throw new Exception('het_hang');
