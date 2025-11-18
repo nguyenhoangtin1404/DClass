@@ -40,6 +40,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   </style>
 </head>
 <body><?php include __DIR__ . '/_nav.php'; ?>
+<div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>
 <div class="container py-3 safe-bottom">
   <div class="row g-3">
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
@@ -99,6 +100,42 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
 </div><script>
 let hsHienTai=null;
 let lsData=[]; let lsPage=1; const lsPageSize=10; let lyDoData=[]; let quaData=[]; let thongKe=null;
+let shouldAutoSelectFirstStudent=true;
+const toastVariantClasses={
+  success:'text-bg-success',
+  info:'text-bg-primary',
+  warning:'text-bg-warning',
+  danger:'text-bg-danger'
+};
+function showToast(message='',variant='info',delay=4000){
+  const container=document.getElementById('toastContainer');
+  if(!container || typeof bootstrap==='undefined' || typeof bootstrap.Toast==='undefined'){
+    console.warn('Toast:', message);
+    return;
+  }
+  const toastEl=document.createElement('div');
+  toastEl.className=`toast align-items-center border-0 ${toastVariantClasses[variant]||toastVariantClasses.info}`;
+  toastEl.setAttribute('role','alert');
+  toastEl.setAttribute('aria-live','assertive');
+  toastEl.setAttribute('aria-atomic','true');
+  const inner=document.createElement('div');
+  inner.className='d-flex';
+  const body=document.createElement('div');
+  body.className='toast-body';
+  body.textContent=message||'Th\u00f4ng b\u00e1o';
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.className='btn-close btn-close-white me-2 m-auto';
+  btn.setAttribute('data-bs-dismiss','toast');
+  btn.setAttribute('aria-label','Close');
+  inner.appendChild(body);
+  inner.appendChild(btn);
+  toastEl.appendChild(inner);
+  container.appendChild(toastEl);
+  const toastInstance=new bootstrap.Toast(toastEl,{delay,autohide:true});
+  toastEl.addEventListener('hidden.bs.toast',()=>toastEl.remove());
+  toastInstance.show();
+}
 function norm(s){ try { return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); } catch(_e){ return String(s||'').toLowerCase(); } }
 function tenLoai(loai){
   switch(String(loai||'')){
@@ -108,10 +145,33 @@ function tenLoai(loai){
     default: return loai;
   }
 }
-async function napHocSinh(){ const r=await fetch('/api/hoc_sinh.php?tu_khoa='+encodeURIComponent(document.getElementById('tu_khoa').value||''));
-  const j=await r.json(); const box=document.getElementById('ds_hs'); box.innerHTML=''; if(!j.ok) return;
-  j.du_lieu.forEach(s=>{ const a=document.createElement('a'); a.href='#'; a.className='list-group-item list-group-item-action'; const av=(s.anh_dai_dien_url && String(s.anh_dai_dien_url).trim()!=='')?s.anh_dai_dien_url:'/upload/avatar/default.svg'; a.style.backgroundImage=`url(${av})`; a.style.backgroundRepeat='no-repeat'; a.style.backgroundSize='24px 24px'; a.style.backgroundPosition='8px center'; a.style.paddingLeft='40px';
-    a.textContent=`${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}`; a.onclick=ev=>{ev.preventDefault(); chonHS(s);}; box.appendChild(a); });
+async function napHocSinh(){
+  const r=await fetch('/api/hoc_sinh.php?tu_khoa='+encodeURIComponent(document.getElementById('tu_khoa').value||''));
+  const j=await r.json();
+  const box=document.getElementById('ds_hs');
+  box.innerHTML='';
+  if(!j.ok) return;
+  const danhSach=Array.isArray(j.du_lieu)?j.du_lieu:[];
+  danhSach.forEach(s=>{
+    const a=document.createElement('a');
+    a.href='#';
+    a.className='list-group-item list-group-item-action';
+    const av=(s.anh_dai_dien_url && String(s.anh_dai_dien_url).trim()!=='')?s.anh_dai_dien_url:'/upload/avatar/default.svg';
+    a.style.backgroundImage=`url(${av})`;
+    a.style.backgroundRepeat='no-repeat';
+    a.style.backgroundSize='24px 24px';
+    a.style.backgroundPosition='8px center';
+    a.style.paddingLeft='40px';
+    a.textContent=`${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}`;
+    a.onclick=ev=>{ev.preventDefault(); chonHS(s);};
+    box.appendChild(a);
+  });
+  if(shouldAutoSelectFirstStudent){
+    if(danhSach.length){
+      chonHS(danhSach[0]);
+    }
+    shouldAutoSelectFirstStudent=false;
+  }
 }
 function renderLyDo(){
   const box=document.getElementById('ds_ly_do'); if(!box) return;
@@ -124,9 +184,18 @@ function renderLyDo(){
       b.className='btn btn-outline-primary';
       b.textContent = `${ld.tieu_de} (${ld.bien_diem>0?'+':''}${ld.bien_diem})`;
       b.onclick = async()=>{
-        if(!hsHienTai) return alert('Chưa chọn học sinh');
+        if(!hsHienTai){
+          showToast('Hãy chọn học sinh.','warning');
+          return;
+        }
         const res=await fetch('/api/diem.php?hanh_dong=cong',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, ly_do_id:ld.id})});
-        const jj=await res.json(); if(jj.ok){ hsHienTai.so_du=jj.du_lieu.so_du; hienThongTin(); napHocSinh(); napLichSu(); napThongKe(); } else alert(jj.thong_bao||'Lỗi');
+        const jj=await res.json();
+        if(jj.ok){
+          hsHienTai.so_du=jj.du_lieu.so_du;
+          hienThongTin(); napHocSinh(); napLichSu(); napThongKe();
+        } else {
+          showToast(jj.thong_bao||'L\u1ed7i','danger');
+        }
       };
       box.appendChild(b);
     });
@@ -226,7 +295,14 @@ function moQuaDaDoi(){
       if(el) el.innerHTML = '<div class="text-danger small">Lỗi tải dữ liệu</div>';
     }
   })();
-}function chonHS(s){ hsHienTai=s; hienThongTin(); napLichSu(); const b=document.getElementById('btn_qua_da_doi'); if(b) b.removeAttribute('disabled'); }
+}function chonHS(s){
+  shouldAutoSelectFirstStudent=false;
+  hsHienTai=s;
+  hienThongTin();
+  napLichSu();
+  const b=document.getElementById('btn_qua_da_doi');
+  if(b) b.removeAttribute('disabled');
+}
 document.getElementById('tu_khoa').oninput=napHocSinh;
 document.getElementById('dang_xuat').onclick=async()=>{ await fetch('/api/dang_nhap.php?hanh_dong=dang_xuat',{method:'POST'}); location.href='/public/dang_nhap.php'; }; const btnQD = document.getElementById('btn_qua_da_doi'); if(btnQD) btnQD.onclick = moQuaDaDoi;
 if(document.getElementById('ly_do_loc')) document.getElementById('ly_do_loc').oninput = renderLyDo;
@@ -273,7 +349,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
     btnToggleScratch.addEventListener('click',()=>{
       const wasHidden = scratchSection.classList.contains('d-none');
       if(wasHidden && !hsHienTai){
-        alert('Chưa chọn học sinh');
+        showToast('Hãy chọn học sinh.','warning');
         return;
       }
       const isHidden=scratchSection.classList.toggle('d-none');
@@ -359,7 +435,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
     drawCover();
   }
 
-  function prepareScratchCard(){
+  function prepareScratchCard(silentIfNoStudent=false){
     if(isProcessing) return;
     scratchComplete=false;
     hasRedeemedCurrent=false;
@@ -368,7 +444,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
     refreshScratchText();
     updateRedeemButton();
     resizeCanvas();
-    redeemRandomReward();
+    redeemRandomReward(silentIfNoStudent);
   }
 
   function revealAll(){
@@ -427,16 +503,19 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
     });
   });
 
-  async function redeemRandomReward(){
+  async function redeemRandomReward(silentIfNoStudent=false){
     if(isProcessing || hasRedeemedCurrent) return;
-    if(!hsHienTai) return alert('Chưa chọn học sinh');
+    if(!hsHienTai){
+      if(!silentIfNoStudent) showToast('Hãy chọn học sinh.','warning');
+      return;
+    }
     const soDuHienTai = Number(hsHienTai.so_du)||0;
     if(soDuHienTai < SCRATCH_COST){
-      alert(`Học sinh cần ít nhất ${SCRATCH_COST} điểm để cào thẻ.`);
+      showToast(`Học sinh cần ít nhất ${SCRATCH_COST} điểm để cào thẻ.`,'warning');
       return;
     }
     const pool=availableRewards();
-    if(!pool.length){ alert('Chưa có quà khả dụng để đổi.'); return; }
+    if(!pool.length){ showToast('Chưa có quà khả dụng để đổi.','warning'); return; }
     isProcessing=true;
     refreshScratchText();
     updateRedeemButton();
@@ -449,7 +528,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
       });
       const jj=await res.json();
       if(!jj.ok){
-        alert(jj.thong_bao||'Đổi điểm thất bại');
+        showToast(jj.thong_bao||'Đổi điểm thất bại','danger');
         return;
       }
       if(jj.du_lieu && typeof jj.du_lieu.so_du!=='undefined'){
@@ -463,7 +542,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
       if(typeof napThongKe==='function') napThongKe();
     } catch(err){
       console.error(err);
-      alert('Lỗi kết nối, vui lòng thử lại.');
+      showToast('Lỗi kết nối.','danger');
     } finally{
       isProcessing=false;
       updateRedeemButton();
@@ -471,10 +550,10 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
     }
   }
 
-  btnNew.addEventListener('click',prepareScratchCard);
+  btnNew.addEventListener('click',()=>prepareScratchCard());
   window.addEventListener('resize',resizeCanvas);
 
-  prepareScratchCard();
+  prepareScratchCard(true);
 })();
 
 </script>
