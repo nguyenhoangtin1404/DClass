@@ -45,7 +45,7 @@ $active = basename($_SERVER['PHP_SELF'] ?? '');
   .btn-logout:hover { filter: brightness(1.05); box-shadow: 0 6px 18px rgba(255,91,91,.45); }
 </style>
 <nav class="navbar navbar-expand-lg nav-glass px-3">
-  <a class="navbar-brand nav-brand" href="/public/trang_chinh.php"><i class="bi bi-stars me-1"></i>DClass</a>
+  <a class="navbar-brand nav-brand" href="/public/trang_chinh.php"><i class="bi bi-book me-1"></i>DClass</a>
   <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>

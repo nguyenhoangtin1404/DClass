@@ -116,7 +116,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: /public/trang_
                 <tr>
                   <th style="width:180px;">Tài khoản</th>
                   <th style="width:220px;">Vai trò</th>
-                  <th style="width:120px;"></th>
+                  <th style="width:200px;">Thao tác</th>
                 </tr>
               </thead>
               <tbody id="gv_quyen_ds"></tbody>
@@ -177,18 +177,33 @@ async function gvNapQuyen(){
     const select=document.createElement('select');
     select.className='form-select form-select-sm';
     roles.forEach(r=>{ const opt=document.createElement('option'); opt.value=r; opt.textContent=r; if(String(tk.vai_tro||'GV')===r) opt.selected=true; select.appendChild(opt); });
-    const btn=document.createElement('button'); btn.type='button'; btn.className='btn btn-outline-primary btn-sm';
-    btn.textContent='Lưu';
-    btn.onclick=async()=>{
-      btn.disabled=true; const jj = await jfetch('/api/giao_vien_quan_tri.php?hanh_dong=cap_nhat_vai_tro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tk.id, vai_tro: select.value})});
+    const btnSave=document.createElement('button'); btnSave.type='button'; btnSave.className='btn btn-outline-primary btn-sm';
+    btnSave.textContent='Lưu';
+    btnSave.onclick=async()=>{
+      btnSave.disabled=true; const jj = await jfetch('/api/giao_vien_quan_tri.php?hanh_dong=cap_nhat_vai_tro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tk.id, vai_tro: select.value})});
       if(jj.ok){ if(msg) msg.textContent='Đã lưu quyền cho ' + tk.ten_dang_nhap; }
       else { if(msg) msg.textContent=jj.thong_bao||'Lỗi'; }
-      btn.disabled=false;
+      btnSave.disabled=false;
     };
-    btn.classList.add('px-3');
+    const btnReset=document.createElement('button'); btnReset.type='button'; btnReset.className='btn btn-outline-danger btn-sm';
+    btnReset.textContent='Đặt lại MK';
+    btnReset.onclick=async()=>{
+      const mk = prompt('Nhập mật khẩu mới cho '+tk.ten_dang_nhap);
+      if(mk===null) return;
+      const mkClean = (mk||'').trim();
+      if(!mkClean){ if(msg) msg.textContent='Nhập mật khẩu mới'; return; }
+      btnReset.disabled=true;
+      const jj = await jfetch('/api/giao_vien_quan_tri.php?hanh_dong=reset_mat_khau',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tk.id, mat_khau_moi: mkClean})});
+      if(jj.ok){ if(msg) msg.textContent='Đã đặt lại mật khẩu cho ' + tk.ten_dang_nhap; }
+      else { if(msg) msg.textContent=jj.thong_bao||'Lỗi'; }
+      btnReset.disabled=false;
+    };
+    btnSave.classList.add('px-3');
     const tdUser=document.createElement('td'); tdUser.textContent=tk.ten_dang_nhap;
     const tdRole=document.createElement('td'); tdRole.appendChild(select);
-    const tdBtn=document.createElement('td'); tdBtn.appendChild(btn);
+    const tdBtn=document.createElement('td');
+    const wrap=document.createElement('div'); wrap.className='d-flex flex-wrap gap-2';
+    wrap.appendChild(btnSave); wrap.appendChild(btnReset); tdBtn.appendChild(wrap);
     tr.appendChild(tdUser); tr.appendChild(tdRole); tr.appendChild(tdBtn);
     tb.appendChild(tr);
   });

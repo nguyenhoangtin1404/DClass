@@ -47,6 +47,21 @@ if ($hanh_dong === 'doi_mat_khau') {
   json_phan_hoi(true);
 }
 
+if ($hanh_dong === 'reset_mat_khau') {
+  if (!$is_admin) json_phan_hoi(false, null, 'khong_du_quyen');
+  $id = (int)($b['id'] ?? 0);
+  $mk_moi = (string)($b['mat_khau_moi'] ?? '');
+  if ($id <= 0 || $mk_moi === '') json_phan_hoi(false, null, 'thieu_truong');
+  $st = $pdo->prepare('SELECT id, ten_dang_nhap FROM giao_vien WHERE id=?');
+  $st->execute([$id]);
+  $gv = $st->fetch();
+  if (!$gv) json_phan_hoi(false, null, 'tai_khoan_khong_ton_tai');
+  $bam = password_hash($mk_moi, PASSWORD_DEFAULT);
+  $pdo->prepare('UPDATE giao_vien SET mat_khau_bam=? WHERE id=?')->execute([$bam, $id]);
+  ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'reset_mat_khau', 'Reset mat khau cho '.$gv['ten_dang_nhap'].' (#'.$id.')');
+  json_phan_hoi(true);
+}
+
 if ($hanh_dong === 'them') {
   if (!$is_admin) json_phan_hoi(false, null, 'khong_du_quyen');
   $ten = trim((string)($b['ten_dang_nhap'] ?? ''));
