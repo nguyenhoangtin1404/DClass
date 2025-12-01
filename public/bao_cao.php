@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
-if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php'); exit; }
+if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
 // Lớp được gán cho GV (admin thấy tất cả)
 $lop_gan = [];
@@ -38,7 +38,7 @@ if ($la_admin) {
 ?>
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Báo cáo & Thống kê</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"><link rel="stylesheet" href="/public/theme.css"></head><body>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"><link rel="stylesheet" href="theme.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3 safe-bottom">
   <div class="d-flex align-items-center justify-content-between"><h5>Báo cáo & Thống kê</h5></div>

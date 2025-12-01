@@ -2,7 +2,7 @@
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
 header('Content-Type: text/html; charset=utf-8');
-if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php'); exit; }
+if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 ?>
 <!doctype html>
 <html>
@@ -13,7 +13,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
-  <link rel="stylesheet" href="/public/theme.css">
+  <link rel="stylesheet" href="theme.css">
   <style>
     .avatar-xs { width:24px; height:24px; border-radius:6px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; }
     .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
@@ -145,7 +145,7 @@ function tenLoai(loai){
   }
 }
 async function napHocSinh(){
-  const r=await fetch('/api/hoc_sinh.php?tu_khoa='+encodeURIComponent(document.getElementById('tu_khoa').value||''));
+  const r=await fetch('../api/hoc_sinh.php?tu_khoa='+encodeURIComponent(document.getElementById('tu_khoa').value||''));
   const j=await r.json();
   const box=document.getElementById('ds_hs');
   box.innerHTML='';
@@ -155,7 +155,7 @@ async function napHocSinh(){
     const a=document.createElement('a');
     a.href='#';
     a.className='list-group-item list-group-item-action';
-    const av=(s.anh_dai_dien_url && String(s.anh_dai_dien_url).trim()!=='')?s.anh_dai_dien_url:'/upload/avatar/default.svg';
+    const av=(s.anh_dai_dien_url && String(s.anh_dai_dien_url).trim()!=='')?s.anh_dai_dien_url:'../upload/avatar/default.svg';
     a.style.backgroundImage=`url(${av})`;
     a.style.backgroundRepeat='no-repeat';
     a.style.backgroundSize='24px 24px';
@@ -188,7 +188,7 @@ function renderLyDo(){
           showToast('Hãy chọn học sinh.','warning');
           return;
         }
-        const res=await fetch('/api/diem.php?hanh_dong=cong',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, ly_do_id:ld.id})});
+        const res=await fetch('../api/diem.php?hanh_dong=cong',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, ly_do_id:ld.id})});
         const jj=await res.json();
         if(jj.ok){
           hsHienTai.so_du=jj.du_lieu.so_du;
@@ -200,7 +200,7 @@ function renderLyDo(){
       box.appendChild(b);
     });
 }async function napLyDo(){
-  const r=await fetch('/api/ly_do.php');
+  const r=await fetch('../api/ly_do.php');
   const j=await r.json();
   if(!j.ok){ lyDoData=[]; renderLyDo(); return; }
   lyDoData = Array.isArray(j.du_lieu) ? j.du_lieu : [];
@@ -221,13 +221,13 @@ function renderLyDo(){
 }
 
 async function napQua(){
-  const r=await fetch('/api/qua_tang.php');
+  const r=await fetch('../api/qua_tang.php');
   const j=await r.json();
   if(!j.ok){ quaData=[]; renderQua(); return; }
   quaData = Array.isArray(j.du_lieu) ? j.du_lieu : [];
   renderQua();
 }function hienThongTin(){ const el=document.getElementById('thong_tin'); el.textContent = hsHienTai ? `${hsHienTai.ho_ten} · Lớp ${hsHienTai.ten_lop||''} · Điểm: ${hsHienTai.so_du}` : ''; }
-async function napLichSu(){ const sid=hsHienTai?hsHienTai.id:0; const r=await fetch('/api/diem.php?hanh_dong=lich_su&hoc_sinh_id='+sid);
+async function napLichSu(){ const sid=hsHienTai?hsHienTai.id:0; const r=await fetch('../api/diem.php?hanh_dong=lich_su&hoc_sinh_id='+sid);
   const j=await r.json(); if(!j.ok){ lsData=[]; renderLichSu(); return; }
   lsData = Array.isArray(j.du_lieu) ? j.du_lieu : []; lsPage=1; renderLichSu();
 }
@@ -269,7 +269,7 @@ function moQuaDaDoi(){
   const el = document.getElementById('qua_modal_body'); if(el) el.innerHTML = '<div class="text-muted small">Đang tải...</div>';
   (async()=>{
     try {
-      const r = await fetch('/api/diem.php?hanh_dong=lich_su&hoc_sinh_id=' + (hsHienTai?hsHienTai.id:0));
+      const r = await fetch('../api/diem.php?hanh_dong=lich_su&hoc_sinh_id=' + (hsHienTai?hsHienTai.id:0));
       const j = await r.json();
       let rows = Array.isArray(j.du_lieu) ? j.du_lieu : [];
       rows = rows.filter(x => String(x.loai||'') === 'DOI_DIEM');
@@ -304,7 +304,7 @@ function moQuaDaDoi(){
   if(b) b.removeAttribute('disabled');
 }
 document.getElementById('tu_khoa').oninput=napHocSinh;
-document.getElementById('dang_xuat').onclick=async()=>{ await fetch('/api/dang_nhap.php?hanh_dong=dang_xuat',{method:'POST'}); location.href='/public/dang_nhap.php'; }; const btnQD = document.getElementById('btn_qua_da_doi'); if(btnQD) btnQD.onclick = moQuaDaDoi;
+document.getElementById('dang_xuat').onclick=async()=>{ await fetch('../api/dang_nhap.php?hanh_dong=dang_xuat',{method:'POST'}); location.href='dang_nhap.php'; }; const btnQD = document.getElementById('btn_qua_da_doi'); if(btnQD) btnQD.onclick = moQuaDaDoi;
 if(document.getElementById('ly_do_loc')) document.getElementById('ly_do_loc').oninput = renderLyDo;
 document.getElementById('ls_prev').onclick=()=>{ lsPage=Math.max(1, lsPage-1); renderLichSu(); };
 document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu(); };
@@ -313,7 +313,7 @@ document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu()
 function hienThongTinDep(){
   const el=document.getElementById('thong_tin');
   if(!hsHienTai){ if(el) el.textContent='Ch\u01B0a ch\u1ECDn h\u1ECDc sinh'; return; }
-  const av = (hsHienTai.anh_dai_dien_url && String(hsHienTai.anh_dai_dien_url).trim()!=='') ? hsHienTai.anh_dai_dien_url : '/upload/avatar/default.svg';
+  const av = (hsHienTai.anh_dai_dien_url && String(hsHienTai.anh_dai_dien_url).trim()!=='') ? hsHienTai.anh_dai_dien_url : '../upload/avatar/default.svg';
   const gioi = (hsHienTai.gioi_tinh||'').toUpperCase();
   const gioiLbl = gioi==='NAM' ? 'Nam' : gioi==='NU' ? 'Nữ' : gioi==='KHAC' ? 'Khác' : '';
   const raw = (hsHienTai.ngay_sinh||'').substring(0,10);
@@ -323,7 +323,7 @@ function hienThongTinDep(){
   }
   if(el) el.innerHTML = `
     <div class="d-flex align-items-center gap-3">
-      <img class="avatar" src="${av}" alt="avatar" onerror="this.onerror=null;this.src='/upload/avatar/default.svg';">
+      <img class="avatar" src="${av}" alt="avatar" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';">
       <div>
         <div class="fw-semibold">${hsHienTai.ho_ten||''}</div>
         <div class="small text-muted">Lớp: ${hsHienTai.ten_lop||''} · Điểm: ${hsHienTai.so_du}</div>
@@ -521,7 +521,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
     updateRedeemButton();
     const reward=pool[Math.floor(Math.random()*pool.length)];
     try{
-      const res=await fetch('/api/diem.php?hanh_dong=quy_doi',{
+      const res=await fetch('../api/diem.php?hanh_dong=quy_doi',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({hoc_sinh_id:hsHienTai.id, qua_tang_id:reward.id, scratch_cost:SCRATCH_COST})

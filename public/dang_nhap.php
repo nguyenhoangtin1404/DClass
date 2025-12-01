@@ -1,10 +1,10 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php'; require __DIR__ . '/../lib/ghi_nho.php';
-if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Location: /public/trang_chinh.php'); exit; }
+if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Location: trang_chinh.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Đăng nhập</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">  <link rel="stylesheet" href="/public/theme.css"></head><body class="bg-light">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">  <link rel="stylesheet" href="theme.css"></head><body class="bg-light">
 <div class="container py-5 safe-bottom"><div class="row justify-content-center"><div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
 <h5 class="mb-3">Giáo viên đăng nhập</h5>
 <div class="mb-2"><label class="form-label">Tài khoản</label><input id="u" class="form-control" value="gv1"></div>
@@ -41,11 +41,11 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
     const chk = document.getElementById('ghi_nho');
     const body = { ten_dang_nhap: elU.value, mat_khau: elP.value, ghi_nho: !!(chk && chk.checked) };
     try{
-      const r = await fetch('/api/dang_nhap.php?hanh_dong=dang_nhap',{
+      const r = await fetch('../api/dang_nhap.php?hanh_dong=dang_nhap',{
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
       let j = null; try{ j = await r.json(); }catch(_e){}
-      if (j && j.ok) { location.href='/public/trang_chinh.php'; return; }
+      if (j && j.ok) { location.href='trang_chinh.php'; return; }
       if (j && j.thong_bao === 'qua_so_lan') {
         const sl = j.du_lieu && j.du_lieu.so_lan ? j.du_lieu.so_lan : 3;
         elMsg.textContent = 'Đăng nhập sai quá 3 lần ('+ sl +'/3). Thử đăng lại sau 10 phút.';

@@ -1,1 +1,1 @@
-<?php header('Location: /public/dang_nhap.php');
+<?php header('Location: public/dang_nhap.php');
