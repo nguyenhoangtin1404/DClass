@@ -22,10 +22,27 @@ try {
   try {
     $cols = $pdo->query("PRAGMA table_info(hoc_sinh)")->fetchAll();
     $tenCols = array_map(fn($c) => $c['name'] ?? '', $cols);
+    if (!in_array('stt', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN stt INTEGER"); }
     if (!in_array('gioi_tinh', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN gioi_tinh TEXT"); }
     if (!in_array('ngay_sinh', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN ngay_sinh TEXT"); }
     if (!in_array('anh_dai_dien_url', $tenCols, true)) { $pdo->exec("ALTER TABLE hoc_sinh ADD COLUMN anh_dai_dien_url TEXT"); }
   } catch (Throwable $___e2) { /* ignore */ }
+  // Bổ sung bảng giao_vien_lop (một giáo viên nhiều lớp)
+  try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS giao_vien_lop (
+      giao_vien_id INTEGER NOT NULL,
+      lop_hoc_id INTEGER NOT NULL,
+      PRIMARY KEY (giao_vien_id, lop_hoc_id),
+      FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id) ON DELETE CASCADE,
+      FOREIGN KEY (lop_hoc_id) REFERENCES lop_hoc(id) ON DELETE CASCADE
+    )");
+  } catch (Throwable $___e5) { /* ignore */ }
+  // Bổ sung vai_tro cho giao_vien
+  try {
+    $colsGv = $pdo->query("PRAGMA table_info(giao_vien)")->fetchAll();
+    $tenColsGv = array_map(fn($c) => $c['name'] ?? '', $colsGv);
+    if (!in_array('vai_tro', $tenColsGv, true)) { $pdo->exec("ALTER TABLE giao_vien ADD COLUMN vai_tro TEXT DEFAULT 'GV'"); }
+  } catch (Throwable $___e6) { /* ignore */ }
   // Bổ sung cột mới cho qua_tang nếu thiếu
   try {
     $cols2 = $pdo->query("PRAGMA table_info(qua_tang)")->fetchAll();
@@ -36,12 +53,23 @@ try {
   try {
     $pdo->exec("CREATE TABLE IF NOT EXISTS reset_khoa (ten_dang_nhap TEXT PRIMARY KEY, het_han INTEGER)");
   } catch (Throwable $___e4) { /* ignore */ }
+  // Bảng nhật ký
+  try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS nhat_ky (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      giao_vien_id INTEGER,
+      hanh_dong TEXT NOT NULL,
+      noi_dung TEXT,
+      tao_luc TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id)
+    )");
+  } catch (Throwable $___e7) { /* ignore */ }
 } catch (Exception $e) { http_response_code(500); echo 'Loi ket noi CSDL'; exit; }
 if ($lan_dau) {
   $luoc_do = file_get_contents(__DIR__ . '/luoc_do.sql');
   $pdo->exec($luoc_do);
-  $stmt = $pdo->prepare("INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam) VALUES(?,?)");
-  $stmt->execute(['gv1', password_hash('123456', PASSWORD_DEFAULT)]);
+  $stmt = $pdo->prepare("INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro) VALUES(?,?,?)");
+  $stmt->execute(['gv1', password_hash('123456', PASSWORD_DEFAULT), 'ADMIN']);
   $pdo->exec("INSERT INTO lop_hoc(ten) VALUES ('4A'),('4B'),('4C')");
   $pdo->exec("INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong) VALUES ('Giup ban',2,1), ('Hoan thanh som',1,1), ('Noi chuyen rieng',-1,1)");
   $pdo->exec("INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong) VALUES ('Sticker',3,-1,1), ('But chi',5,50,1), ('Tui mu',8,20,1)");

@@ -2,18 +2,39 @@
 header('Content-Type: text/html; charset=utf-8');
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php'); exit; }
+$la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
+// Lớp được gán cho GV (admin thấy tất cả)
+$lop_gan = [];
+if (!$la_admin) {
+  $st = $pdo->prepare("SELECT lop_hoc_id FROM giao_vien_lop WHERE giao_vien_id=?");
+  $st->execute([(int)$_SESSION['giao_vien_id']]);
+  $lop_gan = array_map(fn($r)=>(int)$r['lop_hoc_id'], $st->fetchAll());
+  if (!$lop_gan) { $lop_gan = [0]; } // để tránh query trống
+}
+function dem($pdo, $sql, $params=[]){ $st=$pdo->prepare($sql); $st->execute($params); $v = $st->fetchColumn(); return (int)($v ?: 0); }
 
-function dem($pdo, $sql){ $v = $pdo->query($sql)->fetchColumn(); return (int)($v ?: 0); }
-
-$tong_hoc_sinh = dem($pdo, "SELECT COUNT(*) FROM hoc_sinh");
-$hoc_sinh_hd   = dem($pdo, "SELECT COUNT(*) FROM hoc_sinh WHERE dang_hoat_dong=1");
-$so_lop        = dem($pdo, "SELECT COUNT(*) FROM lop_hoc WHERE dang_hoat_dong=1");
-$so_giao_vien  = dem($pdo, "SELECT COUNT(*) FROM giao_vien");
-$so_giao_dich  = dem($pdo, "SELECT COUNT(*) FROM so_cai_diem");
-$tong_cong     = (int)($pdo->query("SELECT COALESCE(SUM(CASE WHEN loai='CONG_DIEM' THEN bien_diem ELSE 0 END),0) FROM so_cai_diem")->fetchColumn() ?: 0);
-$tong_doi      = (int)($pdo->query("SELECT COALESCE(SUM(CASE WHEN loai='DOI_DIEM' THEN bien_diem ELSE 0 END),0) FROM so_cai_diem")->fetchColumn() ?: 0);
-
-$top5 = $pdo->query("SELECT h.ho_ten, COALESCE(v.so_du,0) AS so_du FROM hoc_sinh h LEFT JOIN vi_diem v ON v.hoc_sinh_id=h.id ORDER BY so_du DESC, h.ho_ten ASC LIMIT 5")->fetchAll();
+if ($la_admin) {
+  $tong_hoc_sinh = dem($pdo, "SELECT COUNT(*) FROM hoc_sinh");
+  $hoc_sinh_hd   = dem($pdo, "SELECT COUNT(*) FROM hoc_sinh WHERE dang_hoat_dong=1");
+  $so_lop        = dem($pdo, "SELECT COUNT(*) FROM lop_hoc WHERE dang_hoat_dong=1");
+  $so_giao_vien  = dem($pdo, "SELECT COUNT(*) FROM giao_vien");
+  $so_giao_dich  = dem($pdo, "SELECT COUNT(*) FROM so_cai_diem");
+  $tong_cong     = (int)($pdo->query("SELECT COALESCE(SUM(CASE WHEN loai='CONG_DIEM' THEN bien_diem ELSE 0 END),0) FROM so_cai_diem")->fetchColumn() ?: 0);
+  $tong_doi      = (int)($pdo->query("SELECT COALESCE(SUM(CASE WHEN loai='DOI_DIEM' THEN bien_diem ELSE 0 END),0) FROM so_cai_diem")->fetchColumn() ?: 0);
+  $top5 = $pdo->query("SELECT h.ho_ten, COALESCE(v.so_du,0) AS so_du FROM hoc_sinh h LEFT JOIN vi_diem v ON v.hoc_sinh_id=h.id ORDER BY so_du DESC, h.ho_ten ASC LIMIT 5")->fetchAll();
+} else {
+  $place = implode(',', array_fill(0, count($lop_gan), '?'));
+  $tong_hoc_sinh = dem($pdo, "SELECT COUNT(*) FROM hoc_sinh WHERE lop_hoc_id IN ($place)", $lop_gan);
+  $hoc_sinh_hd   = dem($pdo, "SELECT COUNT(*) FROM hoc_sinh WHERE dang_hoat_dong=1 AND lop_hoc_id IN ($place)", $lop_gan);
+  $so_lop        = count($lop_gan);
+  $so_giao_vien  = dem($pdo, "SELECT COUNT(DISTINCT giao_vien_id) FROM giao_vien_lop WHERE lop_hoc_id IN ($place)", $lop_gan);
+  $so_giao_dich  = dem($pdo, "SELECT COUNT(*) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.lop_hoc_id IN ($place)", $lop_gan);
+  $tong_cong     = dem($pdo, "SELECT COALESCE(SUM(CASE WHEN sc.loai='CONG_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.lop_hoc_id IN ($place)", $lop_gan);
+  $tong_doi      = dem($pdo, "SELECT COALESCE(SUM(CASE WHEN sc.loai='DOI_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.lop_hoc_id IN ($place)", $lop_gan);
+  $st = $pdo->prepare("SELECT h.ho_ten, COALESCE(v.so_du,0) AS so_du FROM hoc_sinh h LEFT JOIN vi_diem v ON v.hoc_sinh_id=h.id WHERE h.lop_hoc_id IN ($place) ORDER BY so_du DESC, h.ho_ten ASC LIMIT 5");
+  $st->execute($lop_gan);
+  $top5 = $st->fetchAll();
+}
 ?>
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Báo cáo & Thống kê</title>

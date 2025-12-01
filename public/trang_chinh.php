@@ -44,9 +44,8 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: /public/dang_nhap.php
 <div class="container py-3 safe-bottom">
   <div class="row g-3">
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <h6>Tìm học sinh</h6>
-      <input id="tu_khoa" class="form-control" placeholder="Tên hoặc mã">
-      <div class="form-text">Dấu ( ... ) sau tên là tên lớp.</div>
+      <h6>Danh sách học sinh</h6>
+      <input id="tu_khoa" class="form-control" placeholder="Tìm theo tên hoặc mã học sinh">
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
@@ -162,7 +161,8 @@ async function napHocSinh(){
     a.style.backgroundSize='24px 24px';
     a.style.backgroundPosition='8px center';
     a.style.paddingLeft='40px';
-    a.textContent=`${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}`;
+    const tenLop = s.ten_lop ? ` (${s.ten_lop})` : '';
+    a.textContent=`${s.ho_ten}${tenLop} · Điểm: ${s.so_du}`;
     a.onclick=ev=>{ev.preventDefault(); chonHS(s);};
     box.appendChild(a);
   });

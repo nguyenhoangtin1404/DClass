@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   $st = $pdo->prepare("SELECT * FROM giao_vien WHERE ten_dang_nhap=?"); $st->execute([$ten]);
   $gv = $st->fetch(); if ($gv && password_verify($mk, $gv['mat_khau_bam'])) {
     // Đăng nhập thành công
-    $_SESSION['giao_vien_id'] = (int)$gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap'];
+    $_SESSION['giao_vien_id'] = (int)$gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
     // Reset đếm sai
     if (isset($_SESSION['dn_sai'][$k])) unset($_SESSION['dn_sai'][$k]);
     if ($bo_qua_khoa) { try { $pdo->prepare("DELETE FROM reset_khoa WHERE ten_dang_nhap=?")->execute([$ten_norm]); } catch (Throwable $____d) { /* ignore */ } }
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   }
   // Thất bại -> tăng đếm và khoá nếu vượt quá
   $sl = (int)($_SESSION['dn_sai'][$k]['so_lan'] ?? 0) + 1;
-  $ban_den = ($sl >= 3 && !$bo_qua_khoa) ? time() + 10*60 : 0; // kh�a 10 ph�t
+  $ban_den = ($sl >= 3 && !$bo_qua_khoa) ? time() + 10*60 : 0; // khóa 10 phút
   $_SESSION['dn_sai'][$k] = ['so_lan' => $sl, 'khoa_den' => $ban_den];
   if ($ban_den) { json_phan_hoi(false, ['so_lan'=>$sl, 'khoa_den'=>$ban_den], 'qua_so_lan'); }
   $con_lai = max(0, 3 - $sl);

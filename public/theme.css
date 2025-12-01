@@ -63,3 +63,65 @@ hr{
   line-height: 1;
   display: inline-block;
 }
+
+/* High-contrast tweaks for sáng chói ngoài trời */
+body, .card, .list-group-item, .form-control, .btn, .table, .modal-content{
+  color: #0a1a2f !important; /* deep navy for readability */
+}
+.text-muted{
+  color: #1f2d3d !important; /* darker muted for outdoor readability */
+}
+.list-group-item{
+  background-color: #f5f7fb;
+  border-color: #c9d5eb;
+  font-weight: 600;
+}
+.list-group-item.active, .list-group-item:hover{
+  background-color: #dce6f8;
+}
+.form-control, .form-select{
+  background-color: #fff;
+  border-color: #9bb6e0;
+  color: #0a1a2f;
+}
+.form-control::placeholder{ color: #5c6a85; }
+.btn-primary, .btn-outline-primary{
+  color: #0a1a2f !important;
+  border-color: #2b66c6;
+}
+.btn-primary{
+  background: linear-gradient(120deg, #4b7ee5, #2b66c6);
+  color: #f8fbff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+.btn-outline-primary:hover{
+  background-color: #e7efff;
+}
+.card, .modal-content{
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+.table thead th{
+  background: #eaf1ff;
+  color: #0a1a2f !important;
+}
+
+/* Soft panel styling */
+.panel-soft{
+  background: #eaf1ff;
+  border: 1px solid #d7e1f5;
+  border-radius: 12px;
+  padding: 12px;
+}
+.panel-soft.narrow-panel{
+  max-width: 960px;
+  margin: 0 auto;
+}
+.role-table thead th{
+  background: transparent;
+  color: #5f6b85 !important;
+  border-bottom: 1px solid #d7e1f5;
+}
+.role-table tbody td{
+  vertical-align: middle;
+  border-color: #e1e7f5;
+}

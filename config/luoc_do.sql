@@ -3,7 +3,15 @@ CREATE TABLE giao_vien (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ten_dang_nhap TEXT UNIQUE NOT NULL,
   mat_khau_bam TEXT NOT NULL,
+  vai_tro TEXT DEFAULT 'GV',
   tao_luc TEXT DEFAULT (datetime('now'))
+);
+CREATE TABLE giao_vien_lop (
+  giao_vien_id INTEGER NOT NULL,
+  lop_hoc_id INTEGER NOT NULL,
+  PRIMARY KEY (giao_vien_id, lop_hoc_id),
+  FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id) ON DELETE CASCADE,
+  FOREIGN KEY (lop_hoc_id) REFERENCES lop_hoc(id) ON DELETE CASCADE
 );
 CREATE TABLE lop_hoc (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,6 +22,7 @@ CREATE TABLE hoc_sinh (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ma TEXT UNIQUE,
   ho_ten TEXT NOT NULL,
+  stt INTEGER,
   lop_hoc_id INTEGER,
   anh_dai_dien_url TEXT,
   dang_hoat_dong INTEGER DEFAULT 1,
@@ -32,6 +41,14 @@ CREATE TABLE qua_tang (
   gia_diem INTEGER NOT NULL,
   ton_kho INTEGER DEFAULT 0,
   dang_hoat_dong INTEGER DEFAULT 1
+);
+CREATE TABLE nhat_ky (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  giao_vien_id INTEGER,
+  hanh_dong TEXT NOT NULL,
+  noi_dung TEXT,
+  tao_luc TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id)
 );
 CREATE TABLE vi_diem (
   hoc_sinh_id INTEGER PRIMARY KEY,

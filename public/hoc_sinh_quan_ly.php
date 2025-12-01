@@ -131,9 +131,16 @@ async function nap(){
   const tat_ca = document.getElementById('hien_tat_ca') && document.getElementById('hien_tat_ca').checked ? 1 : 0;
   const r=await fetch('/api/hoc_sinh.php?tu_khoa='+encodeURIComponent(document.getElementById('tu_khoa').value||'')+'&tat_ca='+tat_ca);
   const j=await r.json(); const box=document.getElementById('ds'); box.innerHTML=''; if(!j.ok) return;
-  j.du_lieu.forEach(s=>{
+  const sorted = [...j.du_lieu].sort((a,b)=>{
+    const as = (a.stt===null || a.stt===undefined || a.stt==='') ? Number.POSITIVE_INFINITY : Number(a.stt);
+    const bs = (b.stt===null || b.stt===undefined || b.stt==='') ? Number.POSITIVE_INFINITY : Number(b.stt);
+    if (as !== bs) return as - bs;
+    return String(a.ho_ten||'').localeCompare(String(b.ho_ten||''));
+  });
+  sorted.forEach(s=>{
     const a=document.createElement('a'); a.href='#'; a.className='list-group-item list-group-item-action d-flex justify-content-between align-items-center';
-    a.innerHTML = `<span>${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}</span>` + (s.dang_hoat_dong? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-secondary">Tắt</span>');
+    const sttText = (s.stt===null || s.stt===undefined || s.stt==='') ? '' : `${s.stt}. `;
+    a.innerHTML = `<span>${sttText}${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}</span>` + (s.dang_hoat_dong? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-secondary">Tắt</span>');
     a.onclick = (ev)=>{ ev.preventDefault(); hsDangChon = s; hienChiTiet(); setChiTietInputs(); setTimeout(syncLopSelectOnce, 0); };
     box.appendChild(a);
   });
@@ -179,6 +186,18 @@ document.getElementById('xuat_csv').onclick = ()=>{
 document.getElementById('nhap_csv').onclick = async()=>{
   const f = document.getElementById('csv_file').files[0]; const msgEl = document.getElementById('csv_msg'); msgEl.textContent='';
   if (!f) { msgEl.textContent = 'Chọn file CSV trước khi nhập'; return; }
+  msgEl.textContent = 'Đang đọc file...';
+  const fdPreview = new FormData(); fdPreview.append('file', f);
+  const rPreview = await fetch('/api/hoc_sinh_csv.php?hanh_dong=xem_truoc', { method:'POST', body: fdPreview });
+  const jPreview = await rPreview.json();
+  if (!jPreview.ok) { msgEl.textContent = jPreview.thong_bao || 'Lỗi đọc CSV'; return; }
+  const mau = (jPreview.du_lieu && Array.isArray(jPreview.du_lieu.mau)) ? jPreview.du_lieu.mau : [];
+  const tong = jPreview.du_lieu?.tong_dong || 0;
+  let previewText = mau.map((it,i)=>`${i+1}. ${it.ho_ten||''} | ${it.ma||''} | ${it.ngay_sinh||''} | ${it.gioi_tinh||''}`).join('\n');
+  if (!previewText) previewText = '(không có dữ liệu xem trước)';
+  const ask = `Đọc được ${tong} dòng (bỏ qua dòng trống).\nMẫu:\n${previewText}\n\nTiếp tục nhập?`;
+  if (!confirm(ask)) { msgEl.textContent = 'Đã hủy nhập CSV'; return; }
+  msgEl.textContent = 'Đang nhập...';
   const fd = new FormData(); fd.append('file', f);
   const r = await fetch('/api/hoc_sinh_csv.php?hanh_dong=nhap', { method:'POST', body: fd });
   const j = await r.json();
@@ -187,7 +206,7 @@ document.getElementById('nhap_csv').onclick = async()=>{
 };
 
 // Nạp danh sách lớp và đổ dữ liệu form chi tiết
-async function napLopOptions(){ const sel = document.getElementById('ct_lop'); if(!sel) return; try { const r = await fetch('/api/lop_hoc_quan_tri.php'); const j = await r.json(); if(!j.ok) return; sel.innerHTML=''; const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0); j.du_lieu.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); }); } catch(_e){} }
+async function napLopOptions(){ const sel = document.getElementById('ct_lop'); if(!sel) return; try { const r = await fetch('/api/lop_hoc_quan_tri.php?cua_toi=1'); const j = await r.json(); if(!j.ok) return; sel.innerHTML=''; const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0); j.du_lieu.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); }); } catch(_e){} }
 napLopOptions();
 syncLopSelectOnce();
 function setChiTietInputs(){ const fma=document.getElementById('ct_ma'); const ften=document.getElementById('ct_ho_ten'); const fgioi=document.getElementById('ct_gioi'); const fngay=document.getElementById('ct_ngay'); const flop=document.querySelector('select#ct_lop'); if(!hsDangChon) return; if(fma) fma.value = hsDangChon.ma || ''; if(ften) ften.value = hsDangChon.ho_ten || ''; if(fgioi) fgioi.value = hsDangChon.gioi_tinh || ''; if(fngay) fngay.value = (hsDangChon.ngay_sinh || '').substring(0,10); if(flop && flop.options && typeof flop.options.length==='number' && flop.options.length){ const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id); flop.value = v; } }

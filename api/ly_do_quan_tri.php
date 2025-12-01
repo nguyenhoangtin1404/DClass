@@ -21,6 +21,7 @@ if ($method === 'POST') {
     if ($tieu_de === '') return json_phan_hoi(false, null, 'thieu_tieu_de');
     $st = $pdo->prepare('INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong) VALUES(?,?,1)');
     $st->execute([$tieu_de, $bien_diem]);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'them_ly_do', 'Thêm lý do '.$tieu_de.' (id '.$pdo->lastInsertId().')');
     return json_phan_hoi(true, ['id' => (int)$pdo->lastInsertId()]);
   }
   if ($hanh_dong === 'sua') {
@@ -34,6 +35,7 @@ if ($method === 'POST') {
     if (!$set) return json_phan_hoi(false, null, 'khong_co_truong_cap_nhat');
     $pr[] = $id;
     $pdo->prepare('UPDATE ly_do SET '.implode(',', $set).' WHERE id=?')->execute($pr);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'sua_ly_do', 'Sửa lý do id '.$id.($tieu_de!==null?(' -> '.$tieu_de):''));
     return json_phan_hoi(true);
   }
   if ($hanh_dong === 'bat_tat') {
@@ -41,16 +43,17 @@ if ($method === 'POST') {
     $trang_thai = (int)($b['dang_hoat_dong'] ?? 1);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
     $pdo->prepare('UPDATE ly_do SET dang_hoat_dong=? WHERE id=?')->execute([$trang_thai?1:0, $id]);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'bat_tat_ly_do', 'Bật/tắt lý do id '.$id.' => '.($trang_thai?1:0));
     return json_phan_hoi(true);
   }
   if ($hanh_dong === 'xoa') {
     $id = (int)($b['id'] ?? 0);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
     $pdo->prepare('DELETE FROM ly_do WHERE id=?')->execute([$id]);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'xoa_ly_do', 'Xóa lý do id '.$id);
     return json_phan_hoi(true);
   }
 }
 
 http_response_code(404);
 json_phan_hoi(false, null, 'khong_tim_thay');
-

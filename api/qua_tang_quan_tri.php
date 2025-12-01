@@ -30,6 +30,7 @@ if ($method === 'POST') {
     $anh_url = isset($b['anh_url']) ? trim((string)$b['anh_url']) : null;
     $st = $pdo->prepare('INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong, anh_url) VALUES(?,?,?,?,?)');
     $st->execute([$ten, $gia_diem, $ton_kho, 1, ($anh_url?:null)]);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'them_qua', 'Thêm quà '.$ten.' (id '.$pdo->lastInsertId().')');
     return json_phan_hoi(true, ['id' => (int)$pdo->lastInsertId()]);
   }
   if ($hanh_dong === 'sua') {
@@ -47,6 +48,7 @@ if ($method === 'POST') {
     if (!$set) return json_phan_hoi(false, null, 'khong_co_truong_cap_nhat');
     $pr[]=$id;
     $pdo->prepare('UPDATE qua_tang SET '.implode(',', $set).' WHERE id=?')->execute($pr);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'sua_qua', 'Sửa quà id '.$id.($ten!==null?(' -> '.$ten):''));
     return json_phan_hoi(true);
   }
   if ($hanh_dong === 'bat_tat') {
@@ -54,12 +56,14 @@ if ($method === 'POST') {
     $trang_thai = (int)($b['dang_hoat_dong'] ?? 1);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
     $pdo->prepare('UPDATE qua_tang SET dang_hoat_dong=? WHERE id=?')->execute([$trang_thai?1:0, $id]);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'bat_tat_qua', 'Bật/tắt quà id '.$id.' => '.($trang_thai?1:0));
     return json_phan_hoi(true);
   }
   if ($hanh_dong === 'xoa') {
     $id = (int)($b['id'] ?? 0);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
     $pdo->prepare('DELETE FROM qua_tang WHERE id=?')->execute([$id]);
+    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'xoa_qua', 'Xóa quà id '.$id);
     return json_phan_hoi(true);
   }
 }
