@@ -1,49 +1,119 @@
-/* DClass custom accents for headings (Morph theme) */
+/* DClass custom accents */
 :root{
   --dc-heading-color: var(--bs-primary);
 }
 
-/* Make headings stand out in a friendly way */
+/* Headings */
 h1, h2, h3, h4, h5, h6{
   color: var(--dc-heading-color) !important;
   font-weight: 600;
 }
 
-/* Common title surfaces */
-.card .card-body h6,
-.card-title,
-.card-header,
-.modal-title,
-.navbar-brand{
-  color: var(--dc-heading-color) !important;
+/* Elegant dashed pill buttons */
+.btn{
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  border-style: dashed !important;
+  border-width: 2px !important;
+  padding: .45rem 1.1rem;
+  box-shadow: none !important;
+  background-color: #fff;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .08s ease;
 }
+.btn:focus{ outline: none; box-shadow: none !important; }
+.btn:active{ transform: translateY(1px); }
 
-/* Table headers feel like section titles */
-.table thead th{
-  color: var(--dc-heading-color) !important;
-}
+/* Button palette */
+.btn-primary{ color:#2151d1 !important; border-color:#2151d1 !important; background-color:#fff !important; }
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active{ background-color: rgba(33,81,209,0.08) !important; border-color:#2151d1 !important; }
 
-/* Subtle accent for separators */
-hr{
-  border-top-color: rgba(var(--bs-primary-rgb), .25);
-}
+.btn-secondary{ color:#d62872 !important; border-color:#d62872 !important; background-color:#fff !important; }
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active,
+.btn-secondary.active{ background-color: rgba(214,40,114,0.1) !important; border-color:#d62872 !important; }
 
-/* Sticky table headers inside .table-responsive */
-.table-responsive thead th{
-  position: sticky;
-  top: 0;
-  background-color: var(--bs-body-bg);
-  z-index: 1;
-}
+.btn-success{ color:#0d9a4a !important; border-color:#0d9a4a !important; background-color:#fff !important; }
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active,
+.btn-success.active{ background-color: rgba(13,154,74,0.1) !important; border-color:#0d9a4a !important; }
 
-/* Safer tap targets for primary actions */
-.btn-lg{ min-height: 44px; }
+.btn-warning{ color:#d08700 !important; border-color:#d08700 !important; background-color:#fff !important; }
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning.active{ background-color: rgba(208,135,0,0.12) !important; border-color:#d08700 !important; }
+
+.btn-danger{ color:#d6254f !important; border-color:#d6254f !important; background-color:#fff !important; }
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active,
+.btn-danger.active{ background-color: rgba(214,37,79,0.1) !important; border-color:#d6254f !important; }
+
+.btn-info{ color:#009fbf !important; border-color:#009fbf !important; background-color:#fff !important; }
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active{ background-color: rgba(0,159,191,0.1) !important; border-color:#009fbf !important; }
+
+/* Outline variants keep dashed border on hover/active */
+.btn-outline-primary,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active,
+.btn-outline-primary.active{ color:#2151d1 !important; border-color:#2151d1 !important; border-style:dashed !important; background-color:#fff !important; }
+.btn-outline-primary:hover{ background-color: rgba(33,81,209,0.08) !important; }
+
+.btn-outline-secondary,
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-outline-secondary:active,
+.btn-outline-secondary.active{ color:#1c2f50 !important; border-color:#9bb6e0 !important; border-style:dashed !important; background-color:#fff !important; }
+.btn-outline-secondary:hover{ background-color: rgba(155,182,224,0.16) !important; }
+
+.btn-outline-success,
+.btn-outline-success:hover,
+.btn-outline-success:focus,
+.btn-outline-success:active,
+.btn-outline-success.active{ color:#0d9a4a !important; border-color:#0d9a4a !important; border-style:dashed !important; background-color:#fff !important; }
+.btn-outline-success:hover{ background-color: rgba(13,154,74,0.1) !important; }
+
+.btn-outline-warning,
+.btn-outline-warning:hover,
+.btn-outline-warning:focus,
+.btn-outline-warning:active,
+.btn-outline-warning.active{ color:#d08700 !important; border-color:#d08700 !important; border-style:dashed !important; background-color:#fff !important; }
+.btn-outline-warning:hover{ background-color: rgba(208,135,0,0.12) !important; }
+
+.btn-outline-danger,
+.btn-outline-danger:hover,
+.btn-outline-danger:focus,
+.btn-outline-danger:active,
+.btn-outline-danger.active{ color:#d6254f !important; border-color:#d6254f !important; border-style:dashed !important; background-color:#fff !important; }
+.btn-outline-danger:hover{ background-color: rgba(214,37,79,0.1) !important; }
+
+.btn-outline-info,
+.btn-outline-info:hover,
+.btn-outline-info:focus,
+.btn-outline-info:active,
+.btn-outline-info.active{ color:#009fbf !important; border-color:#009fbf !important; border-style:dashed !important; background-color:#fff !important; }
+.btn-outline-info:hover{ background-color: rgba(0,159,191,0.1) !important; }
+
+/* Safer tap targets */
+.btn-lg,
 .btn-primary,
+.btn-secondary,
 .btn-success,
 .btn-danger,
 .btn-warning,
 .btn-info,
 .btn-outline-primary,
+.btn-outline-secondary,
 .btn-outline-success,
 .btn-outline-danger,
 .btn-outline-warning,
@@ -52,7 +122,7 @@ hr{
 /* Safe area bottom padding utility */
 .safe-bottom{ padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 
-/* Center navbar buttons' content (icon + text) */
+/* Navbar buttons */
 .navbar .btn{
   display: inline-flex;
   align-items: center;
@@ -64,12 +134,20 @@ hr{
   display: inline-block;
 }
 
-/* High-contrast tweaks for sáng chói ngoài trời */
+/* High-contrast tweaks for outdoor readability */
 body, .card, .list-group-item, .form-control, .btn, .table, .modal-content{
-  color: #0a1a2f !important; /* deep navy for readability */
+  color: #0a1a2f !important;
+}
+body{
+  background-color: #f9f6f1;
+}
+.card, .modal-content{
+  background: rgba(255,255,255,0.9);
+  border-color: #e7e0d6;
+  box-shadow: 0 8px 18px rgba(0,0,0,.08);
 }
 .text-muted{
-  color: #1f2d3d !important; /* darker muted for outdoor readability */
+  color: #1f2d3d !important;
 }
 .list-group-item{
   background-color: #f5f7fb;
@@ -85,24 +163,76 @@ body, .card, .list-group-item, .form-control, .btn, .table, .modal-content{
   color: #0a1a2f;
 }
 .form-control::placeholder{ color: #5c6a85; }
-.btn-primary, .btn-outline-primary{
-  color: #0a1a2f !important;
-  border-color: #2b66c6;
-}
-.btn-primary{
-  background: linear-gradient(120deg, #4b7ee5, #2b66c6);
-  color: #f8fbff !important;
-  text-shadow: 0 1px 2px rgba(0,0,0,.25);
-}
-.btn-outline-primary:hover{
-  background-color: #e7efff;
-}
-.card, .modal-content{
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+
+/* Titles and tables */
+.card .card-body h6,
+.card-title,
+.card-header,
+.modal-title,
+.navbar-brand{
+  color: var(--dc-heading-color) !important;
 }
 .table thead th{
-  background: #eaf1ff;
-  color: #0a1a2f !important;
+  color: #1f2a44 !important;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(33,81,209,0.15),
+      rgba(33,81,209,0.15) 12px,
+      rgba(33,81,209,0.08) 12px,
+      rgba(33,81,209,0.08) 24px);
+  border-bottom: 1px solid #d7e1f5;
+}
+.table tbody tr:nth-child(odd){
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(33,81,209,0.05),
+      rgba(33,81,209,0.05) 12px,
+      rgba(33,81,209,0.02) 12px,
+      rgba(33,81,209,0.02) 24px) !important;
+}
+.table tbody tr:nth-child(even){
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(33,81,209,0.03),
+      rgba(33,81,209,0.03) 12px,
+      rgba(33,81,209,0.015) 12px,
+      rgba(33,81,209,0.015) 24px) !important;
+}
+.table tbody tr:hover{
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(33,81,209,0.12),
+      rgba(33,81,209,0.12) 12px,
+      rgba(33,81,209,0.08) 12px,
+      rgba(33,81,209,0.08) 24px) !important;
+}
+.table tbody tr{
+  background-color: transparent !important;
+}
+.table tbody td{
+  background-color: transparent !important;
+}
+.table{
+  background-color: transparent !important;
+}
+.table tbody tr,
+.table tbody td,
+.table{
+  background: #fff !important;
+  background-color: #fff !important;
+}
+
+/* Subtle accent for separators */
+hr{
+  border-top-color: rgba(var(--bs-primary-rgb), .25);
+}
+
+/* Sticky table headers inside .table-responsive */
+.table-responsive thead th{
+  position: sticky;
+  top: 0;
+  background-color: var(--bs-body-bg);
+  z-index: 1;
 }
 
 /* Soft panel styling */

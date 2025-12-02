@@ -14,6 +14,8 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
   <link rel="stylesheet" href="theme.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
   <style>
     .avatar-xs { width:24px; height:24px; border-radius:6px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; }
     .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
@@ -37,6 +39,14 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
     .scratch-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
     .scratch-actions .scratch-btn { border-radius: 999px; font-weight: 600; padding: .4rem 1.4rem; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
     .scratch-actions .scratch-btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+    .scratch-summary { background: linear-gradient(135deg, #e8f0ff, #d8ecff); border: 1px solid #c5dbff; }
+    .scratch-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .7rem; border-radius: 999px; background: #fff; border: 1px solid #d0daf0; color: #113668; font-weight: 600; box-shadow: 0 4px 12px rgba(17,54,104,.1); }
+    .scratch-chip small { font-weight: 500; color: #2f6bcb; }
+    .scratch-summary-empty { background: #f7f9fc; border: 1px dashed #cdd6e8; color: #4a5872; }
+    .scratch-gift-list { background:#fff; border:1px solid #dce6ff; border-radius:12px; padding:.6rem; box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+    .scratch-gift-item { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.4rem .6rem; border-radius:10px; background:#f6f9ff; border:1px solid #e2e9ff; color:#123c6a; margin-bottom:.35rem; }
+    .scratch-gift-item:last-child { margin-bottom:0; }
+    .scratch-gift-item small { color:#3a6cb4; }
   </style>
 </head>
 <body><?php include __DIR__ . '/_nav.php'; ?>
@@ -49,12 +59,11 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Thông tin</h6><button id="btn_qua_da_doi" class="btn btn-outline-secondary btn-sm" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
+      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Thông tin</h6><button id="btn_qua_da_doi" class="btn btn-outline-secondary px-3 py-2" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
       <h6 class="mt-2">Lý do</h6>      <input id="ly_do_loc" class="form-control form-control-sm mb-2" placeholder="Lọc lý do...">
 <div id="ds_ly_do" class="d-flex flex-wrap gap-2"></div>
       <hr><div class="d-flex align-items-center justify-content-between">
         <h6 class="mb-0">Thẻ cào</h6>
-        <button type="button" class="btn btn-outline-primary btn-sm" id="btnToggleScratch">Đổi điểm</button>
       </div>
       <div id="ds_qua" class="mb-3"></div>
       <div class="scratch-card d-none" id="scratchSection">
@@ -208,16 +217,60 @@ function renderLyDo(){
 }function renderQua(){
   const box=document.getElementById('ds_qua'); if(!box) return;
   box.innerHTML='';
-  const available=(quaData||[]).filter(q=>{
+  const ds=(quaData||[]).filter(q=>{
     const ton=Number(q.ton_kho);
     return Number.isNaN(ton) || ton!==0;
-  }).length;
-  const info=document.createElement('div');
-  info.className='alert alert-info small mb-0';
-  info.textContent = available
-    ? ('Có ' + available + ' quà sẵn sàng để đổi.')
-    : 'Hiện chưa có quà khả dụng để đổi. Vui lòng thêm quà mới.';
-  box.appendChild(info);
+  });
+  const wrap=document.createElement('div');
+  wrap.className='scratch-summary rounded-3 p-3 mb-2 shadow-sm';
+  const head=document.createElement('div');
+  head.className='d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2';
+  const headLeft=document.createElement('div');
+  headLeft.className='d-flex align-items-center gap-2';
+  headLeft.innerHTML = `<div class="fw-semibold text-primary">Sẵn sàng đổi</div>`;
+  const badge=document.createElement('button');
+  badge.type='button';
+  badge.className='btn btn-light btn-sm border text-primary fw-semibold shadow-sm';
+  badge.textContent=`${ds.length} quà`;
+  headLeft.appendChild(badge);
+  head.appendChild(headLeft);
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.id='btnToggleScratch';
+  btn.className='btn btn-primary btn-sm shadow-sm';
+  btn.textContent='Đổi điểm';
+  head.appendChild(btn);
+  wrap.appendChild(head);
+  const hint=document.createElement('div');
+  hint.className='small text-primary-emphasis mb-2';
+  hint.textContent = ds.length ? '' : 'Chưa có quà khả dụng, hãy thêm quà mới.';
+  wrap.appendChild(hint);
+  if (ds.length) {
+    const listWrap=document.createElement('div');
+    listWrap.className='scratch-gift-list d-none mt-2';
+    ds.forEach(q=>{
+      const item=document.createElement('div');
+      item.className='scratch-gift-item';
+      const ten=document.createElement('span');
+      ten.textContent=q.ten||'Quà';
+      const ton=Number(q.ton_kho);
+      const tonLbl = (Number.isNaN(ton) || ton < 0) ? 'Không giới hạn' : `Còn ${ton}`;
+      const tonEl=document.createElement('small');
+      tonEl.textContent = tonLbl;
+      item.appendChild(ten); item.appendChild(tonEl);
+      listWrap.appendChild(item);
+    });
+    const note=document.createElement('div');
+    note.className='scratch-summary-empty p-2 rounded-3 mt-3';
+    note.textContent = 'Quà sẽ được chọn ngẫu nhiên khi dùng thẻ cào.';
+    wrap.appendChild(note);
+    wrap.appendChild(listWrap);
+    badge.onclick = ()=>{ listWrap.classList.toggle('d-none'); };
+  } else {
+    wrap.className += ' scratch-summary-empty';
+  }
+  box.appendChild(wrap);
+  if (typeof window._bindScratchToggle === 'function') { window._bindScratchToggle(); }
 }
 
 async function napQua(){
@@ -342,24 +395,31 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
   const scratchLabel=document.getElementById('scratchLabel');
   const btnNew=document.getElementById('scratchBtnNew');
   const scratchSection=document.getElementById('scratchSection');
-  const btnToggleScratch=document.getElementById('btnToggleScratch');
   if(!scratchCanvas||!scratchLabel||!btnNew) return;
 
-  if(btnToggleScratch && scratchSection){
-    btnToggleScratch.addEventListener('click',()=>{
-      const wasHidden = scratchSection.classList.contains('d-none');
-      if(wasHidden && !hsHienTai){
-        showToast('Hãy chọn học sinh.','warning');
-        return;
-      }
-      const isHidden=scratchSection.classList.toggle('d-none');
-      btnToggleScratch.textContent = isHidden ? 'Đổi điểm' : 'Ẩn thẻ cào';
-      if(!isHidden){
-        scratchSection.scrollIntoView({behavior:'smooth', block:'nearest'});
-        setTimeout(()=>prepareScratchCard(), 10);
-      }
-    });
-  }
+  const handleToggle = ()=>{
+    if(!scratchSection) return;
+    const wasHidden = scratchSection.classList.contains('d-none');
+    if(wasHidden && !hsHienTai){
+      showToast('Hãy chọn học sinh.','warning');
+      return;
+    }
+    const isHidden=scratchSection.classList.toggle('d-none');
+    const btn=document.getElementById('btnToggleScratch');
+    if(btn){ btn.textContent = isHidden ? 'Đổi điểm' : 'Ẩn thẻ cào'; }
+    if(!isHidden){
+      scratchSection.scrollIntoView({behavior:'smooth', block:'nearest'});
+      setTimeout(()=>prepareScratchCard(), 10);
+    }
+  };
+  const bindToggle = ()=>{
+    const btn=document.getElementById('btnToggleScratch');
+    if(btn && scratchSection){
+      btn.onclick = handleToggle;
+    }
+  };
+  bindToggle();
+  window._bindScratchToggle = bindToggle;
 
   const ctx=scratchCanvas.getContext('2d');
   let isDrawing=false;
@@ -559,5 +619,3 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
 </script>
 </body>
 </html>
-
-

@@ -100,7 +100,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
           <h6>Thêm giáo viên mới</h6>
           <div class="mb-2"><label class="form-label">Tên đăng nhập</label><input id="gv_ten" class="form-control" placeholder="vd: gv2"></div>
           <div class="mb-2"><label class="form-label">Mật khẩu</label><input id="gv_mk" type="password" class="form-control"></div>
-          <button class="btn btn-success btn-sm" id="gv_them">Thêm</button>
+          <button class="btn btn-primary btn-sm" id="gv_them">Thêm</button>
           <span id="gv_them_msg" class="ms-2 small text-muted"></span>
         </div></div></div>
       </div>
@@ -108,7 +108,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
         <div class="card-body">
           <h6 class="mb-2">Phân quyền tài khoản</h6>
           <div class="d-flex align-items-center justify-content-end mb-2">
-            <button id="gv_log_reload" class="btn btn-outline-secondary btn-sm">Xem log thao tác</button>
+            <button id="gv_log_reload" class="btn btn-primary btn-sm">Xem log thao tác</button>
           </div>
           <div class="table-responsive">
             <table class="table table-sm align-middle mb-0 role-table">
@@ -159,7 +159,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
 <script>
 // Helpers
 async function jfetch(url, opts){ const r = await fetch(url, opts); return await r.json(); }
-function badge(on){ return `<span class="badge ${on? 'bg-success':'bg-secondary'}">${on?'Bật':'Tắt'}</span>` }
+function badge(on){ return `<span class="badge ${on? 'bg-success':'bg-warning text-dark'}">${on?'Bật':'Tắt'}</span>` }
 let _gvDs = [];
 async function loadGiaoVienDs(){
   const r = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=ds');
@@ -177,7 +177,7 @@ async function gvNapQuyen(){
     const select=document.createElement('select');
     select.className='form-select form-select-sm';
     roles.forEach(r=>{ const opt=document.createElement('option'); opt.value=r; opt.textContent=r; if(String(tk.vai_tro||'GV')===r) opt.selected=true; select.appendChild(opt); });
-    const btnSave=document.createElement('button'); btnSave.type='button'; btnSave.className='btn btn-outline-primary btn-sm';
+    const btnSave=document.createElement('button'); btnSave.type='button'; btnSave.className='btn btn-primary btn-sm';
     btnSave.textContent='Lưu';
     btnSave.onclick=async()=>{
       btnSave.disabled=true; const jj = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=cap_nhat_vai_tro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tk.id, vai_tro: select.value})});
@@ -185,7 +185,7 @@ async function gvNapQuyen(){
       else { if(msg) msg.textContent=jj.thong_bao||'Lỗi'; }
       btnSave.disabled=false;
     };
-    const btnReset=document.createElement('button'); btnReset.type='button'; btnReset.className='btn btn-outline-danger btn-sm';
+    const btnReset=document.createElement('button'); btnReset.type='button'; btnReset.className='btn btn-danger btn-sm';
     btnReset.textContent='Đặt lại MK';
     btnReset.onclick=async()=>{
       const mk = prompt('Nhập mật khẩu mới cho '+tk.ten_dang_nhap);
@@ -275,7 +275,7 @@ async function ldNap(){ const j = await jfetch('../api/ly_do_quan_tri.php'); if(
     tr.dataset.bien_diem = x.bien_diem;
     tr.innerHTML = `<td>${x.id}</td><td>${x.tieu_de}</td><td>${x.bien_diem}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
-      <div class="d-flex flex-wrap justify-content-end gap-2">
+      <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
         <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
         <button class="btn btn-outline-danger rounded-pill px-3 py-2">Xóa</button>
@@ -315,7 +315,7 @@ async function qNap(){ const j = await jfetch('../api/qua_tang_quan_tri.php'); i
     const av = (x.anh_url && String(x.anh_url).trim()!=='') ? x.anh_url : '../upload/avatar/default.svg';
     tr.innerHTML = `<td>${x.id}</td><td><img src="${av}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';"></td><td>${x.ten}</td><td>${x.gia_diem}</td><td>${x.ton_kho}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
-      <div class="d-flex flex-wrap justify-content-end gap-2">
+      <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
         <button class="btn btn-outline-info rounded-pill px-3 py-2">Ảnh</button>
         <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
@@ -366,7 +366,7 @@ async function lNap(){ if(!_gvDs.length) await loadGiaoVienDs(); const j = await
     tr.innerHTML = `<td>${x.id}</td><td>${x.ten}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td>${gvNames}</td>
     <td class="text-end">
-      <div class="d-flex flex-wrap justify-content-end gap-2">
+      <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
         <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
         <button class="btn btn-outline-danger rounded-pill px-3 py-2">Xóa</button>

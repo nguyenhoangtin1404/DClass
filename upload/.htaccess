@@ -1,0 +1,11 @@
+Options -Indexes
+
+# Ngăn thực thi mã trong thư mục upload (chỉ cho phép serve tĩnh)
+<FilesMatch "\.(php|phar|phtml|pht|phps|cgi|pl|asp|aspx|jsp|sh|bash)$">
+  Require all denied
+</FilesMatch>
+
+# Tắt handler PHP nếu mod_php đang bật (không ảnh hưởng PHP-FPM)
+RemoveHandler .php
+RemoveType .php
+php_flag engine off

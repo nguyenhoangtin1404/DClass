@@ -58,7 +58,7 @@ if ($hanh_dong === 'reset_mat_khau') {
   if (!$gv) json_phan_hoi(false, null, 'tai_khoan_khong_ton_tai');
   $bam = password_hash($mk_moi, PASSWORD_DEFAULT);
   $pdo->prepare('UPDATE giao_vien SET mat_khau_bam=? WHERE id=?')->execute([$bam, $id]);
-  ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'reset_mat_khau', 'Reset mat khau cho '.$gv['ten_dang_nhap'].' (#'.$id.')');
+  ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'reset_mat_khau', 'Reset mật khẩu cho '.$gv['ten_dang_nhap'].' (#'.$id.')');
   json_phan_hoi(true);
 }
 
