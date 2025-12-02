@@ -1,4 +1,9 @@
 PRAGMA foreign_keys = ON;
+CREATE TABLE lop_hoc (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ten TEXT NOT NULL,
+  dang_hoat_dong INTEGER DEFAULT 1
+);
 CREATE TABLE giao_vien (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ten_dang_nhap TEXT UNIQUE NOT NULL,
@@ -12,11 +17,6 @@ CREATE TABLE giao_vien_lop (
   PRIMARY KEY (giao_vien_id, lop_hoc_id),
   FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id) ON DELETE CASCADE,
   FOREIGN KEY (lop_hoc_id) REFERENCES lop_hoc(id) ON DELETE CASCADE
-);
-CREATE TABLE lop_hoc (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  ten TEXT NOT NULL,
-  dang_hoat_dong INTEGER DEFAULT 1
 );
 CREATE TABLE hoc_sinh (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

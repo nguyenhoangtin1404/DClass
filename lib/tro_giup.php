@@ -13,9 +13,11 @@ function than_json() {
   return is_array($j) ? $j : [];
 }
 function like_mau($s) { return '%' . str_replace(['%','_'], ['\%','\_'], trim($s)) . '%'; }
-function ghi_log(PDO $pdo, $gv_id, string $hanh_dong, string $noi_dung=''): void {
-  try {
-    $st = $pdo->prepare("INSERT INTO nhat_ky(giao_vien_id, hanh_dong, noi_dung) VALUES(?,?,?)");
-    $st->execute([$gv_id ?: null, $hanh_dong, $noi_dung ?: null]);
-  } catch (Throwable $e) { /* ignore logging failures */ }
+if (!function_exists('ghi_log')) {
+  function ghi_log(PDO $pdo, $gv_id, string $hanh_dong, string $noi_dung=''): void {
+    try {
+      $st = $pdo->prepare("INSERT INTO nhat_ky(giao_vien_id, hanh_dong, noi_dung) VALUES(?,?,?)");
+      $st->execute([$gv_id ?: null, $hanh_dong, $noi_dung ?: null]);
+    } catch (Throwable $e) { /* ignore logging failures */ }
+  }
 }
