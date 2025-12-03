@@ -52,7 +52,6 @@ $active = basename($_SERVER['PHP_SELF'] ?? '');
   <div class="collapse navbar-collapse" id="navMain">
     <div class="ms-auto d-flex flex-wrap gap-2 py-2 py-lg-0">
       <a class="btn btn-sm nav-square-link <?php echo $active==='trang_chinh.php'?'active':''; ?>" href="trang_chinh.php" title="Trang chủ" aria-label="Trang chủ"><i class="bi bi-house-fill"></i></a>
-      <a class="btn btn-sm nav-square-link <?php echo $active==='hoc_sinh_quan_ly.php'?'active':''; ?>" href="hoc_sinh_quan_ly.php"><i class="bi bi-people me-1"></i>Học sinh</a>
       <a class="btn btn-sm nav-square-link <?php echo $active==='lich_su.php'?'active':''; ?>" href="lich_su.php"><i class="bi bi-clock-history me-1"></i>Lịch sử</a>
       <a class="btn btn-sm nav-square-link <?php echo $active==='bao_cao.php'?'active':''; ?>" href="bao_cao.php"><i class="bi bi-bar-chart me-1"></i>Báo cáo</a>
       <?php if (($_SESSION['vai_tro'] ?? '') === 'ADMIN') { ?>
