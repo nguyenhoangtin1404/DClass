@@ -100,7 +100,7 @@ if ($top5_values) {
 ?>
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Báo cáo & Thống kê</title>
-<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="theme.css"></head><body>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3 safe-bottom">
   <div class="d-flex align-items-center justify-content-between"><h5>Báo cáo & Thống kê</h5></div>

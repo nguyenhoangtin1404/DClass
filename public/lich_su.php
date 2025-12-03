@@ -4,7 +4,7 @@ require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lịch sử</title>
-<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="date_picker.css"></head><body>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/date_picker.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
 <style>
   .filter-compact .form-control-sm,
@@ -189,7 +189,7 @@ nap();
 </script>
 <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="vendor/aos/aos.js"></script>
-<script src="date_picker.js"></script>
+<script src="vendor/date_picker.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script></body></html>
 
 

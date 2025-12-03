@@ -4,7 +4,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
-<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="custom_file.css"><link rel="stylesheet" href="date_picker.css"><style>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"><style>
 .nav-tabs.nav-square {
   background: #e9f0fb;
   border: 1px solid #d7e1f5;
@@ -232,9 +232,8 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
        </div>
      </div>
    </div>
- </div>
+</div>
 
-<script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script>
 // Helpers
 async function jfetch(url, opts){ const r = await fetch(url, opts); return await r.json(); }
@@ -803,7 +802,6 @@ const btnLog = document.getElementById('gv_log_reload'); if(btnLog){ btnLog.oncl
 </script>
 <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="vendor/aos/aos.js"></script>
-<script src="date_picker.js"></script>
+<script src="vendor/date_picker.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body></html>
-

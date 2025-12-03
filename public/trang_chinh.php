@@ -13,7 +13,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
   <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css">
   <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
   <link rel="stylesheet" href="vendor/aos/aos.css">
-  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="vendor/theme.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="favicon.svg">
   <style>
