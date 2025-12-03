@@ -5,7 +5,7 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Đăng nhập</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg"><link rel="apple-touch-icon" href="favicon.svg">
-<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css">  <link rel="stylesheet" href="theme.css"></head><body class="bg-light">
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css">  <link rel="stylesheet" href="vendor/theme.css"></head><body class="bg-light">
 <div class="container py-5 safe-bottom"><div class="row justify-content-center"><div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
 <h5 class="mb-3">Giáo viên đăng nhập</h5>
 <div class="mb-2"><label class="form-label">Tài khoản</label><input id="u" class="form-control" value="gv1"></div>
