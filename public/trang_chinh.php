@@ -400,9 +400,16 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
   const handleToggle = ()=>{
     if(!scratchSection) return;
     const wasHidden = scratchSection.classList.contains('d-none');
-    if(wasHidden && !hsHienTai){
-      showToast('Hãy chọn học sinh.','warning');
-      return;
+    if(wasHidden){
+      if(!hsHienTai){
+        showToast('Hãy chọn học sinh.','warning');
+        return;
+      }
+      const soDu = Number(hsHienTai.so_du) || 0;
+      if(soDu < SCRATCH_COST){
+        showToast(`Học sinh cần ít nhất ${SCRATCH_COST} điểm mới cào thẻ được.`, 'warning');
+        return;
+      }
     }
     const isHidden=scratchSection.classList.toggle('d-none');
     const btn=document.getElementById('btnToggleScratch');
