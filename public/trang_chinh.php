@@ -115,6 +115,18 @@ const toastVariantClasses={
   warning:'text-bg-warning',
   danger:'text-bg-danger'
 };
+function formatDateTime(v){
+  if(!v) return '';
+  const parsed = new Date(String(v).replace(' ', 'T'));
+  if(isNaN(parsed.getTime())) return String(v);
+  const dd=String(parsed.getDate()).padStart(2,'0');
+  const mm=String(parsed.getMonth()+1).padStart(2,'0');
+  const yy=parsed.getFullYear();
+  const hh=String(parsed.getHours()).padStart(2,'0');
+  const mi=String(parsed.getMinutes()).padStart(2,'0');
+  const ss=String(parsed.getSeconds()).padStart(2,'0');
+  return `${dd}/${mm}/${yy} ${hh}:${mi}:${ss}`;
+}
 function showToast(message='',variant='info',delay=4000){
   const container=document.getElementById('toastContainer');
   if(!container || typeof bootstrap==='undefined' || typeof bootstrap.Toast==='undefined'){
@@ -201,7 +213,7 @@ function renderLyDo(){
         const jj=await res.json();
         if(jj.ok){
           hsHienTai.so_du=jj.du_lieu.so_du;
-          hienThongTin(); napHocSinh(); napLichSu(); napThongKe();
+          hienThongTin(); napHocSinh(); napLichSu(); if(typeof napThongKe==='function') napThongKe();
         } else {
           showToast(jj.thong_bao||'L\u1ed7i','danger');
         }
@@ -306,7 +318,7 @@ function renderLichSu(){
     const ghiChu = row.ghi_chu||'';
     const tr=document.createElement('tr');
     tr.innerHTML = `
-      <td class="text-muted small">${row.tao_luc||''}</td>
+      <td class="text-muted small">${formatDateTime(row.tao_luc)}</td>
       <td>${row.ho_ten||''}</td>
       <td>${loaiHtml}</td>
       <td>${deltaHtml}</td>
@@ -335,7 +347,7 @@ function moQuaDaDoi(){
           const item = document.createElement('div');
           item.className = 'list-group-item d-flex justify-content-between align-items-center';
           const ten = x.qua || 'Quà';
-          const tg = x.tao_luc || '';
+          const tg = formatDateTime(x.tao_luc);
           item.innerHTML = `<span>${ten}</span><span class="text-muted small">${tg}</span>`;
           ul.appendChild(item);
         });
