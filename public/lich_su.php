@@ -4,7 +4,7 @@ require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lịch sử</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="date_picker.css"></head><body>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="date_picker.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
 <style>
   .filter-compact .form-control-sm,
@@ -143,12 +143,19 @@ function veTrang(){
   tb.innerHTML='';
   duLieuLoc.slice(start,end).forEach(row=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${row.tao_luc}</td><td>${row.ho_ten}</td><td>${tenLoai(row.loai)}</td><td>${row.bien_diem}</td><td>${row.so_du_sau}</td><td>${row.ghi_chu||''}</td>`;
+    tr.innerHTML=`<td>${dinDangDateTime(row.tao_luc)}</td><td>${row.ho_ten}</td><td>${tenLoai(row.loai)}</td><td>${row.bien_diem}</td><td>${row.so_du_sau}</td><td>${row.ghi_chu||''}</td>`;
     tb.appendChild(tr);
   });
   pgInfo.textContent = total ? `Trang ${trang}/${totalPages} – hiển thị ${start+1}-${end} / ${total}` : 'Không có dữ liệu';
   document.getElementById('pg_prev').disabled = trang<=1;
   document.getElementById('pg_next').disabled = trang>=totalPages;
+}
+function dinDangDateTime(str){
+  if(!str) return '';
+  const m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+  if(!m) return str;
+  const [_, y, mo, d, h, mi, s] = m;
+  return `${d}/${mo}/${y} ${h}:${mi}:${s}`;
 }
 async function nap(){
   const r=await fetch('../api/diem.php?hanh_dong=lich_su');
@@ -180,8 +187,8 @@ if(btnToggle && filterWrap){
 }
 nap();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="vendor/aos/aos.js"></script>
 <script src="date_picker.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script></body></html>
 
