@@ -4,7 +4,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/morph/bootstrap.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"><link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"><link rel="stylesheet" href="theme.css"><style>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="theme.css"><style>
 .nav-tabs.nav-square {
   background: #e9f0fb;
   border: 1px solid #d7e1f5;
@@ -155,7 +155,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
    </div>
  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script>
 // Helpers
 async function jfetch(url, opts){ const r = await fetch(url, opts); return await r.json(); }
@@ -516,8 +516,8 @@ document.getElementById('l_ds').addEventListener('click', async (e) => {
 ldNap(); qNap(); loadGiaoVienDs().then(()=>{ lNap(); gvNapQuyen(); });
 const btnLog = document.getElementById('gv_log_reload'); if(btnLog){ btnLog.onclick = gvNapLog; }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="vendor/aos/aos.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body></html>
 
