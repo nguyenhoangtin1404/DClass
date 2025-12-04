@@ -9,6 +9,9 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="copyright" content="2024 DClass">
+  <meta name="version" content="1.0.0">
+  <meta name="license" content="MIT">
   <title>Chấm điểm nhanh</title>
   <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css">
   <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">

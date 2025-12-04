@@ -136,13 +136,7 @@ if ($top5_values) {
       <?php if ($top5): ?>
         <div class="mt-3" style="height:260px;"><canvas id="chart-top5" aria-label="Histogram top 5 số dư" role="img"></canvas></div>
         <?php if ($top5_thong_ke): ?>
-          <div class="d-flex flex-wrap gap-3 align-items-center mt-3 small text-muted">
-            <div>P25: <span class="fw-semibold text-body"><?php echo number_format($top5_thong_ke['p25']); ?></span></div>
-            <div>Median: <span class="fw-semibold text-body"><?php echo number_format($top5_thong_ke['median']); ?></span></div>
-            <div>P75: <span class="fw-semibold text-body"><?php echo number_format($top5_thong_ke['p75']); ?></span></div>
-            <div>Min: <span class="fw-semibold text-body"><?php echo number_format($top5_thong_ke['min']); ?></span></div>
-            <div>Max: <span class="fw-semibold text-body"><?php echo number_format($top5_thong_ke['max']); ?></span></div>
-          </div>
+          
         <?php endif; ?>
       <?php else: ?>
         <div class="text-muted small mt-2">Chưa có dữ liệu số dư</div>
