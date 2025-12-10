@@ -29,7 +29,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
 .hs-avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
 </style></head><body><?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3">
-  <div class="d-flex align-items-center justify-content-between"><h4 class="mb-0">Cấu hình hệ thống</h4></div>
+  <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Cấu hình hệ thống</h5></div>
 
   <ul class="nav nav-tabs mt-3 nav-square" id="tab" role="tablist">
     <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-ly-do" type="button">Lý do</button></li>
@@ -42,13 +42,13 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
     <div class="tab-pane fade show active" id="tab-ly-do">
       <div class="row g-3">
         <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <h6>Thêm lý do</h6>
+          <h5 class="ribbon-title-modern">Thêm lý do</h5>
           <div class="mb-2"><label class="form-label">Tiêu đề</label><input id="ld_tieu_de" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Biến điểm</label><input id="ld_bien_diem" type="number" class="form-control" value="1"></div>
           <button class="btn btn-primary btn-sm" id="ld_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
+          <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tiêu đề</th><th>Biến điểm</th><th>Trạng thái</th><th></th></tr></thead><tbody id="ld_ds"></tbody></table>
           </div>
@@ -58,7 +58,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
     <div class="tab-pane fade" id="tab-qua">
       <div class="row g-3">
         <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <h6>Thêm quà tặng</h6>
+          <h5 class="ribbon-title-modern">Thêm quà tặng</h5>
           <div class="mb-2"><label class="form-label">Tên</label><input id="q_ten" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Giá điểm</label><input id="q_gia" type="number" class="form-control" value="1"></div>
           <div class="mb-2"><label class="form-label">Tồn kho</label><input id="q_ton" type="number" class="form-control" value="0"></div>
@@ -66,7 +66,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
           <button class="btn btn-primary btn-sm" id="q_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
+          <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá điểm</th><th>Tồn kho</th><th>Trạng thái</th><th></th></tr></thead><tbody id="q_ds"></tbody></table>
           </div>
@@ -76,12 +76,12 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
     <div class="tab-pane fade" id="tab-lop">
       <div class="row g-3">
         <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <h6>Thêm lớp học</h6>
+          <h5 class="ribbon-title-modern">Thêm lớp học</h5>
           <div class="mb-2"><label class="form-label">Tên lớp</label><input id="l_ten" class="form-control"></div>
           <button class="btn btn-primary btn-sm" id="l_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Danh sách</h6><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
+          <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tên</th><th>Trạng thái</th><th>Giáo viên quản lý</th><th></th></tr></thead><tbody id="l_ds"></tbody></table>
           </div>
@@ -102,7 +102,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
         </div>
         <div class="col-md-7">
           <div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-            <h6>Thêm học sinh</h6>
+            <h5 class="ribbon-title-modern">Thêm học sinh</h5>
             <div class="row g-2">
               <div class="col-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
               <div class="col-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
@@ -136,7 +136,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
             </div>
             <div id="csv_msg" class="small text-muted mt-2"></div>
             <hr>
-            <h6>Chi tiết học sinh</h6>
+            <h5 class="ribbon-title-modern">Chi tiết học sinh</h5>
             <div id="ct_no_sel" class="text-muted">Chưa chọn học sinh</div>
             <div id="ct_sel" class="d-none">
               <div class="d-flex align-items-center gap-3">
@@ -170,14 +170,14 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div>
-              <h6 class="mb-1">Tài khoản giáo viên</h6>
+              <h5 class="ribbon-title-modern mb-1">Tài khoản giáo viên</h5>
               <div class="small text-muted">Đổi mật khẩu của bạn hoặc thêm giáo viên mới.</div>
             </div>
           </div>
           <div class="row g-3">
             <div class="col-md-6">
               <div class="border rounded-3 p-3 h-100">
-                <h6 class="mb-3">Đổi mật khẩu</h6>
+                <h5 class="ribbon-title-modern mb-3">Đổi mật khẩu</h5>
                 <div class="mb-2"><label class="form-label">Mật khẩu hiện tại</label><input id="gv_mk_cu" type="password" class="form-control"></div>
                 <div class="mb-2"><label class="form-label">Mật khẩu mới</label><input id="gv_mk_moi" type="password" class="form-control"></div>
                 <div class="mb-3"><label class="form-label">Nhập lại mật khẩu mới</label><input id="gv_mk_lai" type="password" class="form-control"></div>
@@ -189,7 +189,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
             </div>
             <div class="col-md-6">
               <div class="border rounded-3 p-3 h-100">
-                <h6 class="mb-3">Thêm giáo viên mới</h6>
+                <h5 class="ribbon-title-modern mb-3">Thêm giáo viên mới</h5>
                 <div class="mb-2"><label class="form-label">Tên đăng nhập</label><input id="gv_ten" class="form-control" placeholder="vd: gv2"></div>
                 <div class="mb-3"><label class="form-label">Mật khẩu</label><input id="gv_mk" type="password" class="form-control"></div>
                 <div class="d-flex align-items-center gap-2">
@@ -201,7 +201,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
           </div>
           <hr class="my-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-            <h6 class="mb-0">Phân quyền tài khoản</h6>
+            <h5 class="ribbon-title-modern mb-0">Phân quyền tài khoản</h5>
             <div class="small text-muted">Cập nhật vai trò hoặc đặt lại mật khẩu.</div>
           </div>
           <div class="table-responsive">
@@ -223,7 +223,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <div>
-              <h6 class="mb-1">Log thao tác</h6>
+              <h5 class="ribbon-title-modern mb-1">Log thao tác</h5>
               <div class="small text-muted">Tối đa 200 dòng gần nhất.</div>
             </div>
           </div>
@@ -263,7 +263,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
    <div class="modal-dialog">
      <div class="modal-content">
        <div class="modal-header">
-         <h5 class="modal-title" id="editModalTitle">Chỉnh sửa</h5>
+         <h5 class="ribbon-title-modern modal-title" id="editModalTitle">Chỉnh sửa</h5>
          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
        </div>
        <div class="modal-body">
@@ -889,3 +889,5 @@ ldNap(); qNap(); loadGiaoVienDs().then(()=>{ lNap(); gvNapQuyen(); });
 <script src="vendor/date_picker.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body></html>
+
+

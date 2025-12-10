@@ -57,16 +57,16 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 <div class="container py-3 safe-bottom">
   <div class="row g-3">
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <h6>Danh sách học sinh</h6>
+      <h5 class="ribbon-title-modern">Danh sách học sinh</h5>
       <input id="tu_khoa" class="form-control" placeholder="Tìm theo tên hoặc mã học sinh">
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Thông tin</h6><button id="btn_qua_da_doi" class="btn btn-outline-secondary px-3 py-2" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
-      <h6 class="mt-2">Lý do</h6>      <input id="ly_do_loc" class="form-control form-control-sm mb-2" placeholder="Lọc lý do...">
+      <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Thông tin</h5><button id="btn_qua_da_doi" class="btn btn-outline-secondary px-3 py-2" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
+      <h5 class="ribbon-title-modern mt-2">Lý do</h5>      <input id="ly_do_loc" class="form-control form-control-sm mb-2" placeholder="Lọc lý do...">
 <div id="ds_ly_do" class="d-flex flex-wrap gap-2"></div>
       <hr><div class="d-flex align-items-center justify-content-between">
-        <h6 class="mb-0">Thẻ cào</h6>
+        <h5 class="ribbon-title-modern mb-0">Thẻ cào</h5>
       </div>
       <div id="ds_qua" class="mb-3"></div>
       <div class="scratch-card d-none" id="scratchSection">
@@ -83,7 +83,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
     </div></div></div>
   </div>
   <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
-    <h6>Lịch sử gần đây</h6><div class="table-responsive"><table class="table table-sm table-hover table-striped align-middle modern-table">
+    <h5 class="ribbon-title-modern">Lịch sử gần đây</h5><div class="table-responsive"><table class="table table-sm table-hover table-striped align-middle modern-table">
       <thead><tr><th>Thời gian</th><th>Học sinh</th><th>Loại</th><th>Thay đổi</th><th>Số dư</th><th>Ghi chú</th></tr></thead>
       <tbody id="bang_lich_su"></tbody></table></div>
     <div class="d-flex align-items-center justify-content-between mt-2">
@@ -102,7 +102,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
   <div class="modal-dialog modal-dialog-scrollable modal-sm modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h6 class="modal-title">Quà đã đổi</h6>
+        <h5 class="ribbon-title-modern modal-title">Quà đã đổi</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="qua_modal_body"></div>
@@ -641,3 +641,5 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
 </script>
 </body>
 </html>
+
+

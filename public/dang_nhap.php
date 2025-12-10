@@ -111,7 +111,7 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
               <div class="brand-chip">
                 <i class="bi bi-stars"></i><span>DClass</span>
               </div>
-              <h5 class="mt-3 mb-0 text-dark">Quản lý điểm thưởng</h5>
+              <h5 class="ribbon-title-modern mt-3 mb-0 text-dark">Quản lý điểm thưởng</h5>
               <div class="text-muted small">Theo dõi học sinh, cộng điểm, đổi quà</div>
             </div>
             <div class="rounded-circle icon-bubble">
@@ -196,3 +196,5 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body>
 </html>
+
+

@@ -24,7 +24,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 <?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3 safe-bottom">
   <div class="d-flex align-items-center justify-content-between">
-    <h5>Quản lý học sinh</h5>
+    <h5 class="ribbon-title-modern">Quản lý học sinh</h5>
     
   </div>
   <div class="row g-3 mt-1">
@@ -40,7 +40,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
     </div>
     <div class="col-md-7">
       <div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-        <h6>Thêm học sinh</h6>
+        <h5 class="ribbon-title-modern">Thêm học sinh</h5>
         <div class="row g-2">
           <div class="col-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
           <div class="col-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
@@ -74,7 +74,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
         </div>
         <div id="csv_msg" class="small text-muted mt-2"></div>
         <hr>
-        <h6>Chi tiết học sinh</h6>
+        <h5 class="ribbon-title-modern">Chi tiết học sinh</h5>
         <div id="ct_no_sel" class="text-muted">Chưa chọn học sinh</div>
         <div id="ct_sel" class="d-none">
           <div class="d-flex align-items-center gap-3">
@@ -310,5 +310,7 @@ function syncLopSelectOnce(){
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body>
 </html>
+
+
 
 

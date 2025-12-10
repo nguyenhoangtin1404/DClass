@@ -35,10 +35,53 @@ textarea {
   color: #212529 !important;
 }
 
-/* Headings */
+/* Headings: dùng màu trung tính, đậm vừa phải */
 h1, h2, h3, h4, h5, h6{
-  color: var(--dc-heading-color) !important;
-  font-weight: 600;
+  color: #111 !important;
+  font-weight: 700;
+}
+
+/* Ribbon-style h5 headers (chỉ áp dụng khi có class) */
+.ribbon-title-modern{
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.2;
+  position: relative;
+  display: inline-block;
+  padding: 12px 78px 12px 22px; /* chừa chỗ cho ngôi sao bên phải */
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffe4f3, #fff3c9);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.ribbon-title-modern::after{
+  content: "";
+  width: 62px;
+  height: 62px;
+  display: block;
+  position: absolute;
+  right: -20px; /* cho ~1/3 ngôi sao ló ra ngoài */
+  top: -18px;
+  transform: translateY(0);
+  background: url("../upload/star.png") center/contain no-repeat;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.ribbon-title-modern:hover::after{
+  animation: hop-twice 0.7s ease-out;
+}
+
+@keyframes hop-twice {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(-6%) scale(1.02); }
+  40%  { transform: translateY(0); }
+  60%  { transform: translateY(-4%) scale(1.01); }
+  80%  { transform: translateY(0); }
+  100% { transform: translateY(0); }
 }
 
 /* Làm nhẹ đường kẻ bảng (tránh viền đen dày khi chạy offline) */
