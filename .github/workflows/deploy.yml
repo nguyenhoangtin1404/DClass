@@ -26,3 +26,5 @@ jobs:
             .gitignore
             README.md
             deploy.yml
+            **/.git*
+            **/node_modules*
