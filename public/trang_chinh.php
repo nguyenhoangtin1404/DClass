@@ -17,7 +17,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
   <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
   <link rel="stylesheet" href="vendor/aos/aos.css">
   <link rel="stylesheet" href="vendor/theme.css">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="favicon.svg">
   <style>
     .avatar-xs { width:24px; height:24px; border-radius:6px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; }

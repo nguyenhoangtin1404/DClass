@@ -11,8 +11,8 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Đăng nhập</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.ico">
   <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css">
   <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
   <link rel="stylesheet" href="vendor/aos/aos.css">
