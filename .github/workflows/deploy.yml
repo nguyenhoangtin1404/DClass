@@ -1,0 +1,28 @@
+name: Auto Deploy to CPanel Hosting
+
+on:
+  push:
+    branches:
+      - main   # mỗi lần push lên main sẽ tự deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Deploy to cPanel using FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          local-dir: ./
+          server-dir: /public_html/dclass     
+          exclude: |
+            **/.git*
+            **/.github*
+            **/node_modules*
+            **/README.md
