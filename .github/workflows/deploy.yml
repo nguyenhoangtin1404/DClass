@@ -3,7 +3,7 @@ name: Auto Deploy to CPanel Hosting
 on:
   push:
     branches:
-      - main   # mỗi lần push lên main sẽ tự deploy
+      - main
 
 jobs:
   deploy:
@@ -14,15 +14,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to cPanel using FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           local-dir: ./
-          server-dir: /public_html/dclass     
+          server-dir: /public_html/dclass/       # phải kết thúc bằng dấu /
           exclude: |
-            **/.git*
-            **/.github*
-            **/node_modules*
-            **/README.md
+            .github/
+            .gitignore
+            README.md
+            deploy.yml
