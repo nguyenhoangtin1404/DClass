@@ -166,28 +166,43 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
       </div>
     </div>
     <div class="tab-pane fade" id="tab-tai-khoan">
-      <div class="row g-3">
-        <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <h6>Đổi mật khẩu</h6>
-          <div class="mb-2"><label class="form-label">Mật khẩu hiện tại</label><input id="gv_mk_cu" type="password" class="form-control"></div>
-          <div class="mb-2"><label class="form-label">Mật khẩu mới</label><input id="gv_mk_moi" type="password" class="form-control"></div>
-          <div class="mb-2"><label class="form-label">Nhập lại mật khẩu mới</label><input id="gv_mk_lai" type="password" class="form-control"></div>
-          <button class="btn btn-primary btn-sm" id="gv_doi">Đổi mật khẩu</button>
-          <span id="gv_doi_msg" class="ms-2 small text-muted"></span>
-        </div></div></div>
-        <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <h6>Thêm giáo viên mới</h6>
-          <div class="mb-2"><label class="form-label">Tên đăng nhập</label><input id="gv_ten" class="form-control" placeholder="vd: gv2"></div>
-          <div class="mb-2"><label class="form-label">Mật khẩu</label><input id="gv_mk" type="password" class="form-control"></div>
-          <button class="btn btn-primary btn-sm" id="gv_them">Thêm</button>
-          <span id="gv_them_msg" class="ms-2 small text-muted"></span>
-        </div></div></div>
-      </div>
-      <div class="card shadow-sm mt-2" data-aos="fade-up">
+      <div class="card shadow-sm" data-aos="fade-up">
         <div class="card-body">
-          <h6 class="mb-2">Phân quyền tài khoản</h6>
-          <div class="d-flex align-items-center justify-content-end mb-2">
-            <button id="gv_log_reload" class="btn btn-primary btn-sm">Xem log thao tác</button>
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+              <h6 class="mb-1">Tài khoản giáo viên</h6>
+              <div class="small text-muted">Đổi mật khẩu của bạn hoặc thêm giáo viên mới.</div>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="border rounded-3 p-3 h-100">
+                <h6 class="mb-3">Đổi mật khẩu</h6>
+                <div class="mb-2"><label class="form-label">Mật khẩu hiện tại</label><input id="gv_mk_cu" type="password" class="form-control"></div>
+                <div class="mb-2"><label class="form-label">Mật khẩu mới</label><input id="gv_mk_moi" type="password" class="form-control"></div>
+                <div class="mb-3"><label class="form-label">Nhập lại mật khẩu mới</label><input id="gv_mk_lai" type="password" class="form-control"></div>
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn btn-primary btn-sm" id="gv_doi">Đổi mật khẩu</button>
+                  <span id="gv_doi_msg" class="small text-muted"></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="border rounded-3 p-3 h-100">
+                <h6 class="mb-3">Thêm giáo viên mới</h6>
+                <div class="mb-2"><label class="form-label">Tên đăng nhập</label><input id="gv_ten" class="form-control" placeholder="vd: gv2"></div>
+                <div class="mb-3"><label class="form-label">Mật khẩu</label><input id="gv_mk" type="password" class="form-control"></div>
+                <div class="d-flex align-items-center gap-2">
+                  <button class="btn btn-primary btn-sm" id="gv_them">Thêm</button>
+                  <span id="gv_them_msg" class="small text-muted"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr class="my-4">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <h6 class="mb-0">Phân quyền tài khoản</h6>
+            <div class="small text-muted">Cập nhật vai trò hoặc đặt lại mật khẩu.</div>
           </div>
           <div class="table-responsive">
             <table class="table table-sm align-middle mb-0 role-table">
@@ -202,12 +217,41 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
             </table>
           </div>
           <div id="gv_quyen_msg" class="small text-muted mt-2"></div>
-          <div class="table-responsive mt-3 d-none" id="gv_log_wrap">
-            <table class="table table-sm align-middle mb-0">
+        </div>
+      </div>
+      <div class="card shadow-sm mt-3" data-aos="fade-up">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <div>
+              <h6 class="mb-1">Log thao tác</h6>
+              <div class="small text-muted">Tối đa 200 dòng gần nhất.</div>
+            </div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-sm-12 col-lg-4">
+              <input id="gv_log_search" class="form-control form-control-sm" placeholder="Tìm kiếm nội dung, tài khoản...">
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <select id="gv_log_action" class="form-select form-select-sm">
+                <option value="">Hành động</option>
+              </select>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <select id="gv_log_user" class="form-select form-select-sm">
+                <option value="">Tài khoản</option>
+              </select>
+            </div>
+            <div class="col-sm-12 col-lg-2 text-lg-end">
+              <button id="gv_log_reload" class="btn btn-outline-primary btn-sm w-100 w-lg-auto">Xem log thao tác</button>
+            </div>
+          </div>
+          <div class="table-responsive" id="gv_log_wrap">
+            <table class="table table-sm align-middle mb-0" id="gv_log_table">
               <thead><tr><th>Thời gian</th><th>Tài khoản</th><th>Hành động</th><th>Nội dung</th></tr></thead>
               <tbody id="gv_log_ds"></tbody>
             </table>
           </div>
+          <div id="gv_log_msg" class="small text-muted mt-2"></div>
         </div>
       </div>
     </div>
@@ -286,18 +330,55 @@ async function gvNapQuyen(){
     tb.appendChild(tr);
   });
 }
-async function gvNapLog(){
-  const wrap=document.getElementById('gv_log_wrap'); const ds=document.getElementById('gv_log_ds'); const msg=document.getElementById('gv_quyen_msg');
-  if(!wrap || !ds) return;
-  wrap.classList.remove('d-none');
+let _gvLogs = [];
+function gvBuildLogFilters(){
+  const actionSel = document.getElementById('gv_log_action');
+  const userSel = document.getElementById('gv_log_user');
+  if(!actionSel || !userSel) return;
+  const actions = new Set(); const users = new Set();
+  _gvLogs.forEach(r => { if(r.hanh_dong) actions.add(r.hanh_dong); if(r.ten_dang_nhap) users.add(r.ten_dang_nhap); });
+  const addOpts = (sel, values, label)=>{ sel.innerHTML=''; const opt=document.createElement('option'); opt.value=''; opt.textContent=label; sel.appendChild(opt); values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); }); };
+  addOpts(actionSel, Array.from(actions).sort(), 'Hành động');
+  addOpts(userSel, Array.from(users).sort(), 'Tài khoản');
+}
+function gvFilterLogs(){
+  const search = (document.getElementById('gv_log_search')?.value||'').toLowerCase();
+  const action = document.getElementById('gv_log_action')?.value||'';
+  const user = document.getElementById('gv_log_user')?.value||'';
+  return _gvLogs.filter(row=>{
+    if(action && row.hanh_dong!==action) return false;
+    if(user && row.ten_dang_nhap!==user) return false;
+    if(search){
+      const text = `${row.tao_luc||''} ${row.ten_dang_nhap||''} ${row.hanh_dong||''} ${row.noi_dung||''}`.toLowerCase();
+      if(!text.includes(search)) return false;
+    }
+    return true;
+  });
+}
+function gvRenderLog(){
+  const ds=document.getElementById('gv_log_ds'); const msg=document.getElementById('gv_log_msg');
+  if(!ds) return;
   ds.innerHTML='';
+  const filtered = gvFilterLogs();
+  if(!filtered.length){
+    ds.innerHTML = '<tr><td colspan="4" class="text-center text-muted small">Không có log phù hợp</td></tr>';
+  } else {
+    filtered.forEach(row=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${row.tao_luc||''}</td><td>${row.ten_dang_nhap||''}</td><td>${row.hanh_dong||''}</td><td>${row.noi_dung||''}</td>`;
+      ds.appendChild(tr);
+    });
+  }
+  if(msg) msg.textContent = `Hiển thị ${filtered.length}/${_gvLogs.length} dòng`;
+}
+async function gvNapLog(){
+  const msg=document.getElementById('gv_log_msg');
+  if(msg) msg.textContent='Đang tải log...';
   const j = await jfetch('../api/nhat_ky.php?limit=200');
   if(!j.ok){ if(msg) msg.textContent=j.thong_bao||'Không tải được log'; return; }
-  (j.du_lieu||[]).forEach(row=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${row.tao_luc||''}</td><td>${row.ten_dang_nhap||''}</td><td>${row.hanh_dong||''}</td><td>${row.noi_dung||''}</td>`;
-    ds.appendChild(tr);
-  });
+  _gvLogs = Array.isArray(j.du_lieu) ? j.du_lieu : [];
+  gvBuildLogFilters();
+  gvRenderLog();
 }
 
 async function openClassModal(lop){
@@ -798,7 +879,10 @@ document.getElementById('l_ds').addEventListener('click', async (e) => {
 
 // Load
 ldNap(); qNap(); loadGiaoVienDs().then(()=>{ lNap(); gvNapQuyen(); });
-const btnLog = document.getElementById('gv_log_reload'); if(btnLog){ btnLog.onclick = gvNapLog; }
+  const btnLog = document.getElementById('gv_log_reload'); if(btnLog){ btnLog.onclick = gvNapLog; }
+  const logSearch = document.getElementById('gv_log_search'); if(logSearch){ logSearch.oninput = gvRenderLog; }
+  const logAction = document.getElementById('gv_log_action'); if(logAction){ logAction.onchange = gvRenderLog; }
+  const logUser = document.getElementById('gv_log_user'); if(logUser){ logUser.onchange = gvRenderLog; }
 </script>
 <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="vendor/aos/aos.js"></script>
