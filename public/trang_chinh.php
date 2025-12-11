@@ -19,38 +19,6 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
   <link rel="stylesheet" href="vendor/theme.css">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="apple-touch-icon" href="favicon.svg">
-  <style>
-    .avatar-xs { width:24px; height:24px; border-radius:6px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; }
-    .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
-    /* Table polish */
-    .modern-table thead th { position: sticky; top: 0; z-index: 1; background: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color); }
-    .modern-table tbody tr:hover { background-color: var(--bs-tertiary-bg); }
-    .modern-table td, .modern-table th { vertical-align: middle; }
-    .cell-notes { max-width: 260px; }
-    .cell-notes .truncate { display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .scratch-card-wrapper { margin-top: 1.5rem; }
-    .scratch-card { text-align: center; }
-    .scratch-card-title { font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-    .scratch-card-hint { font-size: .9rem; color: #0b3a69; margin-bottom: 1rem; }
-    .scratch-ticket { position: relative; width: 100%; max-width: 360px; margin: 0 auto 1rem; padding: 1.2rem; border-radius: 16px; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,.2); }
-    .scratch-reward-title { font-size: .8rem; text-transform: uppercase; color: #888; margin-bottom: .2rem; letter-spacing: .05em; }
-    .scratch-reward-value { font-size: 1.4rem; font-weight: 800; margin-bottom: .35rem; }
-    .scratch-reward-note { font-size: .8rem; color: #666; margin-bottom: .5rem; }
-    .scratch-area { position: relative; width: 100%; height: 130px; border-radius: 12px; overflow: hidden; border: 2px solid #c0c0c0; }
-    .scratch-under { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #fffbe6; color: #c46b1c; font-size: 1rem; font-weight: 700; z-index: 0; }
-    #scratchCanvas { position: absolute; inset: 0; z-index: 1; cursor: crosshair; touch-action: none; }
-    .scratch-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
-    .scratch-actions .scratch-btn { border-radius: 999px; font-weight: 600; padding: .4rem 1.4rem; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
-    .scratch-actions .scratch-btn:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(0,0,0,.3); }
-    .scratch-summary { background: linear-gradient(135deg, #e8f0ff, #d8ecff); border: 1px solid #c5dbff; }
-    .scratch-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .7rem; border-radius: 999px; background: #fff; border: 1px solid #d0daf0; color: #113668; font-weight: 600; box-shadow: 0 4px 12px rgba(17,54,104,.1); }
-    .scratch-chip small { font-weight: 500; color: #2f6bcb; }
-    .scratch-summary-empty { background: #f7f9fc; border: 1px dashed #cdd6e8; color: #4a5872; }
-    .scratch-gift-list { background:#fff; border:1px solid #dce6ff; border-radius:12px; padding:.6rem; box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
-    .scratch-gift-item { display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:.4rem .6rem; border-radius:10px; background:#f6f9ff; border:1px solid #e2e9ff; color:#123c6a; margin-bottom:.35rem; }
-    .scratch-gift-item:last-child { margin-bottom:0; }
-    .scratch-gift-item small { color:#3a6cb4; }
-  </style>
 </head>
 <body><?php include __DIR__ . '/_nav.php'; ?>
 <div class="toast-container position-fixed top-0 end-0 p-3" id="toastContainer"></div>

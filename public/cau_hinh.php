@@ -4,30 +4,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
-<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"><style>
-.nav-tabs.nav-square {
-  background: #e9f0fb;
-  border: 1px solid #d7e1f5;
-  border-radius: 12px;
-  padding: 4px;
-  box-shadow: 0 10px 20px rgba(25, 75, 150, 0.12);
-  gap: 4px;
-}
-.nav-tabs.nav-square .nav-link {
-  border: none;
-  border-radius: 8px;
-  color: #5f6b85;
-  padding: 10px 18px;
-  font-weight: 600;
-}
-.nav-tabs.nav-square .nav-link:hover { color: #1d4ed8; }
-.nav-tabs.nav-square .nav-link.active {
-  background: #2f8af5;
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(47, 138, 245, 0.35);
-}
-.hs-avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
-</style></head><body><?php include __DIR__ . '/_nav.php'; ?>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"></head><body><?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3">
   <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Cấu hình hệ thống</h5></div>
 

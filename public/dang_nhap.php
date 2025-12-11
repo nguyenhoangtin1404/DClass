@@ -17,88 +17,6 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
   <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
   <link rel="stylesheet" href="vendor/aos/aos.css">
   <link rel="stylesheet" href="vendor/theme.css">
-  <style>
-    body.login-bg {
-      min-height: 100vh;
-      background: radial-gradient(circle at 25% 20%, #3b82f6 0, #2563eb 28%, #111827 65%, #0b1220 100%);
-      color: #e8edff;
-    }
-    .glass-card {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(12px);
-      color: #e9eefb;
-    }
-    .glass-card h5,
-    .glass-card h6,
-    .glass-card p,
-    .glass-card .text-dark { color: #f9fbff !important; }
-    .glass-card .text-muted,
-    .glass-card small,
-    .glass-card label,
-    .glass-card .form-check-label,
-    .glass-card .text-secondary { color: #f1f4ff !important; }
-    .glass-card .form-label { color: #f1f5ff !important; font-weight: 700; letter-spacing: .02em; }
-    .glass-card .form-control,
-    .glass-card .input-group-text {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.2);
-      color: #0f172a;
-    }
-    .glass-card .form-control::placeholder { color: #6b7280; }
-    .icon-bubble {
-      width: 48px;
-      height: 48px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #c7d2fe, #93c5fd);
-      color: #0b1220;
-    }
-    .login-hero-blur {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 14px;
-      color: #f7fbff;
-    }
-    .login-hero-blur h2 { color: #f7fbff; text-shadow: 0 6px 18px rgba(0,0,0,0.18); }
-    .login-hero-blur p { color: #f0f5ff; }
-    .login-hero-blur small { color: #f8fbff !important; }
-    .brand-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      padding: .55rem 1.1rem;
-      border-radius: 999px;
-      background: #4c8dfd;
-      color: #0b1220;
-      font-weight: 600;
-      box-shadow: 0 8px 25px rgba(76, 141, 253, 0.35);
-    }
-    .brand-chip i { color: #f8fafc; }
-    .brand-chip span { color: #0b3a99; }
-    .full-height-center {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .login-shell {
-      width: 100%;
-      max-width: 1180px;
-    }
-    .badge-contrast {
-      background: #d9f99d;
-      color: #166534;
-      border: 1px solid rgba(22, 101, 52, 0.25);
-    }
-    .badge-contrast-secondary {
-      background: #e0e7ff;
-      color: #312e81;
-      border: 1px solid rgba(49, 46, 129, 0.25);
-    }
-  </style>
 </head>
 <body class="login-bg">
 <div class="container py-5 safe-bottom full-height-center">
@@ -106,15 +24,15 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
         <div class="col-lg-5 col-xl-4">
       <div class="card glass-card border-0" data-aos="fade-up">
         <div class="card-body p-4">
-          <div class="d-flex align-items-center justify-content-between mb-4">
+          <div class="d-flex align-items-start justify-content-between mb-4">
             <div>
               <div class="brand-chip">
-                <i class="bi bi-stars"></i><span>DClass</span>
+                <img src="../upload/star.png" alt="Ngôi sao" class="brand-icon"><span>DClass</span>
               </div>
-              <h5 class="ribbon-title-modern mt-3 mb-0 text-dark">Quản lý điểm thưởng</h5>
+              <h5 class="mt-3 mb-0 text-dark">Quản lý điểm thưởng</h5>
               <div class="text-muted small">Theo dõi học sinh, cộng điểm, đổi quà</div>
             </div>
-            <div class="rounded-circle icon-bubble">
+            <div class="rounded-circle icon-bubble mt-1">
               <i class="bi bi-shield-lock-fill fs-5"></i>
             </div>
           </div>

@@ -6,14 +6,6 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 <title>Lịch sử</title>
 <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/date_picker.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
-<style>
-  .filter-compact .form-control-sm,
-  .filter-compact .form-select-sm{
-    min-height: 36px;
-    padding-top: .35rem;
-    padding-bottom: .35rem;
-  }
-</style>
 <div class="container py-3 safe-bottom">
   <div class="card shadow-sm" data-aos="fade-up"><div class="card-body py-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">

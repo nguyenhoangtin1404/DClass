@@ -16,9 +16,6 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
   <link rel="stylesheet" href="vendor/theme.css">
   <link rel="stylesheet" href="vendor/custom_file.css">
   <link rel="stylesheet" href="vendor/date_picker.css">
-  <style>
-    .avatar { width:56px; height:56px; border-radius:8px; border:1px solid #ddd; object-fit:cover; object-position:center; background:#fff; display:block; }
-  </style>
 </head>
 <body>
 <?php include __DIR__ . '/_nav.php'; ?>
