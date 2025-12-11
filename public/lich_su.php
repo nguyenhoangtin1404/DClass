@@ -6,18 +6,10 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 <title>Lịch sử</title>
 <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/date_picker.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
-<style>
-  .filter-compact .form-control-sm,
-  .filter-compact .form-select-sm{
-    min-height: 36px;
-    padding-top: .35rem;
-    padding-bottom: .35rem;
-  }
-</style>
 <div class="container py-3 safe-bottom">
   <div class="card shadow-sm" data-aos="fade-up"><div class="card-body py-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <h5 class="mb-0">Lịch sử giao dịch</h5>
+      <h5 class="ribbon-title-modern mb-0">Lịch sử giao dịch</h5>
       <button class="btn btn-outline-primary btn-sm" id="btn_toggle_filter" type="button" title="Ẩn/hiện bộ lọc" aria-label="Ẩn/hiện bộ lọc"><i class="bi bi-funnel"></i></button>
     </div>
     <div id="filter_wrap" class="mt-3 d-none">
@@ -191,6 +183,8 @@ nap();
 <script src="vendor/aos/aos.js"></script>
 <script src="vendor/date_picker.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script></body></html>
+
+
 
 
 

@@ -2,48 +2,6 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 $active = basename($_SERVER['PHP_SELF'] ?? '');
 ?>
-<style>
-  .nav-glass {
-    background: #e9f0fb;
-    border: 1px solid #d7e1f5;
-    color: #1f2a44;
-    border-radius: 12px;
-    margin: 10px auto;
-    box-shadow: 0 10px 22px rgba(25, 75, 150, 0.15);
-  }
-  .nav-brand {
-    font-weight: 800;
-    letter-spacing: .04em;
-    color: #1f2a44 !important;
-  }
-  .nav-square-link {
-    border-radius: 6px !important;
-    color: #5f6b85 !important;
-    background: transparent;
-    border: 1px solid transparent !important;
-    padding: 8px 14px !important;
-    font-weight: 600;
-    transition: all .15s ease;
-  }
-  .nav-square-link:hover {
-    color: #1d4ed8 !important;
-    background: rgba(45, 126, 255, 0.08);
-    border-color: rgba(45, 126, 255, 0.15) !important;
-  }
-  .nav-square-link.active {
-    background: #2f8af5;
-    color: #fff !important;
-    border-color: #2f8af5 !important;
-    box-shadow: 0 8px 18px rgba(47, 138, 245, 0.3);
-  }
-  .btn-logout {
-    background: #ff5b5b;
-    border-color: #ff5b5b;
-    color: #fff !important;
-    box-shadow: 0 6px 16px rgba(255,91,91,.35);
-  }
-  .btn-logout:hover { filter: brightness(1.05); box-shadow: 0 6px 18px rgba(255,91,91,.45); }
-</style>
 <nav class="navbar navbar-expand-lg nav-glass px-3">
   <a class="navbar-brand nav-brand" href="trang_chinh.php"><i class="bi bi-book me-1"></i>DClass</a>
   <button class="navbar-toggler border-0 ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">

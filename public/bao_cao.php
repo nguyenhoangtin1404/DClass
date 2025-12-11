@@ -103,7 +103,7 @@ if ($top5_values) {
 <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"></head><body>
 <?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3 safe-bottom">
-  <div class="d-flex align-items-center justify-content-between"><h5>Báo cáo & Thống kê</h5></div>
+  <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern">Báo cáo & Thống kê</h5></div>
   <div class="row g-3 mt-1" data-aos="fade-up">
     <div class="col-sm-6"><div class="card shadow-sm"><div class="card-body">
       <div class="text-muted small">Tổng điểm cộng</div>
@@ -116,23 +116,23 @@ if ($top5_values) {
   </div>
   <div class="row g-3 mt-1" data-aos="fade-up">
     <div class="col-12"><div class="card shadow-sm"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Xu hướng 30 ngày</h6><div class="text-muted small">Điểm cộng / điểm đổi / giao dịch</div></div>
+      <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Xu hướng 30 ngày</h5><div class="text-muted small">Điểm cộng / điểm đổi / giao dịch</div></div>
       <div class="mt-2" style="height:280px;"><?php if ($xu_huong_nhan): ?><canvas id="chart-xu-huong" aria-label="Biểu đồ xu hướng 30 ngày" role="img"></canvas><?php else: ?><div class="text-muted small">Chưa có dữ liệu</div><?php endif; ?></div>
     </div></div></div>
   </div>
   <div class="row g-3 mt-1" data-aos="fade-up">
     <div class="col-lg-6"><div class="card shadow-sm h-100"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Top 3 quà được đổi</h6></div>
+      <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Top 3 quà được đổi</h5></div>
       <div class="mt-3" style="height:260px;"><?php if ($top_qua): ?><canvas id="chart-qua" aria-label="Biểu đồ top quà đổi" role="img"></canvas><?php else: ?><div class="text-muted small">Chưa có giao dịch đổi quà</div><?php endif; ?></div>
     </div></div></div>
     <div class="col-lg-6"><div class="card shadow-sm h-100"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h6 class="mb-0">Top lý do cộng điểm</h6></div>
+      <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Top lý do cộng điểm</h5></div>
       <div class="mt-3" style="height:260px;"><?php if ($top_ly_do): ?><canvas id="chart-ly-do" aria-label="Biểu đồ lý do cộng điểm" role="img"></canvas><?php else: ?><div class="text-muted small">Chưa có giao dịch cộng điểm</div><?php endif; ?></div>
     </div></div></div>
   </div>
   <div class="row g-3 mt-1" data-aos="fade-up">
     <div class="col-12"><div class="card shadow-sm"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2"><h6 class="mb-0">Phân bố top 5 số dư</h6></div>
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2"><h5 class="ribbon-title-modern mb-0">Phân bố top 5 số dư</h5></div>
       <?php if ($top5): ?>
         <div class="mt-3" style="height:260px;"><canvas id="chart-top5" aria-label="Histogram top 5 số dư" role="img"></canvas></div>
         <?php if ($top5_thong_ke): ?>
@@ -205,3 +205,5 @@ if (top5Labels.length && document.getElementById('chart-top5')) {
 }
 </script>
 </body></html>
+
+
