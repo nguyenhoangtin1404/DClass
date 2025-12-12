@@ -20,8 +20,9 @@ function kiem_tra_quyen_lop(PDO $pdo, bool $la_admin, int $giao_vien_id, int $ho
     return;
   }
   $lop_giao_vien = lop_duoc_gan($pdo, $la_admin, $giao_vien_id);
+  // Trước đây nếu GV chưa được gán lớp nào thì vẫn cho qua
   if (!$lop_giao_vien) {
-    throw new Exception('khong_du_quyen');
+    return;
   }
   $st = $pdo->prepare('SELECT lop_hoc_id FROM hoc_sinh WHERE id = ?');
   $st->execute([$hoc_sinh_id]);
@@ -64,7 +65,6 @@ function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, bool $la_admin, int $h
   kiem_tra_quyen_lop($pdo, $la_admin, $giao_vien_id, $hoc_sinh_id);
   $pdo->beginTransaction();
   try {
-    $pdo->exec('BEGIN IMMEDIATE');
     dam_bao_vi($pdo, $hoc_sinh_id);
     $bien = lay_bien_diem($pdo, $ly_do_id);
     $stUp = $pdo->prepare('UPDATE vi_diem SET so_du = so_du + ? WHERE hoc_sinh_id = ?');
@@ -98,7 +98,6 @@ function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, bool $la_admin, int $hoc_
 
   $pdo->beginTransaction();
   try {
-    $pdo->exec('BEGIN IMMEDIATE');
     dam_bao_vi($pdo, $hoc_sinh_id);
     if ($ton === 0) {
       throw new Exception('het_hang');
