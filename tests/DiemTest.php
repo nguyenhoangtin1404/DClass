@@ -17,7 +17,7 @@ final class DiemTest extends TestCase
 
     $this->assertSame(2, $ket_qua['so_du']);
     $st = $pdo->query('SELECT COUNT(*) FROM so_cai_diem WHERE loai="CONG_DIEM"');
-    $this->assertSame('1', $st->fetchColumn());
+    $this->assertSame(1, (int)$st->fetchColumn());
   }
 
   public function testQuyDoiTruDiemVaCapNhatTonKho(): void
@@ -36,7 +36,7 @@ final class DiemTest extends TestCase
     $st->execute([$qua_id]);
     $this->assertSame(0, (int)$st->fetchColumn());
     $st = $pdo->query('SELECT COUNT(*) FROM so_cai_diem WHERE loai="DOI_DIEM"');
-    $this->assertSame('1', $st->fetchColumn());
+    $this->assertSame(1, (int)$st->fetchColumn());
   }
 
   public function testCongDiemTuChoiNeuKhongDuQuyen(): void
