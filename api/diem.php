@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
 require __DIR__ . '/../lib/diem_nghiep_vu.php';
+/** @var \PDO $pdo Global PDO instance from config/db.php */
 $hanh_dong = $_GET['hanh_dong'] ?? '';
 $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'cong') {
