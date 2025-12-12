@@ -20,7 +20,9 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
           local-dir: ./
-          server-dir: /public_html/dclass/       # phải kết thúc bằng dấu /
+          # FTP user is already rooted at /public_html/dclass, so keep this relative
+          # to avoid duplicating the path (it was uploading into /public_html/dclass/public_html/dclass).
+          server-dir: ./                        # phải kết thúc bằng dấu /
           exclude: |
             .github/
             .gitignore
