@@ -1,0 +1,11 @@
+parameters:
+  level: 1
+  paths:
+    - api
+    - lib
+    - config
+  ignoreErrors:
+    - '#json_phan_hoi#'
+  bootstrapFiles:
+    - tests/bootstrap.php
+
