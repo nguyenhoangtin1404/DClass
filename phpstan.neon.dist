@@ -6,6 +6,7 @@ parameters:
     - config
   ignoreErrors:
     - '#json_phan_hoi#'
+  reportUnmatchedIgnoredErrors: false
   bootstrapFiles:
     - tests/bootstrap.php
 

@@ -4,7 +4,7 @@ require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
 require __DIR__ . '/../lib/ghi_nho.php';
 require __DIR__ . '/../lib/dang_nhap_nghiep_vu.php';
-/** @var PDO $pdo Global PDO instance from config/db.php */
+/** @var \PDO $pdo Global PDO instance from config/db.php */
 $hanh_dong = $_GET['hanh_dong'] ?? '';
 // Reset khóa đăng nhập (xóa bộ đếm sai trong session của trình duyệt hiện tại)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
