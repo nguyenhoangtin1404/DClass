@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
+/** @var \PDO $pdo Global PDO instance from config/db.php */
 
 yeu_cau_dang_nhap();
 if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { http_response_code(403); json_phan_hoi(false, null, 'khong_du_quyen'); }

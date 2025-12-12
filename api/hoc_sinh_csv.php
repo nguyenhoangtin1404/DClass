@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
+/** @var \PDO $pdo Global PDO instance from config/db.php */
 
 yeu_cau_dang_nhap();
 $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');

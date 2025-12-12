@@ -1,7 +1,15 @@
 <?php
 declare(strict_types=1);
+$env = [];
+$env_file = __DIR__ . '/env.php';
+if (file_exists($env_file)) {
+  $env = require $env_file;
+}
+if (!headers_sent() && isset($env['session_name']) && is_string($env['session_name'])) {
+  session_name($env['session_name']);
+}
 session_start();
-$DB_PATH = __DIR__ . '/../data/ung_dung.db';
+$DB_PATH = $env['db_path'] ?? (__DIR__ . '/../data/ung_dung.db');
 $DB_DIR = dirname($DB_PATH);
 $lan_dau = !file_exists($DB_PATH);
 // Tự tạo thư mục dữ liệu nếu chưa tồn tại để tránh lỗi kết nối SQLite lần đầu

@@ -3,6 +3,8 @@ declare(strict_types=1);
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
 require __DIR__ . '/../lib/ghi_nho.php';
+require __DIR__ . '/../lib/dang_nhap_nghiep_vu.php';
+/** @var \PDO $pdo Global PDO instance from config/db.php */
 $hanh_dong = $_GET['hanh_dong'] ?? '';
 // Reset khóa đăng nhập (xóa bộ đếm sai trong session của trình duyệt hiện tại)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
@@ -17,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   // Tự động reset sau khi hết thời gian khoá
   if ($ban && $ban <= time()) { unset($_SESSION['dn_sai'][$k]); $ban = 0; $sl_hien_tai = 0; }
   if ($ban > time() && !$bo_qua_khoa) { json_phan_hoi(false, ['so_lan'=>$sl_hien_tai, 'khoa_den'=>$ban], 'qua_so_lan'); }
-  $st = $pdo->prepare("SELECT * FROM giao_vien WHERE ten_dang_nhap=?"); $st->execute([$ten]);
-  $gv = $st->fetch(); if ($gv && password_verify($mk, $gv['mat_khau_bam'])) {
+  $gv = kiem_tra_dang_nhap($pdo, $ten, $mk);
+  if ($gv) {
     // Đăng nhập thành công
     $_SESSION['giao_vien_id'] = (int)$gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
     // Reset đếm sai
