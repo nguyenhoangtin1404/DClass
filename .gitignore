@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# Vite build output
+public/react/
+
+# Editor/IDE
+.DS_Store
+Thumbs.db
+.vscode/

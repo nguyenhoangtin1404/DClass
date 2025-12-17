@@ -61,3 +61,9 @@ rule_dat_ten_tieng_viet.txt  Quy tắc đặt tên/dự án
 
 ## License
 Nội bộ/Chưa khai báo. Thêm giấy phép nếu phát hành.
+
+## Frontend React (SPA)
+- Thu muc: `frontend/` (Vite + React + TypeScript), build ra `public/react/`.
+- Lenh chinh: `npm install`, `npm run dev` (proxy `/api` -> PHP), `npm run build` (khong xoa file khac trong `public/`).
+- Cau hinh: `vite.config.ts` dat `base='/react/'` va `outDir=public/react`. Su dung `BrowserRouter` basename `/react`, fetch mac dinh kem cookie session (`credentials: 'include'`).
+- UI: Import Bootstrap, Bootstrap Icons, AOS, Chart.js qua npm; se port cac trang PHP sang component React theo ke hoach (Dang nhap, Trang chinh/Cham diem, Lich su, Bao cao, Hoc sinh, Cau hinh).
