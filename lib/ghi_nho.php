@@ -50,7 +50,7 @@ function thu_cookie_ghi_nho(PDO $pdo): bool {
   $ten = $_COOKIE['gv_u'] ?? '';
   $tok = $_COOKIE['gv_t'] ?? '';
   if ($ten === '' || $tok === '') return false;
-  $st = $pdo->prepare('SELECT id, ten_dang_nhap, mat_khau_bam FROM giao_vien WHERE ten_dang_nhap=?');
+  $st = $pdo->prepare('SELECT id, ten_dang_nhap, mat_khau_bam, COALESCE(vai_tro,"GV") AS vai_tro FROM giao_vien WHERE ten_dang_nhap=?');
   $st->execute([$ten]);
   $gv = $st->fetch(); if (!$gv) return false;
   $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
@@ -58,6 +58,6 @@ function thu_cookie_ghi_nho(PDO $pdo): bool {
   if (!hash_equals($ky, $tok)) return false;
   $_SESSION['giao_vien_id'] = (int)$gv['id'];
   $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap'];
+  $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
   return true;
 }
-

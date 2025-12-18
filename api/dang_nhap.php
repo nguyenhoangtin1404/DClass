@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
     // Ghi nhớ nếu có yêu cầu
     $ghi_nho = (bool)($b['ghi_nho'] ?? false);
     if ($ghi_nho) { dat_cookie_ghi_nho($gv['ten_dang_nhap'], $gv['mat_khau_bam']); }
-    json_phan_hoi(true, ['ten_dang_nhap'=>$gv['ten_dang_nhap']]);
+    json_phan_hoi(true, ['ten_dang_nhap'=>$gv['ten_dang_nhap'], 'vai_tro'=>$gv['vai_tro'] ?? 'GV']);
   }
   // Thất bại -> tăng đếm và khoá nếu vượt quá
   $sl = (int)($_SESSION['dn_sai'][$k]['so_lan'] ?? 0) + 1;
@@ -38,6 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   if ($ban_den) { json_phan_hoi(false, ['so_lan'=>$sl, 'khoa_den'=>$ban_den], 'qua_so_lan'); }
   $con_lai = max(0, 3 - $sl);
   json_phan_hoi(false, ['so_lan'=>$sl, 'con_lai'=>$con_lai], 'dang_nhap_that_bai');
+}
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && $hanh_dong === 'kiem_tra') {
+  if (!isset($_SESSION['giao_vien_id'])) {
+    thu_cookie_ghi_nho($pdo);
+  }
+  if (isset($_SESSION['giao_vien_id'])) {
+    json_phan_hoi(true, [
+      'ten_dang_nhap' => $_SESSION['ten_dang_nhap'] ?? '',
+      'vai_tro' => $_SESSION['vai_tro'] ?? 'GV',
+    ]);
+  }
+  json_phan_hoi(false, null, 'chua_dang_nhap');
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_xuat') { xoa_cookie_ghi_nho(); session_destroy(); json_phan_hoi(true); }
 http_response_code(404); json_phan_hoi(false, null, 'khong_tim_thay');
