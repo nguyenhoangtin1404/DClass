@@ -98,6 +98,11 @@ function formatDateTime(v){
   const ss=String(parsed.getSeconds()).padStart(2,'0');
   return `${dd}/${mm}/${yy} ${hh}:${mi}:${ss}`;
 }
+function formatSigned(n){
+  const num = Number(n) || 0;
+  const sign = num>0 ? '+' : num<0 ? '-' : '±';
+  return `${sign}${Math.abs(num)}`;
+}
 function showToast(message='',variant='info',delay=4000){
   const container=document.getElementById('toastContainer');
   if(!container || typeof bootstrap==='undefined' || typeof bootstrap.Toast==='undefined'){
@@ -174,7 +179,7 @@ function renderLyDo(){
     .forEach(ld => {
       const b=document.createElement('button');
       b.className='btn btn-outline-primary';
-      b.textContent = `${ld.tieu_de} (${ld.bien_diem>0?'+':''}${ld.bien_diem})`;
+      b.textContent = `${ld.tieu_de} (${formatSigned(ld.bien_diem)})`;
       b.onclick = async()=>{
         if(!hsHienTai){
           showToast('Hãy chọn học sinh.','warning');
@@ -283,7 +288,7 @@ function renderLichSu(){
       }
     })();
     const delta = Number(row.bien_diem)||0;
-    const deltaHtml = `<span class="fw-semibold ${delta>0?'text-success':'text-danger'}">${delta>0?'+':''}${delta}</span>`;
+    const deltaHtml = `<span class="fw-semibold ${delta>0?'text-success':'text-danger'}">${formatSigned(delta)}</span>`;
     const soDu = Number(row.so_du_sau)||0;
     const soDuHtml = `<span class="fw-semibold">${new Intl.NumberFormat('vi-VN').format(soDu)}</span>`;
     const ghiChu = row.ghi_chu||'';

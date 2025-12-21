@@ -4,7 +4,7 @@ if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit
 if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
-<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"></head><body><?php include __DIR__ . '/_nav.php'; ?>
+<link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"><style>.ld-stepper .ld-stepper-btns{min-width:38px;height:100%;}.ld-stepper .ld-stepper-btns .btn{padding:4px 0;line-height:1;height:50%;border-radius:0;}.ld-stepper .ld-stepper-btns .btn:first-child{border-top-right-radius:.375rem;}.ld-stepper .ld-stepper-btns .btn:last-child{border-bottom-right-radius:.375rem;}</style></head><body><?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3">
   <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Cấu hình hệ thống</h5></div>
 
@@ -21,7 +21,16 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
         <div class="col-md-4"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <h5 class="ribbon-title-modern">Thêm lý do</h5>
           <div class="mb-2"><label class="form-label">Tiêu đề</label><input id="ld_tieu_de" class="form-control"></div>
-          <div class="mb-2"><label class="form-label">Biến điểm</label><input id="ld_bien_diem" type="number" class="form-control" value="1"></div>
+          <div class="mb-2">
+            <label class="form-label">Biến điểm</label>
+            <div class="input-group ld-stepper">
+              <input id="ld_bien_diem" type="text" class="form-control" value="+1">
+              <div class="btn-group-vertical ld-stepper-btns" role="group" aria-label="Điều chỉnh điểm">
+                <button type="button" class="btn btn-success ld-bd-inc"><i class="bi bi-plus"></i></button>
+                <button type="button" class="btn btn-danger ld-bd-dec"><i class="bi bi-dash"></i></button>
+              </div>
+            </div>
+          </div>
           <button class="btn btn-primary btn-sm" id="ld_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
@@ -258,6 +267,26 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
 <script>
 // Helpers
 async function jfetch(url, opts){ const r = await fetch(url, opts); return await r.json(); }
+function formatSigned(n){ const v=Number(n)||0; return v>0?`+${v}`:String(v); }
+// Stepper cho ô Biến điểm
+(function(){
+  const input = document.getElementById('ld_bien_diem');
+  const inc = document.querySelector('.ld-bd-inc');
+  const dec = document.querySelector('.ld-bd-dec');
+  if(!input || !inc || !dec) return;
+  const formatVal = (num)=> num>0 ? `+${num}` : String(num);
+  const readVal = ()=> {
+    const raw = String(input.value||'').trim().replace(/^\+/, '');
+    const v = parseInt(raw, 10);
+    return isNaN(v) ? 0 : v;
+  };
+  const step = ()=> parseInt(input.step||'1',10) || 1;
+  const setVal = (val)=>{ input.value = formatVal(val); };
+  inc.addEventListener('click', ()=>{ setVal(readVal() + step()); });
+  dec.addEventListener('click', ()=>{ setVal(readVal() - step()); });
+  input.addEventListener('input', ()=>{ setVal(readVal()); });
+  setVal(readVal());
+})();
 function badge(on){ return `<span class="badge ${on? 'bg-success':'bg-warning text-dark'}">${on?'Bật':'Tắt'}</span>` }
 let _gvDs = [];
 async function loadGiaoVienDs(){
@@ -409,7 +438,7 @@ async function ldNap(){ const j = await jfetch('../api/ly_do_quan_tri.php'); if(
     tr.dataset.id = x.id;
     tr.dataset.tieu_de = x.tieu_de;
     tr.dataset.bien_diem = x.bien_diem;
-    tr.innerHTML = `<td>${x.id}</td><td>${x.tieu_de}</td><td>${x.bien_diem}</td><td>${badge(x.dang_hoat_dong)}</td>
+    tr.innerHTML = `<td>${x.id}</td><td>${x.tieu_de}</td><td>${formatSigned(x.bien_diem)}</td><td>${badge(x.dang_hoat_dong)}</td>
     <td class="text-end">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>

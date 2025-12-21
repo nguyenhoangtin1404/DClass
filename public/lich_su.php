@@ -135,7 +135,8 @@ function veTrang(){
   tb.innerHTML='';
   duLieuLoc.slice(start,end).forEach(row=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${dinDangDateTime(row.tao_luc)}</td><td>${row.ho_ten}</td><td>${tenLoai(row.loai)}</td><td>${row.bien_diem}</td><td>${row.so_du_sau}</td><td>${row.ghi_chu||''}</td>`;
+    const bd = Number(row.bien_diem||0);
+    tr.innerHTML=`<td>${dinDangDateTime(row.tao_luc)}</td><td>${row.ho_ten}</td><td>${tenLoai(row.loai)}</td><td>${bd>0?'+':''}${bd}</td><td>${row.so_du_sau}</td><td>${row.ghi_chu||''}</td>`;
     tb.appendChild(tr);
   });
   pgInfo.textContent = total ? `Trang ${trang}/${totalPages} – hiển thị ${start+1}-${end} / ${total}` : 'Không có dữ liệu';
