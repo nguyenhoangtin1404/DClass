@@ -120,7 +120,7 @@ if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.ph
                 <img id="ct_avatar" class="hs-avatar" src="../upload/avatar/default.svg" alt="avatar" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';">
                 <div>
                   <div id="ct_ten" class="fw-semibold"></div>
-                  <div class="small text-muted"><span id="ct_lop"></span> - <span id="ct_trang_thai"></span></div>
+                  <div class="small text-muted"><span id="ct_lop_text"></span> - <span id="ct_trang_thai"></span></div>
                 </div>
               </div>
               <div class="d-flex align-items-center gap-2 mt-2">
@@ -534,6 +534,16 @@ document.getElementById('l_them').onclick = async()=>{
 // Học sinh
 let hsDangChon = null;
 
+function hsResolveAvatar(url){
+  const u = (url||'').trim();
+  if (!u) return '../upload/avatar/default.svg';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (u.startsWith('../')) return u;
+  if (u.startsWith('/upload/')) return '..' + u;
+  if (u.startsWith('upload/')) return '../' + u;
+  return u;
+}
+
 function hsHienChiTiet(){
   const noSel = document.getElementById('ct_no_sel');
   const sel = document.getElementById('ct_sel');
@@ -551,11 +561,11 @@ function hsHienChiTiet(){
     const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
     lopSel.value = v;
   }
-  const lopText = document.querySelector('span#ct_lop');
+  const lopText = document.querySelector('span#ct_lop_text');
   if(lopText && lopText.tagName !== 'SELECT') { lopText.textContent = 'Lớp: ' + (hsDangChon.ten_lop||''); }
   const active = Number(hsDangChon.dang_hoat_dong) === 1;
   if(tt) tt.textContent = active ? 'Đang bật' : 'Đang tắt';
-  if(av) av.src = (hsDangChon.anh_dai_dien_url && hsDangChon.anh_dai_dien_url.trim()!=='') ? hsDangChon.anh_dai_dien_url : '../upload/avatar/default.svg';
+  if(av) av.src = hsResolveAvatar(hsDangChon.anh_dai_dien_url);
   const btnToggle = document.getElementById('btn_toggle');
   if(btnToggle) btnToggle.textContent = active ? 'Tắt' : 'Bật';
 }
@@ -644,8 +654,11 @@ if(hsBtnUpAnh) hsBtnUpAnh.onclick = async()=>{
   const f = document.getElementById('up_anh').files[0]; const msg = document.getElementById('ct_msg'); if(!hsDangChon) return;
   if(!f){ if(msg) msg.textContent='Chọn ảnh để upload'; return; }
   const fd = new FormData(); fd.append('hoc_sinh_id', hsDangChon.id); fd.append('file', f);
-  const r = await fetch('../api/upload_avatar.php', { method:'POST', body: fd }); const j = await r.json();
-  if(j.ok){ hsDangChon = { ...hsDangChon, anh_dai_dien_url: j.du_lieu.url }; hsHienChiTiet(); hsSetChiTietInputs(); if(msg) msg.textContent='Đã cập nhật ảnh'; document.getElementById('up_anh').value=''; }
+  const r = await fetch('../api/upload_avatar.php', { method:'POST', body: fd });
+  let j = null;
+  try { j = await r.json(); }
+  catch(_e){ if(msg) msg.textContent = 'Upload thất bại (phản hồi không hợp lệ)'; return; }
+  if(j.ok){ hsDangChon = { ...hsDangChon, anh_dai_dien_url: hsResolveAvatar(j.du_lieu.url) }; hsHienChiTiet(); hsSetChiTietInputs(); if(msg) msg.textContent='Đã cập nhật ảnh'; document.getElementById('up_anh').value=''; }
   else { if(msg) msg.textContent = j.thong_bao || 'Lỗi upload ảnh'; }
 };
 
@@ -698,7 +711,7 @@ if (hsCsvInput) {
 }
 
 // Nạp danh sách lớp và dữ liệu form chi tiết
-async function hsNapLopOptions(){ const sel = document.getElementById('ct_lop'); if(!sel) return; try { const r = await fetch('../api/lop_hoc_quan_tri.php?cua_toi=1'); const j = await r.json(); if(!j.ok) return; sel.innerHTML=''; const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0); j.du_lieu.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); }); } catch(_e){} }
+async function hsNapLopOptions(){ const sel = document.querySelector('select#ct_lop'); if(!sel) return; try { const r = await fetch('../api/lop_hoc_quan_tri.php'); const j = await r.json(); if(!j.ok) return; sel.innerHTML=''; const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0); j.du_lieu.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); }); } catch(_e){} }
 hsNapLopOptions();
 hsSyncLopSelectOnce();
 function hsSetChiTietInputs(){ const fma=document.getElementById('ct_ma'); const ften=document.getElementById('ct_ho_ten'); const fgioi=document.getElementById('ct_gioi'); const fngay=document.getElementById('ct_ngay'); const flop=document.querySelector('select#ct_lop'); if(!hsDangChon) return; if(fma) fma.value = hsDangChon.ma || ''; if(ften) ften.value = hsDangChon.ho_ten || ''; if(fgioi) fgioi.value = hsDangChon.gioi_tinh || ''; if(fngay) fngay.value = hsToVNDate((hsDangChon.ngay_sinh || '').substring(0,10)); if(flop && flop.options && typeof flop.options.length==='number' && flop.options.length){ const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id); flop.value = v; } }
@@ -866,5 +879,6 @@ ldNap(); qNap(); loadGiaoVienDs().then(()=>{ lNap(); gvNapQuyen(); });
 <script src="vendor/date_picker.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body></html>
+
 
 
