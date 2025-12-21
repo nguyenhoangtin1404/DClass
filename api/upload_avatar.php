@@ -44,15 +44,22 @@ $info = @getimagesize($file['tmp_name']);
 if (!$info || !isset($info[0], $info[1])) json_phan_hoi(false, null, 'anh_khong_hop_le');
 [$w, $h] = [$info[0], $info[1]];
 if ($w <= 0 || $h <= 0 || $w > 4000 || $h > 4000 || ($w * $h) > 16000000) json_phan_hoi(false, null, 'anh_qua_lon');
+$gdAvailable = function_exists('imagecreatefromstring');
 
 $baseDir = realpath(__DIR__ . '/..');
 $uploadDir = $baseDir . DIRECTORY_SEPARATOR . 'upload' . DIRECTORY_SEPARATOR . 'avatar';
 if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0755, true); }
 
-$name = 'hs_' . $hoc_sinh_id . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+$randBytes = function(int $len){
+  if (function_exists('random_bytes')) return random_bytes($len);
+  if (function_exists('openssl_random_pseudo_bytes')) return openssl_random_pseudo_bytes($len);
+  // Fallback (không an toàn bằng nhưng đủ để đặt tên file)
+  return substr(md5(uniqid((string)mt_rand(), true)), 0, $len);
+};
+$name = 'hs_' . $hoc_sinh_id . '_' . date('Ymd_His') . '_' . bin2hex($randBytes(4)) . '.' . $ext;
 $dest = $uploadDir . DIRECTORY_SEPARATOR . $name;
-// Re-encode để loại bỏ payload lạ; GIF giữ nguyên
-if ($imgType === IMAGETYPE_GIF) {
+// Nếu GD không sẵn có, hoặc GIF, chỉ move file sau khi đã kiểm tra định dạng/size.
+if (!$gdAvailable || $imgType === IMAGETYPE_GIF) {
   if (!move_uploaded_file($file['tmp_name'], $dest)) json_phan_hoi(false, null, 'khong_luu_duoc_file');
 } else {
   $data = @file_get_contents($file['tmp_name']);
@@ -65,7 +72,14 @@ if ($imgType === IMAGETYPE_GIF) {
     if ($w >= $h) { $newW = $maxDim; $newH = (int)round($h * $maxDim / $w); }
     else { $newH = $maxDim; $newW = (int)round($w * $maxDim / $h); }
   }
-  $outImg = ($newW !== $w || $newH !== $h) ? imagescale($img, $newW, $newH, IMG_BILINEAR_FIXED) : $img;
+  $outImg = $img;
+  if (($newW !== $w || $newH !== $h) && function_exists('imagescale')) {
+    $scaled = imagescale($img, $newW, $newH, IMG_BILINEAR_FIXED);
+    if ($scaled) { $outImg = $scaled; }
+  } elseif ($newW !== $w || $newH !== $h) {
+    // Không có imagescale -> giữ nguyên kích thước gốc
+    $newW = $w; $newH = $h;
+  }
   if (!$outImg) { imagedestroy($img); json_phan_hoi(false, null, 'khong_luu_duoc_file'); }
   $saveOk = false;
   if ($imgType === IMAGETYPE_JPEG) { $saveOk = imagejpeg($outImg, $dest, 85); }

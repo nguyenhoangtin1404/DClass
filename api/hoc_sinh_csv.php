@@ -72,6 +72,13 @@ $chuan_gioi = function ($s) use ($chuan_key) {
   if (in_array($ascii, ['KHAC','X','OTHER'], true)) return 'KHAC';
   return $v;
 };
+$chuan_lop_id = function ($v) {
+  $raw = trim((string)$v);
+  if ($raw === '' || $raw === '0') return null;
+  if (!ctype_digit($raw)) return null;
+  $id = (int)$raw;
+  return $id > 0 ? $id : null;
+};
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && $hanh_dong === 'xuat') {
   header('Content-Type: text/csv; charset=utf-8');
@@ -151,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'xem_truoc') {
     $dong++;
     $ho_ten = trim((string)($row[$idxHoTen] ?? ''));
     $ma = $idxMa !== null ? trim((string)($row[$idxMa] ?? '')) : '';
-    $lop_hoc_id = $idxLop !== null ? trim((string)($row[$idxLop] ?? '')) : '';
+    $lop_hoc_id = $idxLop !== null ? $chuan_lop_id($row[$idxLop] ?? '') : null;
     $gioi = $idxGioi !== null ? $chuan_gioi((string)($row[$idxGioi] ?? '')) : '';
     $ngay = $idxNgay !== null ? $chuan_ngay((string)($row[$idxNgay] ?? '')) : '';
     $stt = null;
@@ -224,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'nhap') {
       $dong++;
       $ho_ten = trim((string)($row[$idxHoTen] ?? ''));
       $ma = $idxMa !== null ? trim((string)($row[$idxMa] ?? '')) : '';
-      $lop_hoc_id = $idxLop !== null ? (int)($row[$idxLop] ?? 0) : null;
+      $lop_hoc_id = $idxLop !== null ? $chuan_lop_id($row[$idxLop] ?? '') : null;
       $anh = $idxAnh !== null ? trim((string)($row[$idxAnh] ?? '')) : '';
       $gioi = $idxGioi !== null ? $chuan_gioi((string)($row[$idxGioi] ?? '')) : '';
       $ngay = $idxNgay !== null ? $chuan_ngay((string)($row[$idxNgay] ?? '')) : '';
@@ -233,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'nhap') {
         $rawStt = trim((string)($row[$idxStt] ?? ''));
         if ($rawStt !== '' && ctype_digit($rawStt)) { $stt = (int)$rawStt; }
       }
-      if (!$la_admin && $lop_hoc_id && $lop_gan && !in_array($lop_hoc_id, $lop_gan, true)) { continue; }
+      if (!$la_admin && $lop_hoc_id !== null && $lop_gan && !in_array($lop_hoc_id, $lop_gan, true)) { continue; }
       if ($ho_ten === '' && $ma === '') { continue; }
       // Upsert theo 'ma' nếu có, ngược lại tạo mới theo ho_ten
       if ($ma !== '') {
