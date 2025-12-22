@@ -101,6 +101,14 @@ function formatDateTime(v){
 function formatSigned(n){
   const v = Number(n) || 0;
   return v > 0 ? `+${v}` : String(v);
+function resolveAvatar(url){
+  const u = (url||'').trim();
+  if(!u) return '../upload/avatar/default.svg';
+  if(/^https?:\/\//i.test(u)) return u;
+  if(u.startsWith('../')) return u;
+  if(u.startsWith('/upload/')) return '..' + u;
+  if(u.startsWith('upload/')) return '../' + u;
+  return u;
 }
 function showToast(message='',variant='info',delay=4000){
   const container=document.getElementById('toastContainer');
@@ -151,7 +159,7 @@ async function napHocSinh(){
     const a=document.createElement('a');
     a.href='#';
     a.className='list-group-item list-group-item-action';
-    const av=(s.anh_dai_dien_url && String(s.anh_dai_dien_url).trim()!=='')?s.anh_dai_dien_url:'../upload/avatar/default.svg';
+    const av=resolveAvatar(s.anh_dai_dien_url);
     a.style.backgroundImage=`url(${av})`;
     a.style.backgroundRepeat='no-repeat';
     a.style.backgroundSize='24px 24px';
@@ -353,7 +361,7 @@ document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu()
 function hienThongTinDep(){
   const el=document.getElementById('thong_tin');
   if(!hsHienTai){ if(el) el.textContent='Ch\u01B0a ch\u1ECDn h\u1ECDc sinh'; return; }
-  const av = (hsHienTai.anh_dai_dien_url && String(hsHienTai.anh_dai_dien_url).trim()!=='') ? hsHienTai.anh_dai_dien_url : '../upload/avatar/default.svg';
+  const av = resolveAvatar(hsHienTai.anh_dai_dien_url);
   const gioi = (hsHienTai.gioi_tinh||'').toUpperCase();
   const gioiLbl = gioi==='NAM' ? 'Nam' : gioi==='NU' ? 'Nữ' : gioi==='KHAC' ? 'Khác' : '';
   const raw = (hsHienTai.ngay_sinh||'').substring(0,10);
