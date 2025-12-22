@@ -99,9 +99,8 @@ function formatDateTime(v){
   return `${dd}/${mm}/${yy} ${hh}:${mi}:${ss}`;
 }
 function formatSigned(n){
-  const num = Number(n) || 0;
-  const sign = num>0 ? '+' : num<0 ? '-' : '±';
-  return `${sign}${Math.abs(num)}`;
+  const v = Number(n) || 0;
+  return v > 0 ? `+${v}` : String(v);
 }
 function showToast(message='',variant='info',delay=4000){
   const container=document.getElementById('toastContainer');
