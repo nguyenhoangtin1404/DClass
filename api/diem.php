@@ -46,6 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $hanh_dong === 'lich_su') {
     $place = implode(',', array_fill(0, count($lop_duoc_gan), '?'));
     $sql .= " AND hs.lop_hoc_id IN ($place)";
     $pr = $lop_duoc_gan;
+    // GV chỉ xem lịch sử cộng điểm của lớp mình
+    $sql .= " AND sc.loai='CONG_DIEM'";
   }
   if ($hs_id) {
     $sql .= " AND sc.hoc_sinh_id=?";

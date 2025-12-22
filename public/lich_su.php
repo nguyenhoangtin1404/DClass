@@ -79,6 +79,24 @@ function tenLoai(loai){
     default: return loai;
   }
 }
+function loaiBadge(loai){
+  const base = 'badge rounded-pill';
+  switch(String(loai||'')){
+    case 'CONG_DIEM': return `<span class="${base} bg-success-subtle text-success border border-success-subtle">Cộng điểm</span>`;
+    case 'DOI_DIEM': return `<span class="${base} bg-warning-subtle text-warning border border-warning-subtle">Đổi điểm</span>`;
+    case 'HOAN_TAC': return `<span class="${base} bg-secondary-subtle text-secondary border border-secondary-subtle">Hoàn tác</span>`;
+    default: return `<span class="${base} bg-light text-body-secondary">${tenLoai(loai)}</span>`;
+  }
+}
+function formatSigned(n){
+  const v = Number(n)||0;
+  return v>0 ? `+${v}` : String(v);
+}
+function formatSignedHtml(n){
+  const v = Number(n)||0;
+  const cls = v>0 ? 'text-success' : v<0 ? 'text-danger' : 'text-body';
+  return `<span class="fw-semibold ${cls}">${formatSigned(v)}</span>`;
+}
 function parseDate(str){
   // expect "YYYY-MM-DD HH:MM:SS"
   if(!str) return 0;
@@ -135,7 +153,10 @@ function veTrang(){
   tb.innerHTML='';
   duLieuLoc.slice(start,end).forEach(row=>{
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${dinDangDateTime(row.tao_luc)}</td><td>${row.ho_ten}</td><td>${tenLoai(row.loai)}</td><td>${row.bien_diem}</td><td>${row.so_du_sau}</td><td>${row.ghi_chu||''}</td>`;
+    const loaiHtml = loaiBadge(row.loai);
+    const deltaHtml = formatSignedHtml(row.bien_diem);
+    const balanceHtml = `<span class="fw-semibold">${row.so_du_sau}</span>`;
+    tr.innerHTML=`<td>${dinDangDateTime(row.tao_luc)}</td><td>${row.ho_ten}</td><td>${loaiHtml}</td><td>${deltaHtml}</td><td>${balanceHtml}</td><td>${row.ghi_chu||''}</td>`;
     tb.appendChild(tr);
   });
   pgInfo.textContent = total ? `Trang ${trang}/${totalPages} – hiển thị ${start+1}-${end} / ${total}` : 'Không có dữ liệu';
