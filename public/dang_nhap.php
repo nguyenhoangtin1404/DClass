@@ -67,7 +67,7 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
             </div>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-shield-check"></i></span>
-              <input id="captcha_input" type="text" class="form-control" placeholder="Nhập mã xác thực" autocomplete="off" maxlength="5">
+              <input id="captcha_input" type="text" class="form-control" placeholder="Nhập mã xác thực" autocomplete="off" maxlength="6">
             </div>
           </div>
           <button id="btn" class="btn btn-primary w-100 btn-lg shadow-sm">Đăng nhập</button>
@@ -178,7 +178,7 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
         const sl2 = j.du_lieu && j.du_lieu.so_lan ? j.du_lieu.so_lan : 1;
         const con = j.du_lieu && (j.du_lieu.con_lai !== undefined) ? j.du_lieu.con_lai : (5 - sl2);
         soLanSai = sl2;
-        if (sl2 >= 3) {
+        if (sl2 >= 2) {
           hienThiCaptcha(true);
           elMsg.textContent = 'Sai tài khoản hoặc mật khẩu ('+ sl2 +'/5). Vui lòng nhập mã xác thực.';
         } else {

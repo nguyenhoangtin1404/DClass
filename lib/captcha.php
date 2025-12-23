@@ -55,14 +55,14 @@ function tao_hinh_captcha(string $text): string {
     $g = $safe_rand(140, 200);
     $b = $safe_rand(140, 200);
     $noise_color = imagecolorallocate($img, $r, $g, $b);
-    imagesetpixel($img, $safe_rand(0, $width), $safe_rand(0, $height), $noise_color);
+    imagesetpixel($img, $safe_rand(0, $width - 1), $safe_rand(0, $height - 1), $noise_color);
   }
   
   // Thêm đường cong ngẫu nhiên - tăng số lượng
   for ($i = 0; $i < 5; $i++) {
     $gray = $safe_rand(170, 210);
     $line_color = imagecolorallocate($img, $gray, $gray, $gray);
-    imageline($img, $safe_rand(0, $width), $safe_rand(0, $height), $safe_rand(0, $width), $safe_rand(0, $height), $line_color);
+    imageline($img, $safe_rand(0, $width - 1), $safe_rand(0, $height - 1), $safe_rand(0, $width - 1), $safe_rand(0, $height - 1), $line_color);
   }
   
   // Vẽ text với font built-in
@@ -86,7 +86,7 @@ function tao_hinh_captcha(string $text): string {
     $g = $safe_rand(100, 220);
     $b = $safe_rand(100, 220);
     $noise_color = imagecolorallocate($img, $r, $g, $b);
-    imagesetpixel($img, $safe_rand(0, $width), $safe_rand(0, $height), $noise_color);
+    imagesetpixel($img, $safe_rand(0, $width - 1), $safe_rand(0, $height - 1), $noise_color);
   }
   
   // Output PNG
@@ -172,18 +172,18 @@ function tao_captcha_svg(string $text): string {
   
   // Thêm nhiễu (đường ngẫu nhiên) - tăng số lượng
   for ($i = 0; $i < 8; $i++) {
-    $x1 = $safe_rand(0, $width);
-    $y1 = $safe_rand(0, $height);
-    $x2 = $safe_rand(0, $width);
-    $y2 = $safe_rand(0, $height);
+    $x1 = $safe_rand(0, $width - 1);
+    $y1 = $safe_rand(0, $height - 1);
+    $x2 = $safe_rand(0, $width - 1);
+    $y2 = $safe_rand(0, $height - 1);
     $gray = $safe_rand(170, 210);
     $svg .= '<line x1="' . $x1 . '" y1="' . $y1 . '" x2="' . $x2 . '" y2="' . $y2 . '" stroke="rgb(' . $gray . ',' . $gray . ',' . $gray . ')" stroke-width="' . $safe_rand(1, 2) . '"/>';
   }
   
   // Thêm điểm nhiễu - tăng số lượng
   for ($i = 0; $i < 50; $i++) {
-    $x = $safe_rand(0, $width);
-    $y = $safe_rand(0, $height);
+    $x = $safe_rand(0, $width - 1);
+    $y = $safe_rand(0, $height - 1);
     $gray = $safe_rand(140, 190);
     $r = $safe_rand(1, 2);
     $svg .= '<circle cx="' . $x . '" cy="' . $y . '" r="' . $r . '" fill="rgb(' . $gray . ',' . $gray . ',' . $gray . ')"/>';
