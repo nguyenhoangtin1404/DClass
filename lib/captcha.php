@@ -75,8 +75,8 @@ function tao_hinh_captcha(string $text): string {
   // Vẽ text với độ lệch nhẹ để tạo hiệu ứng méo - tăng độ lệch
   $len = strlen($text);
   for ($i = 0; $i < $len; $i++) {
-    $char_x = $x + ($i * imagefontwidth($font_size)) + $safe_rand(-2, 2);
-    $char_y = $y + $safe_rand(-5, 5); // Lệch ngẫu nhiên theo chiều dọc
+    $char_x = (int)($x + ($i * imagefontwidth($font_size)) + $safe_rand(-2, 2));
+    $char_y = (int)($y + $safe_rand(-5, 5)); // Lệch ngẫu nhiên theo chiều dọc
     imagestring($img, $font_size, $char_x, $char_y, $text[$i], $text_color);
   }
   
