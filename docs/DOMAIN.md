@@ -1,0 +1,22 @@
+# Mô hình nghiệp vụ
+
+- **Vai trò**: `ADMIN` (toàn quyền, xem thống kê toàn hệ thống, quản trị tài khoản/lớp/lý do/quà, xem nhật ký), `GV` (quyền trong lớp được gán). Session lưu `giao_vien_id`, `ten_dang_nhap`, `vai_tro`.
+- **Thực thể chính**:
+  - `lop_hoc`: lớp học; có thể bật/tắt; gán nhiều giáo viên qua bảng phụ `giao_vien_lop`.
+  - `hoc_sinh`: thuộc một lớp, có mã, họ tên, STT, giới tính, ngày sinh, avatar, trạng thái hoạt động.
+  - `vi_diem`: số dư điểm của từng học sinh (1-1 với `hoc_sinh`).
+  - `ly_do`: lý do cộng/trừ điểm với giá trị `bien_diem` (+ thưởng, - phạt) và trạng thái hoạt động.
+  - `qua_tang`: quà tặng đổi điểm, giá điểm, tồn kho (`-1` nghĩa không giới hạn), trạng thái hoạt động, ảnh minh họa.
+  - `so_cai_diem`: sổ cái ghi mọi giao dịch điểm (cộng/đổi), lưu số dư sau giao dịch để truy vết.
+  - `nhat_ky`: log thao tác quản trị (tạo/sửa/xóa, upload, reset mật khẩu...).
+- **Quy tắc quyền**:
+  - ADMIN bỏ qua mọi ràng buộc lớp; GV chỉ xem/sửa học sinh trong lớp được gán (nếu chưa gán lớp nào thì API học sinh trả danh sách rỗng).
+  - Mọi API cần đăng nhập; upload ảnh quà chỉ dành cho ADMIN.
+- **Luồng điểm**:
+  - Cộng điểm: chọn học sinh + lý do, hệ thống đảm bảo ví tồn tại (`dam_bao_vi`), cập nhật số dư, ghi `CONG_DIEM` vào `so_cai_diem` trong transaction.
+  - Đổi quà: kiểm tồn kho, kiểm số dư bằng cập nhật nguyên tử, trừ tồn (nếu có), ghi `DOI_DIEM` vào sổ cái. Giá có thể override bằng `scratch_cost` nếu truyền từ client.
+  - Lịch sử & thống kê: lọc theo lớp GV được gán; thống kê top số dư, top cộng/đổi, tồn kho quà, quà ưa thích.
+- **Nhập/xuất dữ liệu**:
+  - Xuất CSV học sinh kèm số dư, lọc theo lớp/từ khóa; chỉ lớp GV được gán (trừ ADMIN).
+  - Nhập CSV: tự nhận diện delimiter và map cột linh hoạt; chuẩn hóa ngày sinh (`dd/mm/yyyy` → `yyyy-mm-dd`), giới tính (`NAM/NU/KHAC`), mã/lớp; chỉ ghi dữ liệu hợp lệ.
+- **Bảo mật đăng nhập**: giới hạn 3 lần sai → khóa 10 phút (session-based), có bảng `reset_khoa` để bypass khóa tạm thời; hỗ trợ cookie ghi nhớ (HMAC theo user agent).
