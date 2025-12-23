@@ -147,11 +147,19 @@ function xac_thuc_captcha(string $user_input): bool {
  * @return string SVG data
  */
 function tao_captcha_svg(string $text): string {
+  if (empty($text)) {
+    throw new RuntimeException('Text CAPTCHA không được rỗng');
+  }
+  
   $width = 180;
   $height = 60;
   $font_size = 28;
   $chars = str_split($text);
-  $char_width = $width / count($chars);
+  $char_count = count($chars);
+  if ($char_count === 0) {
+    throw new RuntimeException('Không thể chia text thành ký tự');
+  }
+  $char_width = $width / $char_count;
   
   // Helper function để dùng random_int nếu có
   $safe_rand = function_exists('random_int') 
