@@ -382,7 +382,7 @@ try { hienThongTin = hienThongTinDep; } catch(_e) {}
 napHocSinh(); napLyDo(); napQua(); napLichSu();
 
 (function initScratchCard(){
-  const SCRATCH_COST = 5;
+  const SCRATCH_MIN_BALANCE = 5;
   const scratchCanvas=document.getElementById('scratchCanvas');
   const scratchLabel=document.getElementById('scratchLabel');
   const btnNew=document.getElementById('scratchBtnNew');
@@ -398,8 +398,8 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
         return;
       }
       const soDu = Number(hsHienTai.so_du) || 0;
-      if(soDu < SCRATCH_COST){
-        showToast(`Học sinh cần ít nhất ${SCRATCH_COST} điểm mới cào thẻ được.`, 'warning');
+      if(soDu < SCRATCH_MIN_BALANCE){
+        showToast(`Học sinh cần ít nhất ${SCRATCH_MIN_BALANCE} điểm mới cào thẻ được.`, 'warning');
         return;
       }
     }
@@ -431,10 +431,14 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
   let hasRedeemedCurrent=false;
   let revealedRewardText='';
 
-  function availableRewards(){
+  function availableRewards(maxCost=null){
     return (quaData||[]).filter(q=>{
       const ton=Number(q.ton_kho);
-      return Number.isNaN(ton) || ton!==0;
+      if (!(Number.isNaN(ton) || ton!==0)) return false;
+      if (maxCost === null) return true;
+      const gia=Number(q.gia_diem);
+      if (Number.isNaN(gia)) return false;
+      return gia <= maxCost;
     });
   }
 
@@ -569,12 +573,12 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
       return;
     }
     const soDuHienTai = Number(hsHienTai.so_du)||0;
-    if(soDuHienTai < SCRATCH_COST){
-      showToast(`Học sinh cần ít nhất ${SCRATCH_COST} điểm để cào thẻ.`,'warning');
+    if(soDuHienTai < SCRATCH_MIN_BALANCE){
+      showToast(`Học sinh cần ít nhất ${SCRATCH_MIN_BALANCE} điểm để cào thẻ.`,'warning');
       return;
     }
-    const pool=availableRewards();
-    if(!pool.length){ showToast('Chưa có quà khả dụng để đổi.','warning'); return; }
+    const pool=availableRewards(soDuHienTai);
+    if(!pool.length){ showToast('Không có quà phù hợp với số điểm hiện tại.','warning'); return; }
     isProcessing=true;
     refreshScratchText();
     updateRedeemButton();
@@ -583,7 +587,7 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
       const res=await fetch('../api/diem.php?hanh_dong=quy_doi',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({hoc_sinh_id:hsHienTai.id, qua_tang_id:reward.id, scratch_cost:SCRATCH_COST})
+        body:JSON.stringify({hoc_sinh_id:hsHienTai.id, qua_tang_id:reward.id})
       });
       const jj=await res.json();
       if(!jj.ok){
@@ -618,5 +622,4 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
 </script>
 </body>
 </html>
-
 

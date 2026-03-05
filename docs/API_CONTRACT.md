@@ -21,7 +21,8 @@
 
 ## Điểm & quà
 - `POST /api/diem.php?hanh_dong=cong` body `{hoc_sinh_id, ly_do_id, ghi_chu?}` → cập nhật số dư, trả `{so_du}`. Kiểm quyền lớp.
-- `POST /api/diem.php?hanh_dong=quy_doi` body `{hoc_sinh_id, qua_tang_id, scratch_cost?, ghi_chu?}` → trừ điểm (giá override nếu `scratch_cost>0`), kiểm tồn kho (>0 hoặc -1 nghĩa vô hạn), trả `{so_du}`.
+- `POST /api/diem.php?hanh_dong=quy_doi` body `{hoc_sinh_id, qua_tang_id, ghi_chu?}` → trừ điểm theo `gia_diem` của quà, kiểm tồn kho (>0 hoặc -1 nghĩa vô hạn), trả `{so_du}`.
+- Luồng thẻ cào ở `trang_chinh.php`: yêu cầu học sinh có tối thiểu `5` điểm để bắt đầu cào; quà được chọn ngẫu nhiên trong nhóm có `gia_diem <= so_du` hiện tại, khi quy đổi trừ theo `gia_diem` của quà.
 - `GET /api/diem.php?hanh_dong=lich_su&hoc_sinh_id=` → tối đa 200 bản ghi, GV chỉ thấy lịch sử cộng điểm lớp mình; trường: `id, loai, bien_diem, so_du_sau, ghi_chu, tao_luc, ho_ten, ly_do, qua`.
 - `GET /api/diem.php?hanh_dong=thong_ke` → top số dư, top cộng điểm, top đổi điểm, tồn kho quà, quà ưa thích (lọc theo lớp GV nếu không phải ADMIN).
 - Lý do: `GET /api/ly_do.php` → danh sách đang hoạt động.

@@ -29,7 +29,7 @@ final class DiemTest extends TestCase
     $qua_id = chen_qua($pdo, 'Sticker', 3, 1);
     $pdo->prepare('INSERT INTO vi_diem(hoc_sinh_id, so_du) VALUES(?, ?)')->execute([$hs_id, 10]);
 
-    $ket_qua = quy_doi_qua_tang($pdo, $gv_id, true, $hs_id, $qua_id, null, 'doi qua');
+    $ket_qua = quy_doi_qua_tang($pdo, $gv_id, true, $hs_id, $qua_id, 'doi qua');
 
     $this->assertSame(7, $ket_qua['so_du']);
     $st = $pdo->prepare('SELECT ton_kho FROM qua_tang WHERE id = ?');
@@ -37,6 +37,20 @@ final class DiemTest extends TestCase
     $this->assertSame(0, (int)$st->fetchColumn());
     $st = $pdo->query('SELECT COUNT(*) FROM so_cai_diem WHERE loai="DOI_DIEM"');
     $this->assertSame(1, (int)$st->fetchColumn());
+  }
+
+  public function testQuyDoiTuChoiNeuKhongDuDiem(): void
+  {
+    $pdo = tao_pdo_test();
+    $gv_id = chen_giao_vien($pdo);
+    $lop_id = chen_lop($pdo, '4A');
+    $hs_id = chen_hoc_sinh($pdo, 'HS 2', $lop_id);
+    $qua_id = chen_qua($pdo, 'Gau bong', 8, 5);
+    $pdo->prepare('INSERT INTO vi_diem(hoc_sinh_id, so_du) VALUES(?, ?)')->execute([$hs_id, 5]);
+
+    $this->expectException(Exception::class);
+    $this->expectExceptionMessage('khong_du_diem');
+    quy_doi_qua_tang($pdo, $gv_id, true, $hs_id, $qua_id, 'test khong du diem');
   }
 
   public function testCongDiemTuChoiNeuKhongDuQuyen(): void
@@ -66,4 +80,3 @@ final class DiemTest extends TestCase
     $this->assertNull($that_bai);
   }
 }
-

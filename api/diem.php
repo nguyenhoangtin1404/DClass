@@ -18,11 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'cong') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'quy_doi') {
   yeu_cau_dang_nhap(); $gv_id = (int)$_SESSION['giao_vien_id']; $b = than_json();
   $hs_id = (int)($b['hoc_sinh_id'] ?? 0); $qua_id = (int)($b['qua_tang_id'] ?? 0); $ghi_chu = trim($b['ghi_chu'] ?? '');
-  $scratch_cost = isset($b['scratch_cost']) ? (int)$b['scratch_cost'] : null;
-  if ($scratch_cost !== null && $scratch_cost <= 0) $scratch_cost = null;
   if (!$hs_id || !$qua_id) json_phan_hoi(false, null, 'thieu_thong_tin');
   try {
-    $kq = quy_doi_qua_tang($pdo, $gv_id, $la_admin, $hs_id, $qua_id, $scratch_cost, $ghi_chu);
+    $kq = quy_doi_qua_tang($pdo, $gv_id, $la_admin, $hs_id, $qua_id, $ghi_chu);
     json_phan_hoi(true, $kq);
   } catch (Exception $e) { json_phan_hoi(false, null, $e->getMessage()); }
 }
