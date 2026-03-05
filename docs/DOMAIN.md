@@ -14,7 +14,8 @@
   - Mọi API cần đăng nhập; upload ảnh quà chỉ dành cho ADMIN.
 - **Luồng điểm**:
   - Cộng điểm: chọn học sinh + lý do, hệ thống đảm bảo ví tồn tại (`dam_bao_vi`), cập nhật số dư, ghi `CONG_DIEM` vào `so_cai_diem` trong transaction.
-  - Đổi quà: kiểm tồn kho, kiểm số dư bằng cập nhật nguyên tử, trừ tồn (nếu có), ghi `DOI_DIEM` vào sổ cái. Giá có thể override bằng `scratch_cost` nếu truyền từ client.
+  - Đổi quà: kiểm tồn kho, kiểm số dư bằng cập nhật nguyên tử, trừ tồn (nếu có), ghi `DOI_DIEM` vào sổ cái. Điểm trừ luôn theo `gia_diem` của quà.
+  - Thẻ cào: yêu cầu số dư tối thiểu 5 điểm để bắt đầu cào; quà được chọn ngẫu nhiên trong nhóm có `gia_diem <= so_du` hiện tại và khi đổi sẽ trừ theo `gia_diem` của quà đó.
   - Lịch sử & thống kê: lọc theo lớp GV được gán; thống kê top số dư, top cộng/đổi, tồn kho quà, quà ưa thích.
 - **Nhập/xuất dữ liệu**:
   - Xuất CSV học sinh kèm số dư, lọc theo lớp/từ khóa; chỉ lớp GV được gán (trừ ADMIN).

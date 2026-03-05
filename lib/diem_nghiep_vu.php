@@ -83,7 +83,7 @@ function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, bool $la_admin, int $h
   }
 }
 
-function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, bool $la_admin, int $hoc_sinh_id, int $qua_tang_id, ?int $gia_tuy_chon, string $ghi_chu = ''): array
+function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, bool $la_admin, int $hoc_sinh_id, int $qua_tang_id, string $ghi_chu = ''): array
 {
   kiem_tra_quyen_lop($pdo, $la_admin, $giao_vien_id, $hoc_sinh_id);
   $st = $pdo->prepare('SELECT gia_diem, ton_kho FROM qua_tang WHERE id = ? AND dang_hoat_dong = 1');
@@ -94,7 +94,7 @@ function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, bool $la_admin, int $hoc_
   }
   $gia_db = (int)$q['gia_diem'];
   $ton = (int)$q['ton_kho'];
-  $gia = $gia_tuy_chon !== null && $gia_tuy_chon > 0 ? $gia_tuy_chon : $gia_db;
+  $gia = $gia_db;
 
   $pdo->beginTransaction();
   try {
