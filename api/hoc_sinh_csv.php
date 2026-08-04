@@ -5,6 +5,7 @@ require __DIR__ . '/../lib/tro_giup.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 
 require __DIR__ . '/../lib/diem_nghiep_vu.php';
+require __DIR__ . '/../lib/hoc_sinh_nghiep_vu.php';
 yeu_cau_dang_nhap();
 $gv_id = (int)$_SESSION['giao_vien_id'];
 $lop_gan = lop_duoc_gan($pdo, $gv_id);
@@ -236,36 +237,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'nhap') {
       }
       if ($lop_hoc_id !== null && !in_array($lop_hoc_id, $lop_gan, true)) { continue; }
       if ($ho_ten === '' && $ma === '') { continue; }
-      // Upsert theo 'ma' nếu có, ngược lại tạo mới theo ho_ten
+      // Upsert theo 'ma' nếu có, ngược lại tạo mới theo ho_ten. 'ma' là duy nhất toàn CSDL (dùng
+      // chung cho mọi giáo viên) - hoc_sinh_upsert_theo_ma() tự kiểm tra học sinh trùng mã đó có
+      // thuộc lớp của mình không trước khi cập nhật, tránh 1 giáo viên ghi đè lên học sinh của
+      // giáo viên khác chỉ bằng cách trùng mã trong file CSV.
       if ($ma !== '') {
-        // 'ma' là duy nhất toàn CSDL (dùng chung cho mọi giáo viên) - phải tự tay kiểm tra học
-        // sinh trùng mã đó có thuộc lớp của mình không trước khi cập nhật, tránh 1 giáo viên
-        // ghi đè lên học sinh của giáo viên khác chỉ bằng cách trùng mã trong file CSV.
-        $stExist = $pdo->prepare("SELECT id, lop_hoc_id FROM hoc_sinh WHERE ma=?");
-        $stExist->execute([$ma]);
-        $existing = $stExist->fetch();
-        if ($existing && (int)$existing['lop_hoc_id'] && !in_array((int)$existing['lop_hoc_id'], $lop_gan, true)) {
-          continue;
-        }
-        if ($existing) {
-          $st = $pdo->prepare("UPDATE hoc_sinh SET
-                                  ho_ten=?,
-                                  lop_hoc_id=COALESCE(?, lop_hoc_id),
-                                  anh_dai_dien_url=COALESCE(?, anh_dai_dien_url),
-                                  gioi_tinh=COALESCE(?, gioi_tinh),
-                                  ngay_sinh=COALESCE(?, ngay_sinh),
-                                  stt=COALESCE(?, stt)
-                                WHERE id=?");
-          $st->execute([$ho_ten, $lop_hoc_id, $anh ?: null, $gioi ?: null, $ngay ?: null, $stt, $existing['id']]);
-          $id = (int)$existing['id'];
-          $cap_nhat++;
-        } else {
-          $st = $pdo->prepare("INSERT INTO hoc_sinh(ma, ho_ten, stt, lop_hoc_id, anh_dai_dien_url, gioi_tinh, ngay_sinh, dang_hoat_dong) VALUES(?,?,?,?,?,?,?,1)");
-          $st->execute([$ma, $ho_ten, $stt, $lop_hoc_id, $anh ?: null, $gioi ?: null, $ngay ?: null]);
-          $id = (int)$pdo->lastInsertId();
-          $them++;
-        }
-        $pdo->prepare("INSERT OR IGNORE INTO vi_diem(hoc_sinh_id, so_du) VALUES(?,0)")->execute([$id]);
+        $kq = hoc_sinh_upsert_theo_ma($pdo, $lop_gan, $ma, $ho_ten, $lop_hoc_id, $anh, $gioi, $ngay, $stt);
+        if ($kq === null) { continue; }
+        if ($kq['moi']) { $them++; } else { $cap_nhat++; }
       } else {
         $st = $pdo->prepare("INSERT INTO hoc_sinh(ma, ho_ten, stt, lop_hoc_id, anh_dai_dien_url, gioi_tinh, ngay_sinh, dang_hoat_dong) VALUES(?,?,?,?,?,?,?,1)");
         $st->execute([null, $ho_ten, $stt, $lop_hoc_id, $anh ?: null, $gioi ?: null, $ngay ?: null]);

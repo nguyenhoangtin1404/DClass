@@ -13,6 +13,13 @@
     - Liệt kê tài khoản: `php tools/cai_dat.php --liet-ke-tai-khoan`
     - Đặt lại mật khẩu cho 1 giáo viên khi được yêu cầu hỗ trợ: `php tools/cai_dat.php --dat-lai-mat-khau=ten_dang_nhap --mat-khau-moi=xxxx`
 
+- **Nâng cấp CSDL production đã có dữ liệu thật (bản trước khi có `nguoi_tao_id`/ownership theo giáo viên)**
+  - Việc này tự chạy 1 lần duy nhất, không cần thao tác gì thêm (xem `docs/DB_SCHEMA.md` mục "Nâng cấp CSDL đã có dữ liệu thật"). Nhưng **trước khi deploy lên server có khách hàng thật**, nên tự kiểm tra trước bằng:
+    ```
+    php tools/kiem_tra_migration.php /duong/dan/toi/backup/ung_dung.db
+    ```
+    Script sao chép file backup ra bản tạm (`*.kiemtra.db`), chạy migration TRÊN BẢN SAO đó, rồi in ra chính xác migration sẽ thay đổi những gì (số lớp/lý do/quà được gán lại quyền) — **không bao giờ đụng tới file backup gốc**. Xem báo cáo hợp lý rồi hẵng deploy code mới lên server thật; xoá file `*.kiemtra.db` khi xong.
+
 - **Kiểm thử & chất lượng**
   - Cài deps: `composer install`
   - Lint cú pháp: `composer lint`
