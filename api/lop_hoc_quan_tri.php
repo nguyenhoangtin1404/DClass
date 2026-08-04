@@ -5,6 +5,7 @@ require __DIR__ . '/../lib/tro_giup.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 
 yeu_cau_dang_nhap();
+$is_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
 
 // Đảm bảo có cột dang_hoat_dong (migrate nhẹ nếu thiếu)
 try {
@@ -45,6 +46,7 @@ if ($method === 'GET') {
 }
 
 if ($method === 'POST') {
+  if (!$is_admin) json_phan_hoi(false, null, 'khong_du_quyen');
   $hanh_dong = $_GET['hanh_dong'] ?? '';
   $b = than_json();
   if ($hanh_dong === 'them') {

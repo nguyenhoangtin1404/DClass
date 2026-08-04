@@ -7,6 +7,14 @@ function json_phan_hoi($ok, $du_lieu=null, $thong_bao='') {
 }
 function yeu_cau_dang_nhap() {
   if (!isset($_SESSION['giao_vien_id'])) { http_response_code(401); json_phan_hoi(false, null, 'chua_dang_nhap'); }
+  if (!empty($_SESSION['phai_doi_mat_khau'])) {
+    $script = $_SERVER['SCRIPT_NAME'] ?? '';
+    // Chỉ cho phép qua trang quản trị tài khoản (nơi có action đổi mật khẩu) khi đang bị buộc đổi mật khẩu
+    if (strpos($script, 'giao_vien_quan_tri.php') === false) {
+      http_response_code(403);
+      json_phan_hoi(false, null, 'phai_doi_mat_khau');
+    }
+  }
 }
 function than_json() {
   $raw = file_get_contents('php://input'); $j = json_decode($raw, true);

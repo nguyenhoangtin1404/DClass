@@ -22,7 +22,7 @@
 ## Cài đặt nhanh
 1) Yêu cầu: PHP 8+ với PDO SQLite.
 2) Clone dự án, đảm bảo PHP có quyền ghi `data/` và `upload/`.
-3) Chạy `php -S 0.0.0.0:8000 -t public` (hoặc dùng web server khác), truy cập `public/dang_nhap.php` để khởi tạo DB:
+3) Chạy `php -S 0.0.0.0:8000` tại **thư mục gốc repo** (không dùng `-t public` vì JS trong `public/*.php` gọi API bằng đường dẫn tương đối `../api/...`, cần `public/` và `api/` là 2 thư mục anh em cùng cấp docroot), truy cập `http://localhost:8000/public/dang_nhap.php` để khởi tạo DB:
    - Tài khoản seed: `gv1` / `123456` (vai trò `ADMIN`). Đổi mật khẩu ngay sau khi đăng nhập.
 
 ## Cấu trúc thư mục

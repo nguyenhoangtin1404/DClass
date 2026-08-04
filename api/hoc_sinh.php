@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
+require __DIR__ . '/../lib/diem_nghiep_vu.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -62,10 +63,21 @@ if ($method === 'POST' && $hanh_dong === 'sua') {
   $b = than_json();
   $id = (int)($b['id'] ?? 0);
   if ($id <= 0) json_phan_hoi(false, null, 'thieu_id');
+  $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
+  try { kiem_tra_quyen_lop($pdo, $la_admin, (int)$_SESSION['giao_vien_id'], $id); }
+  catch (Throwable $e) { json_phan_hoi(false, null, 'khong_du_quyen'); }
   $set = [];$pr=[];
   if (array_key_exists('ma',$b)) { $set[]='ma=?'; $pr[] = (trim((string)$b['ma']) ?: null); }
   if (array_key_exists('ho_ten',$b)) { $ht=trim((string)$b['ho_ten']); if ($ht==='') json_phan_hoi(false, null, 'thieu_ho_ten'); $set[]='ho_ten=?'; $pr[] = $ht; }
-  if (array_key_exists('lop_hoc_id',$b)) { $lv = $b['lop_hoc_id']; $set[]='lop_hoc_id=?'; $pr[] = ($lv===null || $lv==='' ? null : (int)$lv); }
+  if (array_key_exists('lop_hoc_id',$b)) {
+    $lv = $b['lop_hoc_id'];
+    $lop_moi = ($lv===null || $lv==='' ? null : (int)$lv);
+    if (!$la_admin && $lop_moi !== null) {
+      $lop_gan = lop_duoc_gan($pdo, $la_admin, (int)$_SESSION['giao_vien_id']);
+      if ($lop_gan && !in_array($lop_moi, $lop_gan, true)) json_phan_hoi(false, null, 'khong_du_quyen');
+    }
+    $set[]='lop_hoc_id=?'; $pr[] = $lop_moi;
+  }
   if (array_key_exists('anh_dai_dien_url',$b)) { $set[]='anh_dai_dien_url=?'; $pr[] = (trim((string)$b['anh_dai_dien_url']) ?: null); }
   if (array_key_exists('gioi_tinh',$b)) { $set[]='gioi_tinh=?'; $pr[] = (trim((string)$b['gioi_tinh']) ?: null); }
   if (array_key_exists('ngay_sinh',$b)) { $set[]='ngay_sinh=?'; $pr[] = (trim((string)$b['ngay_sinh']) ?: null); }
@@ -83,6 +95,9 @@ if ($method === 'POST' && $hanh_dong === 'bat_tat') {
   $id = (int)($b['id'] ?? 0);
   $trang_thai = (int)($b['dang_hoat_dong'] ?? 1) ? 1 : 0;
   if ($id <= 0) json_phan_hoi(false, null, 'thieu_id');
+  $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
+  try { kiem_tra_quyen_lop($pdo, $la_admin, (int)$_SESSION['giao_vien_id'], $id); }
+  catch (Throwable $e) { json_phan_hoi(false, null, 'khong_du_quyen'); }
   $pdo->prepare('UPDATE hoc_sinh SET dang_hoat_dong=? WHERE id=?')->execute([$trang_thai, $id]);
   json_phan_hoi(true);
 }

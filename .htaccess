@@ -1,0 +1,13 @@
+# Docroot Apache = gốc repo (JS gọi API bằng đường dẫn tương đối ../api/...).
+# Mặc định CHẶN truy cập trực tiếp mọi thứ ở đây (config/, lib/, data/, tests/,
+# scripts/, tools/, vendor/, composer.*, phpunit.xml, phpstan.neon.dist...).
+# public/, api/, upload/ có .htaccess riêng để tự mở lại quyền truy cập.
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>

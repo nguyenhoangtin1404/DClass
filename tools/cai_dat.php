@@ -67,7 +67,7 @@ function seed_mau(PDO $pdo): void
   if ($da_co > 0) {
     return;
   }
-  $pdo->prepare('INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro) VALUES(?,?,?)')
+  $pdo->prepare('INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro, phai_doi_mat_khau) VALUES(?,?,?,1)')
       ->execute(['gv1', password_hash('123456', PASSWORD_DEFAULT), 'ADMIN']);
   $pdo->exec("INSERT INTO lop_hoc(ten) VALUES ('4A'),('4B'),('4C')");
   $pdo->exec("INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong) VALUES ('Giup ban',2,1), ('Hoan thanh som',1,1), ('Noi chuyen rieng',-1,1)");

@@ -2,6 +2,7 @@
 header('Content-Type: text/html; charset=utf-8');
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
+if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); exit; }
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lịch sử</title>
 <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/date_picker.css"></head><body>

@@ -43,7 +43,8 @@ if ($hanh_dong === 'doi_mat_khau') {
   $gv = $st->fetch();
   if (!$gv || !password_verify($mk_cu, $gv['mat_khau_bam'])) json_phan_hoi(false, null, 'mat_khau_cu_khong_dung');
   $bam = password_hash($mk_moi, PASSWORD_DEFAULT);
-  $pdo->prepare('UPDATE giao_vien SET mat_khau_bam=? WHERE id=?')->execute([$bam, (int)$gv['id']]);
+  $pdo->prepare('UPDATE giao_vien SET mat_khau_bam=?, phai_doi_mat_khau=0 WHERE id=?')->execute([$bam, (int)$gv['id']]);
+  $_SESSION['phai_doi_mat_khau'] = false;
   ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'doi_mat_khau', 'Đổi mật khẩu tài khoản '.$_SESSION['ten_dang_nhap']);
   json_phan_hoi(true);
 }
@@ -80,6 +81,7 @@ if ($hanh_dong === 'them') {
 }
 
 if ($hanh_dong === 'cap_nhat_lop') {
+  if (!$is_admin) json_phan_hoi(false, null, 'khong_du_quyen');
   $gvId = isset($b['giao_vien_id']) ? (int)$b['giao_vien_id'] : (int)$_SESSION['giao_vien_id'];
   if ($gvId <= 0) json_phan_hoi(false, null, 'thieu_giao_vien_id');
   // Kiểm tra giáo viên tồn tại

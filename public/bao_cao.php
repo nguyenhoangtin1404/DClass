@@ -2,6 +2,7 @@
 header('Content-Type: text/html; charset=utf-8');
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
+if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); exit; }
 $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
 // Lớp được gán cho GV (admin thấy tất cả)
 $lop_gan = [];
