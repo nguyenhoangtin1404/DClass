@@ -86,6 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_ky') {
     json_phan_hoi(false, null, 'ten_dang_nhap_da_ton_tai');
   }
 
+  $gv_id = 0;
   try {
     $pdo->beginTransaction();
     $st = $pdo->prepare("INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro, phai_doi_mat_khau) VALUES(?,?,?,0)");
