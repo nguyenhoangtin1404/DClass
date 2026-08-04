@@ -2,8 +2,7 @@
 declare(strict_types=1);
 
 /**
- * Migration cho CSDL nghiệp vụ (mỗi tổ chức/tenant 1 file). Tách riêng khỏi config/db.php
- * để dùng lại được từ scripts/migrate_all.php (áp dụng cho mọi tenant, không chỉ 1 kết nối hiện tại).
+ * Migration cho CSDL nghiệp vụ (1 CSDL dùng chung cho tất cả giáo viên tự đăng ký).
  */
 if (!function_exists('chay_migration')) {
   function chay_migration(PDO $pdo): void {
@@ -33,7 +32,15 @@ if (!function_exists('chay_migration')) {
       'phai_doi_mat_khau' => 'phai_doi_mat_khau INTEGER DEFAULT 0'
     ]);
     $ensureCols('qua_tang', [
-      'anh_url' => 'anh_url TEXT'
+      'anh_url' => 'anh_url TEXT',
+      'nguoi_tao_id' => 'nguoi_tao_id INTEGER REFERENCES giao_vien(id) ON DELETE CASCADE'
+    ]);
+    // Lý do cộng/trừ điểm và kho quà chuyển từ catalog dùng chung sang sở hữu theo từng giáo
+    // viên. Dữ liệu cũ (tạo trước khi có cột này) không xác định được thuộc giáo viên nào nên
+    // giữ nguyên nguoi_tao_id = NULL - các bản ghi đó sẽ không hiển thị cho ai cho tới khi giáo
+    // viên tự tạo lại lý do/quà của riêng mình.
+    $ensureCols('ly_do', [
+      'nguoi_tao_id' => 'nguoi_tao_id INTEGER REFERENCES giao_vien(id) ON DELETE CASCADE'
     ]);
     // Đảm bảo bảng tồn tại
     try {

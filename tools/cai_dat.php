@@ -7,7 +7,10 @@ $options = getopt('', [
   'export-hoc-sinh::',
   'export-so-cai::',
   'import-hoc-sinh::',
-  'import-so-cai::'
+  'import-so-cai::',
+  'liet-ke-tai-khoan',
+  'dat-lai-mat-khau::',
+  'mat-khau-moi::'
 ]);
 
 $env = [];
@@ -63,15 +66,47 @@ function thuc_thi_ddl(PDO $pdo, string $schema_file): void
 
 function seed_mau(PDO $pdo): void
 {
+  // Chỉ chạy khi có --seed tường minh (dùng cho dev/demo cục bộ), không tự động chạy khi mới
+  // tạo CSDL nữa - giáo viên thật tự đăng ký tài khoản qua api/dang_nhap.php?hanh_dong=dang_ky.
   $da_co = (int)$pdo->query('SELECT COUNT(*) FROM giao_vien')->fetchColumn();
   if ($da_co > 0) {
     return;
   }
   $pdo->prepare('INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro, phai_doi_mat_khau) VALUES(?,?,?,1)')
-      ->execute(['gv1', password_hash('123456', PASSWORD_DEFAULT), 'ADMIN']);
+      ->execute(['gv1', password_hash('123456', PASSWORD_DEFAULT), 'GV']);
+  $gv_id = (int)$pdo->lastInsertId();
   $pdo->exec("INSERT INTO lop_hoc(ten) VALUES ('4A'),('4B'),('4C')");
-  $pdo->exec("INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong) VALUES ('Giup ban',2,1), ('Hoan thanh som',1,1), ('Noi chuyen rieng',-1,1)");
-  $pdo->exec("INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong) VALUES ('Sticker',3,-1,1), ('But chi',5,50,1), ('Tui mu',8,20,1)");
+  $st = $pdo->prepare('INSERT INTO giao_vien_lop(giao_vien_id, lop_hoc_id) SELECT ?, id FROM lop_hoc');
+  $st->execute([$gv_id]);
+  $pdo->prepare("INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong, nguoi_tao_id) VALUES ('Giup ban',2,1,?), ('Hoan thanh som',1,1,?), ('Noi chuyen rieng',-1,1,?)")
+      ->execute([$gv_id, $gv_id, $gv_id]);
+  $pdo->prepare("INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong, nguoi_tao_id) VALUES ('Sticker',3,-1,1,?), ('But chi',5,50,1,?), ('Tui mu',8,20,1,?)")
+      ->execute([$gv_id, $gv_id, $gv_id]);
+  echo "Da seed du lieu mau: tai khoan 'gv1' / '123456' (bat buoc doi mat khau ngay lan dau dang nhap)." . PHP_EOL;
+}
+
+function dat_lai_mat_khau(PDO $pdo, string $ten_dang_nhap, string $mat_khau_moi): void
+{
+  $st = $pdo->prepare('SELECT id FROM giao_vien WHERE ten_dang_nhap=?');
+  $st->execute([$ten_dang_nhap]);
+  $id = $st->fetchColumn();
+  if (!$id) {
+    throw new RuntimeException("Khong tim thay tai khoan '{$ten_dang_nhap}'");
+  }
+  $bam = password_hash($mat_khau_moi, PASSWORD_DEFAULT);
+  $pdo->prepare('UPDATE giao_vien SET mat_khau_bam=? WHERE id=?')->execute([$bam, $id]);
+  echo "Da dat lai mat khau cho '{$ten_dang_nhap}'." . PHP_EOL;
+}
+
+function liet_ke_tai_khoan(PDO $pdo): void
+{
+  $rows = $pdo->query("SELECT gv.id, gv.ten_dang_nhap, gv.tao_luc,
+                               (SELECT COUNT(*) FROM giao_vien_lop gl WHERE gl.giao_vien_id = gv.id) AS so_lop
+                        FROM giao_vien gv ORDER BY gv.ten_dang_nhap ASC")->fetchAll();
+  if (!$rows) { echo "Chua co tai khoan nao." . PHP_EOL; return; }
+  foreach ($rows as $r) {
+    echo "#{$r['id']}\t{$r['ten_dang_nhap']}\t{$r['so_lop']} lop\ttao luc {$r['tao_luc']}" . PHP_EOL;
+  }
 }
 
 function xuat_csv(PDO $pdo, string $sql, array $cot, string $dich): void
@@ -135,8 +170,21 @@ if (!$vua_tao && !isset($options['no-backup'])) {
 }
 
 thuc_thi_ddl($pdo, $schema);
-if ($vua_tao || isset($options['seed'])) {
+if (isset($options['seed'])) {
   seed_mau($pdo);
+}
+
+if (isset($options['liet-ke-tai-khoan'])) {
+  liet_ke_tai_khoan($pdo);
+}
+if (isset($options['dat-lai-mat-khau'])) {
+  $ten = (string)$options['dat-lai-mat-khau'];
+  $mk_moi = isset($options['mat-khau-moi']) ? (string)$options['mat-khau-moi'] : '';
+  if ($ten === '' || $mk_moi === '') {
+    fwrite(STDERR, "Dung: php tools/cai_dat.php --dat-lai-mat-khau=ten_dang_nhap --mat-khau-moi=xxxx" . PHP_EOL);
+    exit(1);
+  }
+  dat_lai_mat_khau($pdo, $ten, $mk_moi);
 }
 
 if (isset($options['export-hoc-sinh'])) {

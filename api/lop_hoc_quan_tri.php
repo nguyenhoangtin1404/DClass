@@ -5,32 +5,24 @@ require __DIR__ . '/../lib/tro_giup.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 
 yeu_cau_dang_nhap();
-$is_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
+$gv_id = (int)$_SESSION['giao_vien_id'];
 
-// Đảm bảo có cột dang_hoat_dong (migrate nhẹ nếu thiếu)
-try {
-  $cols = $pdo->query("PRAGMA table_info(lop_hoc)")->fetchAll();
-  $co_cot = false; foreach ($cols as $c) { if (($c['name'] ?? '') === 'dang_hoat_dong') { $co_cot = true; break; } }
-  if (!$co_cot) { $pdo->exec("ALTER TABLE lop_hoc ADD COLUMN dang_hoat_dong INTEGER DEFAULT 1"); }
-} catch (Throwable $e) {}
+function so_huu_lop(PDO $pdo, int $giao_vien_id, int $lop_hoc_id): bool {
+  $st = $pdo->prepare('SELECT 1 FROM giao_vien_lop WHERE giao_vien_id=? AND lop_hoc_id=?');
+  $st->execute([$giao_vien_id, $lop_hoc_id]);
+  return (bool)$st->fetchColumn();
+}
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET') {
-  $chi_cua_toi = isset($_GET['cua_toi']) ? (int)$_GET['cua_toi'] : 0;
-  if ($chi_cua_toi) {
-    $st = $pdo->prepare("SELECT l.id, l.ten, COALESCE(l.dang_hoat_dong,1) AS dang_hoat_dong,
-                                (SELECT group_concat(gl2.giao_vien_id, ',') FROM giao_vien_lop gl2 WHERE gl2.lop_hoc_id = l.id) AS gv_ids
-                         FROM lop_hoc l
-                         WHERE EXISTS (SELECT 1 FROM giao_vien_lop gl WHERE gl.lop_hoc_id = l.id AND gl.giao_vien_id = ?)
-                         ORDER BY l.dang_hoat_dong DESC, l.ten ASC");
-    $st->execute([(int)$_SESSION['giao_vien_id']]);
-  } else {
-    $st = $pdo->query("SELECT l.id, l.ten, COALESCE(l.dang_hoat_dong,1) AS dang_hoat_dong,
-                              (SELECT group_concat(gl.giao_vien_id, ',') FROM giao_vien_lop gl WHERE gl.lop_hoc_id = l.id) AS gv_ids
+  // Luôn chỉ trả về lớp mà giáo viên hiện tại sở hữu (không còn khái niệm admin thấy hết).
+  $st = $pdo->prepare("SELECT l.id, l.ten, COALESCE(l.dang_hoat_dong,1) AS dang_hoat_dong,
+                              (SELECT group_concat(gl2.giao_vien_id, ',') FROM giao_vien_lop gl2 WHERE gl2.lop_hoc_id = l.id) AS gv_ids
                        FROM lop_hoc l
+                       WHERE EXISTS (SELECT 1 FROM giao_vien_lop gl WHERE gl.lop_hoc_id = l.id AND gl.giao_vien_id = ?)
                        ORDER BY l.dang_hoat_dong DESC, l.ten ASC");
-  }
+  $st->execute([$gv_id]);
   $rows = $st->fetchAll();
   foreach ($rows as &$r) {
     $ids = [];
@@ -46,50 +38,43 @@ if ($method === 'GET') {
 }
 
 if ($method === 'POST') {
-  if (!$is_admin) json_phan_hoi(false, null, 'khong_du_quyen');
   $hanh_dong = $_GET['hanh_dong'] ?? '';
   $b = than_json();
   if ($hanh_dong === 'them') {
     $ten = trim((string)($b['ten'] ?? ''));
-    $gv_ids = isset($b['giao_vien_ids']) && is_array($b['giao_vien_ids']) ? $b['giao_vien_ids'] : [];
     if ($ten === '') return json_phan_hoi(false, null, 'thieu_ten');
     $st = $pdo->prepare('INSERT INTO lop_hoc(ten, dang_hoat_dong) VALUES(?,1)');
     $st->execute([$ten]);
     $lopId = (int)$pdo->lastInsertId();
-    // Gán giáo viên nếu có
-    $ins = $pdo->prepare("INSERT INTO giao_vien_lop(giao_vien_id, lop_hoc_id) VALUES(?,?)");
-    foreach ($gv_ids as $gid) { $gid = (int)$gid; if ($gid>0) { $ins->execute([$gid, $lopId]); } }
-    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'them_lop', 'Thêm lớp '.$ten.' (id '.$lopId.')');
+    $pdo->prepare("INSERT INTO giao_vien_lop(giao_vien_id, lop_hoc_id) VALUES(?,?)")->execute([$gv_id, $lopId]);
+    ghi_log($pdo, $gv_id, 'them_lop', 'Thêm lớp '.$ten.' (id '.$lopId.')');
     return json_phan_hoi(true, ['id' => $lopId]);
   }
   if ($hanh_dong === 'sua') {
     $id = (int)($b['id'] ?? 0);
-    $ten = isset($b['ten']) ? trim((string)$b['ten']) : null;
-    $gv_ids = isset($b['giao_vien_ids']) && is_array($b['giao_vien_ids']) ? $b['giao_vien_ids'] : null;
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
-    if ($ten === null && $gv_ids === null) return json_phan_hoi(false, null, 'khong_co_truong_cap_nhat');
-    if ($ten !== null) { $pdo->prepare('UPDATE lop_hoc SET ten=? WHERE id=?')->execute([$ten, $id]); }
-    if ($gv_ids !== null) {
-      $pdo->prepare("DELETE FROM giao_vien_lop WHERE lop_hoc_id=?")->execute([$id]);
-      $ins = $pdo->prepare("INSERT INTO giao_vien_lop(giao_vien_id, lop_hoc_id) VALUES(?,?)");
-      foreach ($gv_ids as $gid) { $gid = (int)$gid; if ($gid>0) { $ins->execute([$gid, $id]); } }
-    }
-    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'sua_lop', 'Sửa lớp id '.$id.($ten!==null?(' ten='.$ten):''));
+    if (!so_huu_lop($pdo, $gv_id, $id)) return json_phan_hoi(false, null, 'khong_du_quyen');
+    $ten = isset($b['ten']) ? trim((string)$b['ten']) : null;
+    if ($ten === null) return json_phan_hoi(false, null, 'khong_co_truong_cap_nhat');
+    $pdo->prepare('UPDATE lop_hoc SET ten=? WHERE id=?')->execute([$ten, $id]);
+    ghi_log($pdo, $gv_id, 'sua_lop', 'Sửa lớp id '.$id.' ten='.$ten);
     return json_phan_hoi(true);
   }
   if ($hanh_dong === 'bat_tat') {
     $id = (int)($b['id'] ?? 0);
     $trang_thai = (int)($b['dang_hoat_dong'] ?? 1);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
+    if (!so_huu_lop($pdo, $gv_id, $id)) return json_phan_hoi(false, null, 'khong_du_quyen');
     $pdo->prepare('UPDATE lop_hoc SET dang_hoat_dong=? WHERE id=?')->execute([$trang_thai?1:0, $id]);
-    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'bat_tat_lop', 'Bật/tắt lớp id '.$id.' => '.($trang_thai?1:0));
+    ghi_log($pdo, $gv_id, 'bat_tat_lop', 'Bật/tắt lớp id '.$id.' => '.($trang_thai?1:0));
     return json_phan_hoi(true);
   }
   if ($hanh_dong === 'xoa') {
     $id = (int)($b['id'] ?? 0);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
+    if (!so_huu_lop($pdo, $gv_id, $id)) return json_phan_hoi(false, null, 'khong_du_quyen');
     $pdo->prepare('DELETE FROM lop_hoc WHERE id=?')->execute([$id]);
-    ghi_log($pdo, (int)$_SESSION['giao_vien_id'], 'xoa_lop', 'Xóa lớp id '.$id);
+    ghi_log($pdo, $gv_id, 'xoa_lop', 'Xóa lớp id '.$id);
     return json_phan_hoi(true);
   }
 }

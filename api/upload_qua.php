@@ -5,18 +5,17 @@ require __DIR__ . '/../lib/tro_giup.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 
 yeu_cau_dang_nhap();
-$is_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
-if (!$is_admin) json_phan_hoi(false, null, 'khong_du_quyen');
+$gv_id = (int)$_SESSION['giao_vien_id'];
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); json_phan_hoi(false, null, 'method_not_allowed'); }
 
 $qua_tang_id = isset($_POST['qua_tang_id']) ? (int)$_POST['qua_tang_id'] : 0;
 if ($qua_tang_id <= 0) json_phan_hoi(false, null, 'thieu_qua_tang_id');
-// kiểm tra quà tồn tại và đang hoạt động để tránh ghi nhầm bản ghi
-$st = $pdo->prepare("SELECT id, anh_url, dang_hoat_dong FROM qua_tang WHERE id=?");
-$st->execute([$qua_tang_id]);
+// kiểm tra quà tồn tại, thuộc về chính giáo viên này, và đang hoạt động để tránh ghi nhầm bản ghi
+$st = $pdo->prepare("SELECT id, anh_url, dang_hoat_dong FROM qua_tang WHERE id=? AND nguoi_tao_id=?");
+$st->execute([$qua_tang_id, $gv_id]);
 $qua = $st->fetch();
-if (!$qua) json_phan_hoi(false, null, 'qua_khong_ton_tai');
+if (!$qua) json_phan_hoi(false, null, 'khong_du_quyen');
 if (!(int)$qua['dang_hoat_dong']) json_phan_hoi(false, null, 'qua_khong_hoat_dong');
 if (!isset($_FILES['file']) || !is_uploaded_file($_FILES['file']['tmp_name'])) json_phan_hoi(false, null, 'thieu_file');
 $file = $_FILES['file'];

@@ -49,17 +49,17 @@ function chen_hoc_sinh(PDO $pdo, string $ho_ten = 'Hoc sinh', ?int $lop_hoc_id =
   return (int)$pdo->lastInsertId();
 }
 
-function chen_ly_do(PDO $pdo, string $tieu_de = 'Cham chi', int $bien_diem = 2): int
+function chen_ly_do(PDO $pdo, string $tieu_de = 'Cham chi', int $bien_diem = 2, ?int $nguoi_tao_id = null): int
 {
-  $st = $pdo->prepare('INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong) VALUES(?,?,1)');
-  $st->execute([$tieu_de, $bien_diem]);
+  $st = $pdo->prepare('INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong, nguoi_tao_id) VALUES(?,?,1,?)');
+  $st->execute([$tieu_de, $bien_diem, $nguoi_tao_id]);
   return (int)$pdo->lastInsertId();
 }
 
-function chen_qua(PDO $pdo, string $ten = 'Sticker', int $gia_diem = 3, int $ton_kho = 10): int
+function chen_qua(PDO $pdo, string $ten = 'Sticker', int $gia_diem = 3, int $ton_kho = 10, ?int $nguoi_tao_id = null): int
 {
-  $st = $pdo->prepare('INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong) VALUES(?,?,?,1)');
-  $st->execute([$ten, $gia_diem, $ton_kho]);
+  $st = $pdo->prepare('INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong, nguoi_tao_id) VALUES(?,?,?,1,?)');
+  $st->execute([$ten, $gia_diem, $ton_kho, $nguoi_tao_id]);
   return (int)$pdo->lastInsertId();
 }
 

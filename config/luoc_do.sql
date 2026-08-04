@@ -34,14 +34,18 @@ CREATE TABLE ly_do (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   tieu_de TEXT NOT NULL,
   bien_diem INTEGER NOT NULL,
-  dang_hoat_dong INTEGER DEFAULT 1
+  dang_hoat_dong INTEGER DEFAULT 1,
+  nguoi_tao_id INTEGER,
+  FOREIGN KEY (nguoi_tao_id) REFERENCES giao_vien(id) ON DELETE CASCADE
 );
 CREATE TABLE qua_tang (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ten TEXT NOT NULL,
   gia_diem INTEGER NOT NULL,
   ton_kho INTEGER DEFAULT 0,
-  dang_hoat_dong INTEGER DEFAULT 1
+  dang_hoat_dong INTEGER DEFAULT 1,
+  nguoi_tao_id INTEGER,
+  FOREIGN KEY (nguoi_tao_id) REFERENCES giao_vien(id) ON DELETE CASCADE
 );
 CREATE TABLE nhat_ky (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

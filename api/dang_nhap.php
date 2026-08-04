@@ -61,4 +61,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   json_phan_hoi(false, ['so_lan'=>$sl, 'con_lai'=>$con_lai], 'dang_nhap_that_bai');
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_xuat') { xoa_cookie_ghi_nho(); session_destroy(); json_phan_hoi(true); }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_ky') {
+  // Chống spam tạo tài khoản hàng loạt: tối đa 5 lần thử (thành công hay thất bại)/10 phút mỗi IP.
+  $ip = $_SERVER['REMOTE_ADDR'] ?? 'na';
+  $dk = $_SESSION['dk_sai'][$ip] ?? ['so_lan' => 0, 'khoa_den' => 0];
+  if ((int)$dk['khoa_den'] && (int)$dk['khoa_den'] <= time()) { $dk = ['so_lan' => 0, 'khoa_den' => 0]; }
+  if ((int)$dk['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
+  $dk['so_lan'] = (int)$dk['so_lan'] + 1;
+  if ($dk['so_lan'] >= 5) { $dk['khoa_den'] = time() + 10*60; }
+  $_SESSION['dk_sai'][$ip] = $dk;
+
+  $b = than_json();
+  $ten = trim((string)($b['ten_dang_nhap'] ?? ''));
+  $mk = (string)($b['mat_khau'] ?? '');
+  $ten_norm = strtolower($ten);
+  if (!preg_match('/^[a-zA-Z0-9_.]{3,32}$/', $ten)) {
+    json_phan_hoi(false, null, 'ten_dang_nhap_khong_hop_le');
+  }
+  if (strlen($mk) < 6) {
+    json_phan_hoi(false, null, 'mat_khau_qua_ngan');
+  }
+  if (tim_giao_vien_theo_ten($pdo, $ten_norm) !== null) {
+    json_phan_hoi(false, null, 'ten_dang_nhap_da_ton_tai');
+  }
+
+  try {
+    $pdo->beginTransaction();
+    $st = $pdo->prepare("INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro, phai_doi_mat_khau) VALUES(?,?,?,0)");
+    $st->execute([$ten_norm, password_hash($mk, PASSWORD_DEFAULT), 'GV']);
+    $gv_id = (int)$pdo->lastInsertId();
+    // Seed vài lý do/quà mặc định để tài khoản mới không trống trơn, giáo viên có thể sửa/xóa sau.
+    $pdo->prepare("INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong, nguoi_tao_id) VALUES
+                    ('Giúp bạn',2,1,?), ('Hoàn thành sớm',1,1,?), ('Nói chuyện riêng',-1,1,?)")
+        ->execute([$gv_id, $gv_id, $gv_id]);
+    $pdo->prepare("INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong, nguoi_tao_id) VALUES
+                    ('Sticker',3,-1,1,?), ('Bút chì',5,50,1,?)")
+        ->execute([$gv_id, $gv_id]);
+    $pdo->commit();
+  } catch (Throwable $e) {
+    if ($pdo->inTransaction()) { $pdo->rollBack(); }
+    json_phan_hoi(false, null, 'ten_dang_nhap_da_ton_tai');
+  }
+
+  unset($_SESSION['dk_sai'][$ip]);
+  session_regenerate_id(true);
+  $_SESSION['giao_vien_id'] = $gv_id; $_SESSION['ten_dang_nhap'] = $ten_norm; $_SESSION['vai_tro'] = 'GV';
+  $_SESSION['phai_doi_mat_khau'] = false;
+  ghi_log($pdo, $gv_id, 'dang_ky', 'Tự đăng ký tài khoản '.$ten_norm);
+  json_phan_hoi(true, ['ten_dang_nhap' => $ten_norm]);
+}
+
 http_response_code(404); json_phan_hoi(false, null, 'khong_tim_thay');

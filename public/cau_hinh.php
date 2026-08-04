@@ -1,7 +1,6 @@
 <?php
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
-if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.php'); exit; }
 $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
@@ -76,7 +75,7 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
           <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
           <div class="table-responsive mt-2">
-            <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tên</th><th>Trạng thái</th><th>Giáo viên quản lý</th><th></th></tr></thead><tbody id="l_ds"></tbody></table>
+            <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tên</th><th>Trạng thái</th><th></th></tr></thead><tbody id="l_ds"></tbody></table>
           </div>
         </div></div></div>
       </div>
@@ -164,7 +163,7 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div>
               <h5 class="ribbon-title-modern mb-1">Tài khoản giáo viên</h5>
-              <div class="small text-muted">Đổi mật khẩu của bạn hoặc thêm giáo viên mới.</div>
+              <div class="small text-muted">Đổi mật khẩu đăng nhập của bạn.</div>
             </div>
           </div>
           <div class="row g-3">
@@ -180,71 +179,7 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="border rounded-3 p-3 h-100">
-                <h5 class="ribbon-title-modern mb-3">Thêm giáo viên mới</h5>
-                <div class="mb-2"><label class="form-label">Tên đăng nhập</label><input id="gv_ten" class="form-control" placeholder="vd: gv2"></div>
-                <div class="mb-3"><label class="form-label">Mật khẩu</label><input id="gv_mk" type="password" class="form-control"></div>
-                <div class="d-flex align-items-center gap-2">
-                  <button class="btn btn-primary btn-sm" id="gv_them">Thêm</button>
-                  <span id="gv_them_msg" class="small text-muted"></span>
-                </div>
-              </div>
-            </div>
           </div>
-          <hr class="my-4">
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-            <h5 class="ribbon-title-modern mb-0">Phân quyền tài khoản</h5>
-            <div class="small text-muted">Cập nhật vai trò hoặc đặt lại mật khẩu.</div>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-sm align-middle mb-0 role-table">
-              <thead>
-                <tr>
-                  <th style="width:180px;">Tài khoản</th>
-                  <th style="width:220px;">Vai trò</th>
-                  <th style="width:200px;">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="gv_quyen_ds"></tbody>
-            </table>
-          </div>
-          <div id="gv_quyen_msg" class="small text-muted mt-2"></div>
-        </div>
-      </div>
-      <div class="card shadow-sm mt-3" data-aos="fade-up">
-        <div class="card-body">
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-            <div>
-              <h5 class="ribbon-title-modern mb-1">Log thao tác</h5>
-              <div class="small text-muted">Tối đa 200 dòng gần nhất.</div>
-            </div>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-sm-12 col-lg-4">
-              <input id="gv_log_search" class="form-control form-control-sm" placeholder="Tìm kiếm nội dung, tài khoản...">
-            </div>
-            <div class="col-sm-6 col-lg-3">
-              <select id="gv_log_action" class="form-select form-select-sm">
-                <option value="">Hành động</option>
-              </select>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-              <select id="gv_log_user" class="form-select form-select-sm">
-                <option value="">Tài khoản</option>
-              </select>
-            </div>
-            <div class="col-sm-12 col-lg-2 text-lg-end">
-              <button id="gv_log_reload" class="btn btn-outline-primary btn-sm w-100 w-lg-auto">Xem log thao tác</button>
-            </div>
-          </div>
-          <div class="table-responsive" id="gv_log_wrap">
-            <table class="table table-sm align-middle mb-0" id="gv_log_table">
-              <thead><tr><th>Thời gian</th><th>Tài khoản</th><th>Hành động</th><th>Nội dung</th></tr></thead>
-              <tbody id="gv_log_ds"></tbody>
-            </table>
-          </div>
-          <div id="gv_log_msg" class="small text-muted mt-2"></div>
         </div>
       </div>
     </div>
@@ -303,142 +238,18 @@ if(ldBienDiemInput && ldBienDiemPlus){
   ldBienDiemInput.addEventListener('input', updateBdPlus);
   ldBienDiemInput.addEventListener('change', updateBdPlus);
 }
-let _gvDs = [];
-async function loadGiaoVienDs(){
-  const r = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=ds');
-  if(r.ok && r.du_lieu && Array.isArray(r.du_lieu.giao_vien)) { _gvDs = r.du_lieu.giao_vien; }
-}
-async function gvNapQuyen(){
-  const tb = document.getElementById('gv_quyen_ds'); const msg = document.getElementById('gv_quyen_msg');
-  if(!tb) return;
-  tb.innerHTML=''; if(msg) msg.textContent='';
-  const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=ds_tk');
-  if(!j.ok){ if(msg) msg.textContent = j.thong_bao||'Không tải được danh sách'; return; }
-  const roles = ['ADMIN','GV'];
-  (j.du_lieu?.tai_khoan||[]).forEach(tk=>{
-    const tr=document.createElement('tr');
-    const select=document.createElement('select');
-    select.className='form-select form-select-sm';
-    roles.forEach(r=>{ const opt=document.createElement('option'); opt.value=r; opt.textContent=r; if(String(tk.vai_tro||'GV')===r) opt.selected=true; select.appendChild(opt); });
-    const btnSave=document.createElement('button'); btnSave.type='button'; btnSave.className='btn btn-primary btn-sm';
-    btnSave.textContent='Lưu';
-    btnSave.onclick=async()=>{
-      btnSave.disabled=true; const jj = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=cap_nhat_vai_tro',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tk.id, vai_tro: select.value})});
-      if(jj.ok){ if(msg) msg.textContent='Đã lưu quyền cho ' + tk.ten_dang_nhap; }
-      else { if(msg) msg.textContent=jj.thong_bao||'Lỗi'; }
-      btnSave.disabled=false;
-    };
-    const btnReset=document.createElement('button'); btnReset.type='button'; btnReset.className='btn btn-danger btn-sm';
-    btnReset.textContent='Đặt lại MK';
-    btnReset.onclick=async()=>{
-      const mk = prompt('Nhập mật khẩu mới cho '+tk.ten_dang_nhap);
-      if(mk===null) return;
-      const mkClean = (mk||'').trim();
-      if(!mkClean){ if(msg) msg.textContent='Nhập mật khẩu mới'; return; }
-      btnReset.disabled=true;
-      const jj = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=reset_mat_khau',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:tk.id, mat_khau_moi: mkClean})});
-      if(jj.ok){ if(msg) msg.textContent='Đã đặt lại mật khẩu cho ' + tk.ten_dang_nhap; }
-      else { if(msg) msg.textContent=jj.thong_bao||'Lỗi'; }
-      btnReset.disabled=false;
-    };
-    btnSave.classList.add('px-3');
-    const tdUser=document.createElement('td'); tdUser.textContent=tk.ten_dang_nhap;
-    const tdRole=document.createElement('td'); tdRole.appendChild(select);
-    const tdBtn=document.createElement('td');
-    const wrap=document.createElement('div'); wrap.className='d-flex flex-wrap gap-2';
-    wrap.appendChild(btnSave); wrap.appendChild(btnReset); tdBtn.appendChild(wrap);
-    tr.appendChild(tdUser); tr.appendChild(tdRole); tr.appendChild(tdBtn);
-    tb.appendChild(tr);
-  });
-}
-let _gvLogs = [];
-function gvBuildLogFilters(){
-  const actionSel = document.getElementById('gv_log_action');
-  const userSel = document.getElementById('gv_log_user');
-  if(!actionSel || !userSel) return;
-  const actions = new Set(); const users = new Set();
-  _gvLogs.forEach(r => { if(r.hanh_dong) actions.add(r.hanh_dong); if(r.ten_dang_nhap) users.add(r.ten_dang_nhap); });
-  const addOpts = (sel, values, label)=>{ sel.innerHTML=''; const opt=document.createElement('option'); opt.value=''; opt.textContent=label; sel.appendChild(opt); values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); }); };
-  addOpts(actionSel, Array.from(actions).sort(), 'Hành động');
-  addOpts(userSel, Array.from(users).sort(), 'Tài khoản');
-}
-function gvFilterLogs(){
-  const search = (document.getElementById('gv_log_search')?.value||'').toLowerCase();
-  const action = document.getElementById('gv_log_action')?.value||'';
-  const user = document.getElementById('gv_log_user')?.value||'';
-  return _gvLogs.filter(row=>{
-    if(action && row.hanh_dong!==action) return false;
-    if(user && row.ten_dang_nhap!==user) return false;
-    if(search){
-      const text = `${row.tao_luc||''} ${row.ten_dang_nhap||''} ${row.hanh_dong||''} ${row.noi_dung||''}`.toLowerCase();
-      if(!text.includes(search)) return false;
-    }
-    return true;
-  });
-}
-function gvRenderLog(){
-  const ds=document.getElementById('gv_log_ds'); const msg=document.getElementById('gv_log_msg');
-  if(!ds) return;
-  ds.innerHTML='';
-  const filtered = gvFilterLogs();
-  if(!filtered.length){
-    ds.innerHTML = '<tr><td colspan="4" class="text-center text-muted small">Không có log phù hợp</td></tr>';
-  } else {
-    filtered.forEach(row=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${row.tao_luc||''}</td><td>${row.ten_dang_nhap||''}</td><td>${row.hanh_dong||''}</td><td>${row.noi_dung||''}</td>`;
-      ds.appendChild(tr);
-    });
-  }
-  if(msg) msg.textContent = `Hiển thị ${filtered.length}/${_gvLogs.length} dòng`;
-}
-async function gvNapLog(){
-  const msg=document.getElementById('gv_log_msg');
-  if(msg) msg.textContent='Đang tải log...';
-  const j = await jfetch('../api/nhat_ky.php?limit=200');
-  if(!j.ok){ if(msg) msg.textContent=j.thong_bao||'Không tải được log'; return; }
-  _gvLogs = Array.isArray(j.du_lieu) ? j.du_lieu : [];
-  gvBuildLogFilters();
-  gvRenderLog();
-}
-
 async function openClassModal(lop){
-  if(!_gvDs.length){ await loadGiaoVienDs(); }
   const modalEl = document.getElementById('editModal'); const modal = new bootstrap.Modal(modalEl);
   document.getElementById('editModalTitle').textContent = lop ? 'Sửa lớp học' : 'Thêm lớp học';
   const form = document.getElementById('editModalForm'); const msg = document.getElementById('editModalMsg');
   form.innerHTML=''; msg.textContent='';
-  const selected = new Set((lop && Array.isArray(lop.giao_vien_ids)) ? lop.giao_vien_ids.map(v=>String(v)) : []);
   const divTen = document.createElement('div'); divTen.className='mb-2';
   divTen.innerHTML = `<label class="form-label">Tên lớp</label><input id="f_lop_ten" class="form-control" value="${lop?.ten||''}" required>`;
   form.appendChild(divTen);
-  const divGv = document.createElement('div'); divGv.className='mb-2';
-  const lbl = document.createElement('label'); lbl.className='form-label'; lbl.textContent='Giáo viên quản lý'; divGv.appendChild(lbl);
-  const filter = document.createElement('input'); filter.type='search'; filter.className='form-control form-control-sm mb-2'; filter.placeholder='Lọc giáo viên...';
-  divGv.appendChild(filter);
-  const wrap = document.createElement('div'); wrap.className='d-flex flex-column gap-1'; wrap.style.maxHeight='240px'; wrap.style.overflow='auto';
-  _gvDs.forEach(g=>{
-    const id = 'gvsel_'+g.id;
-    const item = document.createElement('div'); item.className='form-check';
-    item.dataset.label = (g.ten_dang_nhap||'').toLowerCase();
-    const inp = document.createElement('input'); inp.type='checkbox'; inp.className='form-check-input'; inp.id=id; inp.value=g.id; if(selected.has(String(g.id))) inp.checked=true;
-    const lb = document.createElement('label'); lb.className='form-check-label'; lb.setAttribute('for', id); lb.textContent=g.ten_dang_nhap;
-    item.appendChild(inp); item.appendChild(lb); wrap.appendChild(item);
-  });
-  const applyFilter = ()=>{
-    const q = (filter.value||'').toLowerCase();
-    wrap.querySelectorAll('.form-check').forEach(el=>{
-      const lblTxt = el.dataset.label||'';
-      el.style.display = q==='' || lblTxt.includes(q) ? '' : 'none';
-    });
-  };
-  filter.addEventListener('input', applyFilter);
-  divGv.appendChild(wrap); form.appendChild(divGv);
   return await new Promise(resolve=>{
     const onHide = ()=>{ modalEl.removeEventListener('hidden.bs.modal', onHide); document.getElementById('editModalSave').removeEventListener('click', onSave); resolve(null); };
     const onSave = ()=>{ const tenVal = (document.getElementById('f_lop_ten')?.value||'').trim(); if(!tenVal){ msg.textContent='Nhập tên lớp'; return; }
-      const ids = Array.from(form.querySelectorAll('input.form-check-input[type=\"checkbox\"]')).filter(i=>i.checked).map(i=>parseInt(i.value,10)).filter(n=>!isNaN(n));
-      modal.hide(); modalEl.removeEventListener('hidden.bs.modal', onHide); document.getElementById('editModalSave').removeEventListener('click', onSave); resolve({ ten:tenVal, giao_vien_ids: ids }); };
+      modal.hide(); modalEl.removeEventListener('hidden.bs.modal', onHide); document.getElementById('editModalSave').removeEventListener('click', onSave); resolve({ ten:tenVal }); };
     document.getElementById('editModalSave').addEventListener('click', onSave);
     modalEl.addEventListener('hidden.bs.modal', onHide);
     modal.show();
@@ -531,20 +342,13 @@ async function qNap(){ const j = await jfetch('../api/qua_tang_quan_tri.php'); i
 document.getElementById('q_them').onclick = async()=>{ const ten = document.getElementById('q_ten').value.trim(); const gia = parseInt(document.getElementById('q_gia').value,10)||0; const ton = parseInt(document.getElementById('q_ton').value,10)||0; const anh = (document.getElementById('q_anh') ? document.getElementById('q_anh').value.trim() : ''); const j = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ten, gia_diem:gia, ton_kho:ton, anh_url:anh})}); if(j.ok){ document.getElementById('q_ten').value=''; if(document.getElementById('q_anh')) document.getElementById('q_anh').value=''; qNap(); } else alert(j.thong_bao||'Loi'); };
 
 // Lớp học
-async function lNap(){ if(!_gvDs.length) await loadGiaoVienDs(); const j = await jfetch('../api/lop_hoc_quan_tri.php'); if(!j.ok) return; const tb = document.getElementById('l_ds'); tb.innerHTML='';
-  const gvDs = Array.isArray(_gvDs) ? _gvDs : [];
+async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if(!j.ok) return; const tb = document.getElementById('l_ds'); tb.innerHTML='';
   j.du_lieu.forEach(x => {
     const tr = document.createElement('tr');
-    const gvNames = (Array.isArray(x.giao_vien_ids) ? x.giao_vien_ids : []).map(id=>{
-      const f = gvDs.find(g=>String(g.id)===String(id));
-      return f ? f.ten_dang_nhap : '';
-    }).filter(Boolean).join(', ');
     // Gắn data cho dòng (lop_hoc)
     tr.dataset.id = x.id;
     tr.dataset.ten = x.ten;
-    tr.dataset.giao_vien_ids = JSON.stringify(x.giao_vien_ids||[]);
     tr.innerHTML = `<td>${x.id}</td><td>${x.ten}</td><td>${badge(x.dang_hoat_dong)}</td>
-    <td>${gvNames}</td>
     <td class="text-end">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
@@ -556,7 +360,7 @@ async function lNap(){ if(!_gvDs.length) await loadGiaoVienDs(); const j = await
     btnSua.onclick = async()=>{
       const res = await openClassModal(x);
       if(!res) return;
-      const body = { id:x.id, ten:res.ten, giao_vien_ids: res.giao_vien_ids };
+      const body = { id:x.id, ten:res.ten };
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       if(jj.ok) lNap(); else alert(jj.thong_bao||'Lỗi'); };
     btnToggle.onclick = async()=>{
@@ -812,17 +616,6 @@ function hsSyncLopSelectOnce(){
     }
     else { msg.textContent=j.thong_bao||'Lỗi'; }
   };
-  const btnThem = document.getElementById('gv_them');
-  if (btnThem) btnThem.onclick = async()=>{
-    const ten = document.getElementById('gv_ten').value.trim();
-    const mk = document.getElementById('gv_mk').value;
-    const msg = document.getElementById('gv_them_msg');
-    msg.textContent='';
-    if (!ten || !mk) { msg.textContent='Nhập đủ tên đăng nhập và mật khẩu'; return; }
-    const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ten_dang_nhap:ten, mat_khau:mk})});
-    if (j.ok) { msg.textContent='Đã thêm giáo viên'; document.getElementById('gv_ten').value=''; document.getElementById('gv_mk').value=''; }
-    else { msg.textContent=j.thong_bao||'Lỗi'; }
-  };
 })();
 
 // Popup nhập liệu (Bootstrap modal)
@@ -907,20 +700,14 @@ document.getElementById('q_ds').addEventListener('click', async (e) => {
 document.getElementById('l_ds').addEventListener('click', async (e) => {
   const btn = e.target.closest('button.btn-outline-primary'); if(!btn) return;
   const tr = btn.closest('tr'); if(!tr) return; e.preventDefault(); e.stopImmediatePropagation();
-  let gvSelected = [];
-  try { gvSelected = JSON.parse(tr.dataset.giao_vien_ids||'[]'); } catch(_e){}
-  const res = await openClassModal({ id: parseInt(tr.dataset.id,10)||0, ten: tr.dataset.ten || '', giao_vien_ids: gvSelected });
+  const res = await openClassModal({ id: parseInt(tr.dataset.id,10)||0, ten: tr.dataset.ten || '' });
   if(!res) return;
-  const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, ten:String(res.ten||'').trim(), giao_vien_ids: res.giao_vien_ids})});
+  const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, ten:String(res.ten||'').trim()})});
   if(jj.ok) lNap(); else alert(jj.thong_bao||'Loi');
 }, true);
 
 // Load
-ldNap(); qNap(); loadGiaoVienDs().then(()=>{ lNap(); gvNapQuyen(); });
-  const btnLog = document.getElementById('gv_log_reload'); if(btnLog){ btnLog.onclick = gvNapLog; }
-  const logSearch = document.getElementById('gv_log_search'); if(logSearch){ logSearch.oninput = gvRenderLog; }
-  const logAction = document.getElementById('gv_log_action'); if(logAction){ logAction.onchange = gvRenderLog; }
-  const logUser = document.getElementById('gv_log_user'); if(logUser){ logUser.onchange = gvRenderLog; }
+ldNap(); qNap(); lNap();
 </script>
 <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="vendor/aos/aos.js"></script>

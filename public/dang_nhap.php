@@ -72,6 +72,51 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
           </div>
           <button id="btn" class="btn btn-primary w-100 btn-lg shadow-sm">Đăng nhập</button>
           <div id="msg" class="small text-danger mt-2"></div>
+          <div class="text-center mt-3">
+            <button type="button" id="btn_toggle_dang_ky" class="btn btn-link btn-sm p-0">Chưa có tài khoản? Đăng ký ngay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5 col-xl-4 d-none" id="dang_ky_shell">
+      <div class="card glass-card border-0" data-aos="fade-up">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-start justify-content-between mb-4">
+            <div>
+              <div class="brand-chip">
+                <img src="../upload/star.png" alt="Ngôi sao" class="brand-icon"><span>DClass</span>
+              </div>
+              <h5 class="mt-3 mb-0 text-dark">Tạo tài khoản giáo viên</h5>
+              <div class="text-muted small">Mỗi giáo viên tự quản lý lớp và học sinh của riêng mình</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-uppercase fw-semibold text-muted">Tên đăng nhập</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text"><i class="bi bi-person"></i></span>
+              <input id="dk_u" class="form-control" placeholder="vd: nguyenvana" autocomplete="username">
+            </div>
+            <div class="form-text">3-32 ký tự, chữ/số/gạch dưới/dấu chấm, không dấu.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-uppercase fw-semibold text-muted">Mật khẩu</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input id="dk_p" type="password" class="form-control" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small text-uppercase fw-semibold text-muted">Nhập lại mật khẩu</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input id="dk_p2" type="password" class="form-control" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+            </div>
+          </div>
+          <button id="dk_btn" class="btn btn-primary w-100 btn-lg shadow-sm">Đăng ký</button>
+          <div id="dk_msg" class="small text-danger mt-2"></div>
+          <div class="text-center mt-3">
+            <button type="button" id="btn_toggle_dang_nhap" class="btn btn-link btn-sm p-0">Đã có tài khoản? Đăng nhập</button>
+          </div>
         </div>
       </div>
     </div>
@@ -198,6 +243,52 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
     }
   });
   elBtn.addEventListener('click', thucHienDangNhap);
+
+  // Đăng ký tài khoản mới
+  const dangNhapShell = elBtn.closest('.col-lg-5');
+  const dangKyShell = document.getElementById('dang_ky_shell');
+  const btnToggleDangKy = document.getElementById('btn_toggle_dang_ky');
+  const btnToggleDangNhap = document.getElementById('btn_toggle_dang_nhap');
+  const dkU = document.getElementById('dk_u');
+  const dkP = document.getElementById('dk_p');
+  const dkP2 = document.getElementById('dk_p2');
+  const dkBtn = document.getElementById('dk_btn');
+  const dkMsg = document.getElementById('dk_msg');
+
+  if (btnToggleDangKy && btnToggleDangNhap && dangNhapShell && dangKyShell) {
+    btnToggleDangKy.addEventListener('click', ()=>{ dangNhapShell.classList.add('d-none'); dangKyShell.classList.remove('d-none'); if (dkMsg) dkMsg.textContent=''; });
+    btnToggleDangNhap.addEventListener('click', ()=>{ dangKyShell.classList.add('d-none'); dangNhapShell.classList.remove('d-none'); if (elMsg) elMsg.textContent=''; });
+  }
+
+  const thongBaoDangKy = {
+    'ten_dang_nhap_khong_hop_le': 'Tên đăng nhập không hợp lệ (3-32 ký tự, chữ/số/gạch dưới/dấu chấm).',
+    'mat_khau_qua_ngan': 'Mật khẩu cần tối thiểu 6 ký tự.',
+    'ten_dang_nhap_da_ton_tai': 'Tên đăng nhập đã được sử dụng.',
+    'qua_so_lan': 'Bạn đã thử quá nhiều lần. Vui lòng thử lại sau ít phút.',
+  };
+  const thucHienDangKy = async()=>{
+    if (!dkU || !dkP || !dkP2 || !dkMsg) return;
+    dkMsg.textContent = '';
+    const ten = dkU.value.trim();
+    const mk = dkP.value;
+    const mk2 = dkP2.value;
+    if (!ten || !mk) { dkMsg.textContent = 'Nhập đủ tên đăng nhập và mật khẩu.'; return; }
+    if (mk !== mk2) { dkMsg.textContent = 'Mật khẩu nhập lại không khớp.'; return; }
+    dkBtn.disabled = true;
+    try {
+      const r = await fetch('../api/dang_nhap.php?hanh_dong=dang_ky', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ten_dang_nhap: ten, mat_khau: mk})
+      });
+      let j = null; try { j = await r.json(); } catch(_e){}
+      if (j && j.ok) { location.href = 'trang_chinh.php'; return; }
+      dkMsg.textContent = (j && thongBaoDangKy[j.thong_bao]) || 'Đăng ký thất bại. Vui lòng thử lại.';
+    } catch(_e) { dkMsg.textContent = 'Không thể kết nối máy chủ.'; }
+    dkBtn.disabled = false;
+  };
+  if (dkBtn) dkBtn.addEventListener('click', thucHienDangKy);
+  [dkU, dkP, dkP2].forEach(el=>{
+    if (el) el.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); thucHienDangKy(); } });
+  });
 })();
 </script>
 <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>

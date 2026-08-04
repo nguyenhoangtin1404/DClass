@@ -4,38 +4,33 @@ declare(strict_types=1);
 /**
  * Các hàm nghiệp vụ điểm để dùng chung cho API và kiểm thử.
  */
-function lop_duoc_gan(PDO $pdo, bool $la_admin, int $giao_vien_id): array
+function lop_duoc_gan(PDO $pdo, int $giao_vien_id): array
 {
-  if ($la_admin) {
-    return [];
-  }
   $st = $pdo->prepare('SELECT lop_hoc_id FROM giao_vien_lop WHERE giao_vien_id = ?');
   $st->execute([$giao_vien_id]);
   return array_map(fn($r) => (int)$r['lop_hoc_id'], $st->fetchAll());
 }
 
-function kiem_tra_quyen_lop(PDO $pdo, bool $la_admin, int $giao_vien_id, int $hoc_sinh_id): void
+function kiem_tra_quyen_lop(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id): void
 {
-  if ($la_admin) {
-    return;
-  }
-  $lop_giao_vien = lop_duoc_gan($pdo, $la_admin, $giao_vien_id);
-  // Trước đây nếu GV chưa được gán lớp nào thì vẫn cho qua
+  $lop_giao_vien = lop_duoc_gan($pdo, $giao_vien_id);
+  // Chưa sở hữu lớp nào -> không có quyền trên bất kỳ học sinh nào (không phải cho qua như
+  // trước đây - mỗi giáo viên tự đăng ký, không có ai đứng trên để "chưa gán = tạm cho qua").
   if (!$lop_giao_vien) {
-    return;
+    throw new Exception('khong_du_quyen');
   }
   $st = $pdo->prepare('SELECT lop_hoc_id FROM hoc_sinh WHERE id = ?');
   $st->execute([$hoc_sinh_id]);
   $lop = (int)$st->fetchColumn();
-  if ($lop && !in_array($lop, $lop_giao_vien, true)) {
+  if (!$lop || !in_array($lop, $lop_giao_vien, true)) {
     throw new Exception('khong_du_quyen');
   }
 }
 
-function lay_bien_diem(PDO $pdo, int $ly_do_id): int
+function lay_bien_diem(PDO $pdo, int $giao_vien_id, int $ly_do_id): int
 {
-  $st = $pdo->prepare('SELECT bien_diem FROM ly_do WHERE id = ? AND dang_hoat_dong = 1');
-  $st->execute([$ly_do_id]);
+  $st = $pdo->prepare('SELECT bien_diem FROM ly_do WHERE id = ? AND dang_hoat_dong = 1 AND nguoi_tao_id = ?');
+  $st->execute([$ly_do_id, $giao_vien_id]);
   $r = $st->fetch();
   if (!$r) {
     throw new Exception('ly_do_khong_hop_le');
@@ -60,13 +55,13 @@ function doc_so_du(PDO $pdo, int $hoc_sinh_id): int
   return (int)$so_du;
 }
 
-function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, bool $la_admin, int $hoc_sinh_id, int $ly_do_id, string $ghi_chu = ''): array
+function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $ly_do_id, string $ghi_chu = ''): array
 {
-  kiem_tra_quyen_lop($pdo, $la_admin, $giao_vien_id, $hoc_sinh_id);
+  kiem_tra_quyen_lop($pdo, $giao_vien_id, $hoc_sinh_id);
   $pdo->beginTransaction();
   try {
     dam_bao_vi($pdo, $hoc_sinh_id);
-    $bien = lay_bien_diem($pdo, $ly_do_id);
+    $bien = lay_bien_diem($pdo, $giao_vien_id, $ly_do_id);
     $stUp = $pdo->prepare('UPDATE vi_diem SET so_du = so_du + ? WHERE hoc_sinh_id = ?');
     $stUp->execute([$bien, $hoc_sinh_id]);
     $so_du_moi = doc_so_du($pdo, $hoc_sinh_id);
@@ -83,11 +78,11 @@ function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, bool $la_admin, int $h
   }
 }
 
-function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, bool $la_admin, int $hoc_sinh_id, int $qua_tang_id, string $ghi_chu = ''): array
+function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $qua_tang_id, string $ghi_chu = ''): array
 {
-  kiem_tra_quyen_lop($pdo, $la_admin, $giao_vien_id, $hoc_sinh_id);
-  $st = $pdo->prepare('SELECT gia_diem, ton_kho FROM qua_tang WHERE id = ? AND dang_hoat_dong = 1');
-  $st->execute([$qua_tang_id]);
+  kiem_tra_quyen_lop($pdo, $giao_vien_id, $hoc_sinh_id);
+  $st = $pdo->prepare('SELECT gia_diem, ton_kho FROM qua_tang WHERE id = ? AND dang_hoat_dong = 1 AND nguoi_tao_id = ?');
+  $st->execute([$qua_tang_id, $giao_vien_id]);
   $q = $st->fetch();
   if (!$q) {
     throw new Exception('qua_khong_hop_le');

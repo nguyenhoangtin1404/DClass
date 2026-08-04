@@ -3,33 +3,22 @@ header('Content-Type: text/html; charset=utf-8');
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); exit; }
-$la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
-// Lớp được gán cho GV (admin thấy tất cả)
-$lop_gan = [];
-if (!$la_admin) {
-  $st = $pdo->prepare("SELECT lop_hoc_id FROM giao_vien_lop WHERE giao_vien_id=?");
-  $st->execute([(int)$_SESSION['giao_vien_id']]);
-  $lop_gan = array_map(fn($r)=>(int)$r['lop_hoc_id'], $st->fetchAll());
-  if (!$lop_gan) { $lop_gan = [0]; } // để tránh query trống
-}
+require __DIR__ . '/../lib/diem_nghiep_vu.php';
+// Lớp giáo viên hiện tại sở hữu
+$lop_gan = lop_duoc_gan($pdo, (int)$_SESSION['giao_vien_id']);
+if (!$lop_gan) { $lop_gan = [0]; } // để tránh query trống
 function dem($pdo, $sql, $params=[]){ $st=$pdo->prepare($sql); $st->execute($params); $v = $st->fetchColumn(); return (int)($v ?: 0); }
 
-if ($la_admin) {
-  $tong_cong     = (int)($pdo->query("SELECT COALESCE(SUM(CASE WHEN sc.loai='CONG_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.dang_hoat_dong=1")->fetchColumn() ?: 0);
-  $tong_doi      = (int)($pdo->query("SELECT COALESCE(SUM(CASE WHEN sc.loai='DOI_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.dang_hoat_dong=1")->fetchColumn() ?: 0);
-  $top5 = $pdo->query("SELECT h.ho_ten, COALESCE(v.so_du,0) AS so_du FROM hoc_sinh h LEFT JOIN vi_diem v ON v.hoc_sinh_id=h.id WHERE h.dang_hoat_dong=1 ORDER BY so_du DESC, h.ho_ten ASC LIMIT 5")->fetchAll();
-} else {
-  $place = implode(',', array_fill(0, count($lop_gan), '?'));
-  $tong_cong     = dem($pdo, "SELECT COALESCE(SUM(CASE WHEN sc.loai='CONG_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.dang_hoat_dong=1 AND hs.lop_hoc_id IN ($place)", $lop_gan);
-  $tong_doi      = dem($pdo, "SELECT COALESCE(SUM(CASE WHEN sc.loai='DOI_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.dang_hoat_dong=1 AND hs.lop_hoc_id IN ($place)", $lop_gan);
-  $st = $pdo->prepare("SELECT h.ho_ten, COALESCE(v.so_du,0) AS so_du FROM hoc_sinh h LEFT JOIN vi_diem v ON v.hoc_sinh_id=h.id WHERE h.dang_hoat_dong=1 AND h.lop_hoc_id IN ($place) ORDER BY so_du DESC, h.ho_ten ASC LIMIT 5");
-  $st->execute($lop_gan);
-  $top5 = $st->fetchAll();
-}
-$lop_placeholders = $la_admin ? '' : implode(',', array_fill(0, count($lop_gan), '?'));
+$place = implode(',', array_fill(0, count($lop_gan), '?'));
+$tong_cong     = dem($pdo, "SELECT COALESCE(SUM(CASE WHEN sc.loai='CONG_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.dang_hoat_dong=1 AND hs.lop_hoc_id IN ($place)", $lop_gan);
+$tong_doi      = dem($pdo, "SELECT COALESCE(SUM(CASE WHEN sc.loai='DOI_DIEM' THEN sc.bien_diem ELSE 0 END),0) FROM so_cai_diem sc JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id WHERE hs.dang_hoat_dong=1 AND hs.lop_hoc_id IN ($place)", $lop_gan);
+$st = $pdo->prepare("SELECT h.ho_ten, COALESCE(v.so_du,0) AS so_du FROM hoc_sinh h LEFT JOIN vi_diem v ON v.hoc_sinh_id=h.id WHERE h.dang_hoat_dong=1 AND h.lop_hoc_id IN ($place) ORDER BY so_du DESC, h.ho_ten ASC LIMIT 5");
+$st->execute($lop_gan);
+$top5 = $st->fetchAll();
+$lop_placeholders = $place;
 $join_lop = "JOIN hoc_sinh hs ON hs.id=sc.hoc_sinh_id";
-$where_lop = $la_admin ? '' : "AND hs.lop_hoc_id IN ($lop_placeholders)";
-$params_lop = $la_admin ? [] : $lop_gan;
+$where_lop = "AND hs.lop_hoc_id IN ($lop_placeholders)";
+$params_lop = $lop_gan;
 // Luôn chỉ lấy học sinh đang hoạt động
 $where_active = "AND hs.dang_hoat_dong=1";
 // Xu hướng 30 ngày (line)
