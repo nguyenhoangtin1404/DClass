@@ -2,10 +2,17 @@
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 if (($_SESSION['vai_tro'] ?? '') !== 'ADMIN') { header('Location: trang_chinh.php'); exit; }
+$can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
 <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"><style>.ld-stepper .ld-stepper-btns{min-width:38px;height:100%;}.ld-stepper .ld-stepper-btns .btn{padding:4px 0;line-height:1;height:50%;border-radius:0;}.ld-stepper .ld-stepper-btns .btn:first-child{border-top-right-radius:.375rem;}.ld-stepper .ld-stepper-btns .btn:last-child{border-bottom-right-radius:.375rem;}.ld-bd-wrap{position:relative;}.ld-bd-wrap input{padding-left:24px;}#ld_bien_diem::-webkit-outer-spin-button,#ld_bien_diem::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}#ld_bien_diem{-moz-appearance:textfield;}.ld-bd-plus{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#0d6efd;font-weight:600;pointer-events:none;font-size:.95rem;}</style></head><body><?php include __DIR__ . '/_nav.php'; ?>
 <div class="container py-3">
+  <?php if ($can_doi_mk_bat_buoc): ?>
+  <div class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+    <i class="bi bi-shield-exclamation"></i>
+    <div>Tài khoản của bạn đang dùng mật khẩu mặc định. Vui lòng đổi mật khẩu ngay bên dưới trước khi tiếp tục sử dụng hệ thống.</div>
+  </div>
+  <?php endif; ?>
   <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Cấu hình hệ thống</h5></div>
 
   <ul class="nav nav-tabs mt-3 nav-square" id="tab" role="tablist">
@@ -798,7 +805,11 @@ function hsSyncLopSelectOnce(){
     msg.textContent='';
     if (!mk_moi || mk_moi !== mk_lai) { msg.textContent='Mật khẩu nhập lại không khớp'; return; }
     const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=doi_mat_khau',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mat_khau_cu:mk_cu, mat_khau_moi:mk_moi})});
-    if (j.ok) { msg.textContent='Đã đổi mật khẩu'; document.getElementById('gv_mk_cu').value=''; document.getElementById('gv_mk_moi').value=''; document.getElementById('gv_mk_lai').value=''; }
+    if (j.ok) {
+      msg.textContent='Đã đổi mật khẩu';
+      document.getElementById('gv_mk_cu').value=''; document.getElementById('gv_mk_moi').value=''; document.getElementById('gv_mk_lai').value='';
+      <?php if ($can_doi_mk_bat_buoc): ?>location.reload();<?php endif; ?>
+    }
     else { msg.textContent=j.thong_bao||'Lỗi'; }
   };
   const btnThem = document.getElementById('gv_them');

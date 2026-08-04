@@ -36,8 +36,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   
   $gv = kiem_tra_dang_nhap($pdo, $ten, $mk);
   if ($gv) {
-    // Đăng nhập thành công
+    // Đăng nhập thành công: đổi session ID để chống session fixation, giữ nguyên dữ liệu session hiện có
+    session_regenerate_id(true);
     $_SESSION['giao_vien_id'] = (int)$gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
+    $_SESSION['phai_doi_mat_khau'] = (bool)((int)($gv['phai_doi_mat_khau'] ?? 0));
     // Reset đếm sai và CAPTCHA
     if (isset($_SESSION['dn_sai'][$k])) unset($_SESSION['dn_sai'][$k]);
     xoa_captcha();

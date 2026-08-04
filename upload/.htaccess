@@ -1,5 +1,14 @@
 Options -Indexes
 
+# Mở lại quyền truy cập cho upload/ (bị chặn mặc định bởi .htaccess ở gốc repo).
+<IfModule mod_authz_core.c>
+  Require all granted
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Allow from all
+</IfModule>
+
 # Ngăn thực thi mã trong thư mục upload (chỉ cho phép serve tĩnh)
 <FilesMatch "\.(php|phar|phtml|pht|phps|cgi|pl|asp|aspx|jsp|sh|bash)$">
   Require all denied

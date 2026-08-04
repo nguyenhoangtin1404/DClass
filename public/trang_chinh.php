@@ -3,6 +3,7 @@ require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
 header('Content-Type: text/html; charset=utf-8');
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
+if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); exit; }
 ?>
 <!doctype html>
 <html>

@@ -9,6 +9,7 @@ CREATE TABLE giao_vien (
   ten_dang_nhap TEXT UNIQUE NOT NULL,
   mat_khau_bam TEXT NOT NULL,
   vai_tro TEXT DEFAULT 'GV',
+  phai_doi_mat_khau INTEGER DEFAULT 0,
   tao_luc TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE giao_vien_lop (
