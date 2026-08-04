@@ -65,7 +65,6 @@ function thu_cookie_ghi_nho(PDO $pdo): bool {
   $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap'];
   $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
   $_SESSION['phai_doi_mat_khau'] = (bool)((int)($gv['phai_doi_mat_khau'] ?? 0));
-  $_SESSION['to_chuc_id'] = $GLOBALS['TO_CHUC_HIEN_TAI']['id'] ?? null;
   return true;
 }
 

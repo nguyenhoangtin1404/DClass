@@ -11,7 +11,6 @@ if (file_exists($autoload)) {
 
 require_once __DIR__ . '/../lib/diem_nghiep_vu.php';
 require_once __DIR__ . '/../lib/dang_nhap_nghiep_vu.php';
-require_once __DIR__ . '/../config/registry.php';
 
 function tao_pdo_test(): PDO
 {
@@ -27,29 +26,6 @@ function tao_pdo_test(): PDO
     }
   }
   return $pdo;
-}
-
-function tao_pdo_registry_test(): PDO
-{
-  $pdo = new PDO('sqlite::memory:');
-  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-  $pdo->exec('PRAGMA foreign_keys = ON');
-  $sql = file_get_contents(__DIR__ . '/../config/luoc_do_registry.sql');
-  $doan = array_filter(array_map('trim', explode(';', $sql)));
-  foreach ($doan as $lenh) {
-    if ($lenh !== '') {
-      $pdo->exec($lenh);
-    }
-  }
-  return $pdo;
-}
-
-function chen_to_chuc(PDO $registry, string $ma, string $ten, ?string $domain, bool $hoat_dong = true): int
-{
-  $st = $registry->prepare('INSERT INTO to_chuc(ma_to_chuc, ten, domain, db_path, dang_hoat_dong) VALUES(?,?,?,?,?)');
-  $st->execute([$ma, $ten, $domain, "/tmp/{$ma}.db", $hoat_dong ? 1 : 0]);
-  return (int)$registry->lastInsertId();
 }
 
 function chen_giao_vien(PDO $pdo, string $ten = 'gv1', string $mat_khau = '123456', string $vai_tro = 'ADMIN'): int

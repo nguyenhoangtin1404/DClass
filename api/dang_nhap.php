@@ -40,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
     session_regenerate_id(true);
     $_SESSION['giao_vien_id'] = (int)$gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
     $_SESSION['phai_doi_mat_khau'] = (bool)((int)($gv['phai_doi_mat_khau'] ?? 0));
-    $_SESSION['to_chuc_id'] = $TO_CHUC_HIEN_TAI['id'] ?? null;
     // Reset đếm sai và CAPTCHA
     if (isset($_SESSION['dn_sai'][$k])) unset($_SESSION['dn_sai'][$k]);
     xoa_captcha();
