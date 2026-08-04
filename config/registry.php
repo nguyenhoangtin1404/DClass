@@ -57,6 +57,43 @@ function chay_migration_registry(PDO $pdo): void {
       FOREIGN KEY (sieu_quan_tri_id) REFERENCES sieu_quan_tri(id)
     )");
   } catch (Throwable $e) { /* ignore */ }
+  try {
+    // Domain la duy nhat khi da gan (nhieu to chuc chua gan domain deu la NULL, khong xung dot).
+    $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_to_chuc_domain ON to_chuc(domain) WHERE domain IS NOT NULL");
+  } catch (Throwable $e) { /* ignore */ }
+}
+
+/**
+ * Chuẩn hoá Host header về dạng so sánh được với cột to_chuc.domain:
+ * bỏ cổng (nếu có), viết thường, bỏ khoảng trắng thừa.
+ */
+function chuan_hoa_host(string $host): string {
+  $host = trim($host);
+  // IPv6 dạng [::1]:8000 - giữ nguyên phần trong ngoặc, chỉ bỏ cổng phía sau ']'
+  if ($host !== '' && $host[0] === '[') {
+    $vi_tri = strpos($host, ']');
+    if ($vi_tri !== false) {
+      return strtolower(substr($host, 0, $vi_tri + 1));
+    }
+  }
+  $vi_tri_hai_cham = strpos($host, ':');
+  if ($vi_tri_hai_cham !== false) {
+    $host = substr($host, 0, $vi_tri_hai_cham);
+  }
+  return strtolower($host);
+}
+
+/**
+ * Xác định tổ chức hiện tại dựa trên Host header của request.
+ * Trả về null nếu không tìm thấy domain khớp hoặc tổ chức đã bị khoá.
+ */
+function xac_dinh_to_chuc_theo_domain(PDO $registry, string $host): ?array {
+  $host_chuan = chuan_hoa_host($host);
+  if ($host_chuan === '') return null;
+  $st = $registry->prepare('SELECT * FROM to_chuc WHERE domain = ? AND dang_hoat_dong = 1');
+  $st->execute([$host_chuan]);
+  $tc = $st->fetch();
+  return $tc ?: null;
 }
 
 function ket_noi_registry(): PDO {
