@@ -52,7 +52,7 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
       </div>
     </div>
   </div></div>
-  <div class="table-responsive mt-3" data-aos="fade-up">
+  <div class="table-responsive table-responsive-stack mt-3" data-aos="fade-up">
     <table class="table table-sm align-middle">
       <thead><tr><th>Thời gian</th><th>Học sinh</th><th>Loại</th><th>Thay đổi</th><th>Số dư</th><th>Ghi chú</th></tr></thead>
       <tbody id="tb"></tbody>
@@ -157,7 +157,7 @@ function veTrang(){
     const loaiHtml = loaiBadge(row.loai);
     const deltaHtml = formatSignedHtml(row.bien_diem);
     const balanceHtml = `<span class="fw-semibold">${row.so_du_sau}</span>`;
-    tr.innerHTML=`<td>${dinDangDateTime(row.tao_luc)}</td><td>${row.ho_ten}</td><td>${loaiHtml}</td><td>${deltaHtml}</td><td>${balanceHtml}</td><td>${row.ghi_chu||''}</td>`;
+    tr.innerHTML=`<td data-label="Thời gian">${dinDangDateTime(row.tao_luc)}</td><td data-label="Học sinh">${row.ho_ten}</td><td data-label="Loại">${loaiHtml}</td><td data-label="Thay đổi">${deltaHtml}</td><td data-label="Số dư">${balanceHtml}</td><td data-label="Ghi chú">${row.ghi_chu||''}</td>`;
     tb.appendChild(tr);
   });
   pgInfo.textContent = total ? `Trang ${trang}/${totalPages} – hiển thị ${start+1}-${end} / ${total}` : 'Không có dữ liệu';

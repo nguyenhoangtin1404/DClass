@@ -533,6 +533,120 @@ body.login-bg {
   padding-bottom: .35rem;
 }
 
+/* ===================== Mobile-first refinements ===================== */
+
+/* Bảng dạng thẻ (card) trên mobile: mỗi <tr> thành 1 thẻ, mỗi <td> hiện
+   nhãn (data-label) bên trái + giá trị bên phải, tránh cuộn ngang. */
+@media (max-width: 767.98px){
+  .table-responsive-stack table{ border: 0; }
+  .table-responsive-stack thead{
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .table-responsive-stack tbody,
+  .table-responsive-stack tr,
+  .table-responsive-stack td{
+    display: block;
+    width: 100%;
+  }
+  .table-responsive-stack tr{
+    margin-bottom: .6rem;
+    border: 1px solid #d7e1f5 !important;
+    border-radius: 12px;
+    padding: .5rem .75rem;
+    background: #fff !important;
+    box-shadow: 0 2px 6px rgba(17,40,90,.06);
+  }
+  .table-responsive-stack tr:last-child{ margin-bottom: 0; }
+  .table-responsive-stack td{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .4rem 0 !important;
+    border: 0 !important;
+    text-align: right;
+  }
+  .table-responsive-stack td:not(:last-child){
+    border-bottom: 1px dotted #e3e9f5 !important;
+  }
+  .table-responsive-stack td[data-label]::before{
+    content: attr(data-label);
+    font-weight: 700;
+    color: #5f6b85;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .table-responsive-stack td:not([data-label]){
+    justify-content: flex-end;
+  }
+  .table-responsive-stack td.stack-actions{
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .5rem;
+    padding-top: .6rem !important;
+  }
+  .table-responsive-stack td.stack-actions > div{
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    width: 100%;
+  }
+  .table-responsive-stack td.stack-actions .btn{ flex: 1 1 auto; min-width: 72px; }
+
+  /* Ghi chú: nội dung dạng câu dài nên hiển thị full chiều rộng, căn trái,
+     không cắt chữ (khác các cột giá trị ngắn khác vẫn căn phải). */
+  .table-responsive-stack td[data-label="Ghi chú"]{
+    display: block;
+    text-align: left;
+  }
+  .table-responsive-stack td[data-label="Ghi chú"]::before{
+    display: block;
+    margin-bottom: .15rem;
+  }
+  .table-responsive-stack td[data-label="Ghi chú"] .truncate{
+    display: block;
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
+/* Chart canvases: chiều cao thấp hơn trên màn hình nhỏ để đỡ phải cuộn dài */
+.chart-box{ height: 260px; }
+.chart-box-lg{ height: 280px; }
+@media (max-width: 575.98px){
+  .chart-box{ height: 200px; }
+  .chart-box-lg{ height: 220px; }
+}
+
+/* Touch target: bảo đảm control nhỏ (btn-sm, input-sm, nav-link) vẫn đủ lớn
+   để bấm ngón tay trên màn hình cảm ứng nhỏ. */
+@media (max-width: 767.98px){
+  .btn-sm{
+    min-height: 40px;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+  }
+  .form-control:not(.form-control-sm),
+  .form-select:not(.form-select-sm){
+    min-height: 44px;
+  }
+  .form-control-sm,
+  .form-select-sm{
+    min-height: 38px;
+  }
+  .nav-square-link{
+    min-height: 40px;
+  }
+  .dp-cell{
+    padding: 9px 0;
+  }
+}
+
 /* Header demo */
 .demo-header-body {
   background: #f7f7fb;
