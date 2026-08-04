@@ -20,3 +20,9 @@
 ## Khởi tạo CSDL trống
 - `config/db.php`/`config/luoc_do.sql` chỉ tạo schema, **không seed tài khoản hay dữ liệu mẫu nào**. Giáo viên tự đăng ký qua `POST /api/dang_nhap.php?hanh_dong=dang_ky`, khi đó hệ thống tự seed vài `ly_do`/`qua_tang` mặc định cho riêng tài khoản đó (xem `api/dang_nhap.php`).
 - `php tools/cai_dat.php --seed` (chỉ chạy khi truyền cờ này) tạo 1 tài khoản mẫu cho dev/demo cục bộ: `gv1` / `123456` (bắt buộc đổi mật khẩu ngay lần đăng nhập đầu), kèm lớp `4A/4B/4C` và vài lý do/quà mẫu gắn với tài khoản đó.
+
+## Nâng cấp CSDL đã có dữ liệu thật (từ bản trước khi có `nguoi_tao_id`)
+- `chay_migration()` trong `config/migration_nghiep_vu.php` tự chạy `chay_backfill_so_huu()` **đúng 1 lần** (đánh dấu trong bảng `migrations_ap_dung`, không lặp lại ở các lần sau, không cần thao tác tay) khi nâng cấp code lên bản này trên CSDL đã có dữ liệu cũ:
+  - Tài khoản có `vai_tro='ADMIN'` được gán tường minh vào `giao_vien_lop` cho **mọi lớp đang có tại thời điểm nâng cấp** — giữ nguyên đúng phạm vi truy cập họ đang có (trước đây ADMIN bỏ qua mọi ràng buộc lớp), không tự động mở rộng thêm cho lớp tạo ra sau này.
+  - Mỗi `ly_do`/`qua_tang` đang có (tạo trước khi có cột `nguoi_tao_id`, tức thuộc catalog dùng chung cũ) được **nhân bản cho từng tài khoản giáo viên đang tồn tại**: giáo viên có `id` nhỏ nhất nhận lại đúng bản ghi gốc (giữ nguyên `id`, lịch sử `so_cai_diem` tham chiếu tới vẫn đúng), các giáo viên còn lại nhận bản sao riêng — từ đó mỗi người tự sửa độc lập.
+  - Không xoá, không sửa `hoc_sinh`/`so_cai_diem`/lịch sử điểm nào.

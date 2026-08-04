@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/../config/migration_nghiep_vu.php';
+
 $options = getopt('', [
   'seed',
   'no-backup',
@@ -170,6 +172,7 @@ if (!$vua_tao && !isset($options['no-backup'])) {
 }
 
 thuc_thi_ddl($pdo, $schema);
+chay_migration($pdo);
 if (isset($options['seed'])) {
   seed_mau($pdo);
 }
