@@ -31,7 +31,7 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Thông tin</h5><button id="btn_qua_da_doi" class="btn btn-outline-secondary px-3 py-2" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2"><h5 class="ribbon-title-modern mb-0">Thông tin</h5><button id="btn_qua_da_doi" class="btn btn-outline-secondary px-3 py-2" disabled>Qu&#224; &#273;&#227; &#273;&#7893;i</button></div><div id="thong_tin" class="mb-2 text-muted"></div>
       <h5 class="ribbon-title-modern mt-2">Lý do</h5>      <input id="ly_do_loc" class="form-control form-control-sm mb-2" placeholder="Lọc lý do...">
 <div id="ds_ly_do" class="d-flex flex-wrap gap-2"></div>
       <hr><div class="d-flex align-items-center justify-content-between">
@@ -52,7 +52,7 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
     </div></div></div>
   </div>
   <div class="card mt-3 shadow-sm" data-aos="fade-up"><div class="card-body">
-    <h5 class="ribbon-title-modern">Lịch sử gần đây</h5><div class="table-responsive"><table class="table table-sm table-hover table-striped align-middle modern-table">
+    <h5 class="ribbon-title-modern">Lịch sử gần đây</h5><div class="table-responsive table-responsive-stack"><table class="table table-sm table-hover table-striped align-middle modern-table">
       <thead><tr><th>Thời gian</th><th>Học sinh</th><th>Loại</th><th>Thay đổi</th><th>Số dư</th><th>Ghi chú</th></tr></thead>
       <tbody id="bang_lich_su"></tbody></table></div>
     <div class="d-flex align-items-center justify-content-between mt-2">
@@ -299,12 +299,12 @@ function renderLichSu(){
     const ghiChu = row.ghi_chu||'';
     const tr=document.createElement('tr');
     tr.innerHTML = `
-      <td class="text-muted small">${formatDateTime(row.tao_luc)}</td>
-      <td>${row.ho_ten||''}</td>
-      <td>${loaiHtml}</td>
-      <td>${deltaHtml}</td>
-      <td>${soDuHtml}</td>
-      <td class="cell-notes"><span class="truncate">${ghiChu}</span></td>`;
+      <td class="text-muted small" data-label="Thời gian">${formatDateTime(row.tao_luc)}</td>
+      <td data-label="Học sinh">${row.ho_ten||''}</td>
+      <td data-label="Loại">${loaiHtml}</td>
+      <td data-label="Thay đổi">${deltaHtml}</td>
+      <td data-label="Số dư">${soDuHtml}</td>
+      <td class="cell-notes" data-label="Ghi chú"><span class="truncate">${ghiChu}</span></td>`;
     tb.appendChild(tr);
   });
   const info=document.getElementById('ls_info'); if(info){ const from=total?start+1:0; const to=Math.min(start+rows.length,total); info.textContent=`Trang ${lsPage}/${totalPages} · ${from}-${to}/${total}`; }

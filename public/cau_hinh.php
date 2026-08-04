@@ -40,8 +40,8 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
           <button class="btn btn-primary btn-sm" id="ld_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
-          <div class="table-responsive mt-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
+          <div class="table-responsive table-responsive-stack mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tiêu đề</th><th>Biến điểm</th><th>Trạng thái</th><th></th></tr></thead><tbody id="ld_ds"></tbody></table>
           </div>
         </div></div></div>
@@ -58,8 +58,8 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
           <button class="btn btn-primary btn-sm" id="q_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
-          <div class="table-responsive mt-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
+          <div class="table-responsive table-responsive-stack mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Ảnh</th><th>Tên</th><th>Giá điểm</th><th>Tồn kho</th><th>Trạng thái</th><th></th></tr></thead><tbody id="q_ds"></tbody></table>
           </div>
         </div></div></div>
@@ -73,8 +73,8 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
           <button class="btn btn-primary btn-sm" id="l_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-          <div class="d-flex align-items-center justify-content-between"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
-          <div class="table-responsive mt-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2"><h5 class="ribbon-title-modern mb-0">Danh sách</h5><small class="text-muted">Bấm bật/tắt, sửa hoặc xóa</small></div>
+          <div class="table-responsive table-responsive-stack mt-2">
             <table class="table table-sm align-middle"><thead><tr><th>#</th><th>Tên</th><th>Trạng thái</th><th></th></tr></thead><tbody id="l_ds"></tbody></table>
           </div>
         </div></div></div>
@@ -96,10 +96,10 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
           <div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
             <h5 class="ribbon-title-modern">Thêm học sinh</h5>
             <div class="row g-2">
-              <div class="col-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
-              <div class="col-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
-              <div class="col-6 mt-2"><input id="anh_dai_dien_url" class="form-control" placeholder="Ảnh đại diện URL"></div>
-              <div class="col-3 mt-2">
+              <div class="col-12 col-sm-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
+              <div class="col-12 col-sm-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
+              <div class="col-12 col-sm-6 mt-2"><input id="anh_dai_dien_url" class="form-control" placeholder="Ảnh đại diện URL"></div>
+              <div class="col-6 col-sm-3 mt-2">
                 <select id="gioi_tinh" class="form-select">
                   <option value="">Giới tính...</option>
                   <option value="NAM">Nam</option>
@@ -107,22 +107,22 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
                   <option value="KHAC">Khác</option>
                 </select>
               </div>
-              <div class="col-3 mt-2"><input id="ngay_sinh" type="text" class="form-control date-picker" placeholder="Ngày sinh" data-datepicker="1"></div>
+              <div class="col-6 col-sm-3 mt-2"><input id="ngay_sinh" type="text" class="form-control date-picker" placeholder="Ngày sinh" data-datepicker="1"></div>
             </div>
             <div class="mt-2"><button id="them" class="btn btn-primary">Thêm</button><span id="msg" class="ms-2 small text-muted"></span></div>
             <hr>
-            <div class="d-flex align-items-center gap-2">
-              <div class="me-auto" style="max-width:320px;">
+            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+              <div class="me-sm-auto" style="max-width:320px;">
                 <label class="form-label">Nhập CSV</label>
                 <div class="custom-file-input-sm position-relative">
                   <input type="file" id="csv_file" accept=".csv" class="form-control form-control-sm" aria-label="Chọn file CSV">
                   <span class="custom-file-label" id="csv_file_label">Chưa chọn tệp</span>
                 </div>
               </div>
-              <div class="pt-4">
+              <div class="pt-sm-4">
                 <div class="d-flex gap-2">
-                  <button id="nhap_csv" class="btn btn-outline-primary btn-sm px-3">Nhập CSV</button>
-                  <button id="xuat_csv" class="btn btn-outline-primary btn-sm px-3">Xuất CSV</button>
+                  <button id="nhap_csv" class="btn btn-outline-primary btn-sm px-3 flex-fill">Nhập CSV</button>
+                  <button id="xuat_csv" class="btn btn-outline-primary btn-sm px-3 flex-fill">Xuất CSV</button>
                 </div>
               </div>
             </div>
@@ -138,18 +138,18 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
                   <div class="small text-muted"><span id="ct_lop_text"></span> - <span id="ct_trang_thai"></span></div>
                 </div>
               </div>
-              <div class="d-flex align-items-center gap-2 mt-2">
+              <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 mt-2">
                 <input type="file" id="up_anh" accept="image/*" class="form-control form-control-sm" style="max-width:320px">
                 <button id="btn_up_anh" class="btn btn-outline-primary btn-sm">Upload ảnh</button>
                 <button id="btn_toggle" class="btn btn-outline-warning btn-sm">Tắt</button>
               </div>
               <div id="ct_msg" class="small text-muted mt-1"></div>
               <div class="row g-2 mt-2">
-                <div class="col-4"><label class="form-label">Mã</label><input id="ct_ma" class="form-control"></div>
-                <div class="col-8"><label class="form-label">Họ tên</label><input id="ct_ho_ten" class="form-control"></div>
-                <div class="col-6"><label class="form-label">Lớp</label><select id="ct_lop" class="form-select"></select></div>
-                <div class="col-3"><label class="form-label">Giới tính</label><select id="ct_gioi" class="form-select"><option value="">--</option><option value="NAM">Nam</option><option value="NU">Nữ</option><option value="KHAC">Khác</option></select></div>
-                <div class="col-3"><label class="form-label">Ngày sinh</label><input id="ct_ngay" type="text" class="form-control date-picker" data-datepicker="1" placeholder="dd/mm/yyyy"></div>
+                <div class="col-12 col-sm-4"><label class="form-label">Mã</label><input id="ct_ma" class="form-control"></div>
+                <div class="col-12 col-sm-8"><label class="form-label">Họ tên</label><input id="ct_ho_ten" class="form-control"></div>
+                <div class="col-12 col-sm-6"><label class="form-label">Lớp</label><select id="ct_lop" class="form-select"></select></div>
+                <div class="col-6 col-sm-3"><label class="form-label">Giới tính</label><select id="ct_gioi" class="form-select"><option value="">--</option><option value="NAM">Nam</option><option value="NU">Nữ</option><option value="KHAC">Khác</option></select></div>
+                <div class="col-6 col-sm-3"><label class="form-label">Ngày sinh</label><input id="ct_ngay" type="text" class="form-control date-picker" data-datepicker="1" placeholder="dd/mm/yyyy"></div>
               </div>
               <div class="mt-2"><button id="btn_luu" class="btn btn-primary btn-sm">Lưu thay đổi</button></div>
             </div>
@@ -264,8 +264,8 @@ async function ldNap(){ const j = await jfetch('../api/ly_do_quan_tri.php'); if(
     tr.dataset.id = x.id;
     tr.dataset.tieu_de = x.tieu_de;
     tr.dataset.bien_diem = x.bien_diem;
-    tr.innerHTML = `<td>${x.id}</td><td>${x.tieu_de}</td><td>${formatSigned(x.bien_diem)}</td><td>${badge(x.dang_hoat_dong)}</td>
-    <td class="text-end">
+    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Tiêu đề">${x.tieu_de}</td><td data-label="Biến điểm">${formatSigned(x.bien_diem)}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
+    <td class="text-end stack-actions">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
         <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>
@@ -304,8 +304,8 @@ async function qNap(){ const j = await jfetch('../api/qua_tang_quan_tri.php'); i
     tr.dataset.ton_kho = x.ton_kho;
     tr.dataset.anh_url = x.anh_url || '';
     const av = (x.anh_url && String(x.anh_url).trim()!=='') ? x.anh_url : '../upload/avatar/default.svg';
-    tr.innerHTML = `<td>${x.id}</td><td><img src="${av}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';"></td><td>${x.ten}</td><td>${x.gia_diem}</td><td>${x.ton_kho}</td><td>${badge(x.dang_hoat_dong)}</td>
-    <td class="text-end">
+    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Ảnh"><img src="${av}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';"></td><td data-label="Tên">${x.ten}</td><td data-label="Giá điểm">${x.gia_diem}</td><td data-label="Tồn kho">${x.ton_kho}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
+    <td class="text-end stack-actions">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
         <button class="btn btn-outline-info rounded-pill px-3 py-2">Ảnh</button>
@@ -348,8 +348,8 @@ async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if
     // Gắn data cho dòng (lop_hoc)
     tr.dataset.id = x.id;
     tr.dataset.ten = x.ten;
-    tr.innerHTML = `<td>${x.id}</td><td>${x.ten}</td><td>${badge(x.dang_hoat_dong)}</td>
-    <td class="text-end">
+    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Tên">${x.ten}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
+    <td class="text-end stack-actions">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
         <button class="btn btn-outline-warning rounded-pill px-3 py-2">${x.dang_hoat_dong? 'Tắt':'Bật'}</button>

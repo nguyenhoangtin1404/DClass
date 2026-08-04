@@ -40,10 +40,10 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
       <div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
         <h5 class="ribbon-title-modern">Thêm học sinh</h5>
         <div class="row g-2">
-          <div class="col-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
-          <div class="col-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
-          <div class="col-6 mt-2"><input id="anh_dai_dien_url" class="form-control" placeholder="Ảnh đại diện URL"></div>
-          <div class="col-3 mt-2">
+          <div class="col-12 col-sm-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
+          <div class="col-12 col-sm-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
+          <div class="col-12 col-sm-6 mt-2"><input id="anh_dai_dien_url" class="form-control" placeholder="Ảnh đại diện URL"></div>
+          <div class="col-6 col-sm-3 mt-2">
             <select id="gioi_tinh" class="form-select">
               <option value="">Giới tính...</option>
               <option value="NAM">Nam</option>
@@ -51,22 +51,22 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
               <option value="KHAC">Khác</option>
             </select>
           </div>
-          <div class="col-3 mt-2"><input id="ngay_sinh" type="text" class="form-control date-picker" placeholder="Ngày sinh" data-datepicker="1"></div>
+          <div class="col-6 col-sm-3 mt-2"><input id="ngay_sinh" type="text" class="form-control date-picker" placeholder="Ngày sinh" data-datepicker="1"></div>
         </div>
         <div class="mt-2"><button id="them" class="btn btn-primary">Thêm</button><span id="msg" class="ms-2 small text-muted"></span></div>
         <hr>
-        <div class="d-flex align-items-center gap-2">
-          <div class="me-auto" style="max-width:320px;">
+        <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+          <div class="me-sm-auto" style="max-width:320px;">
             <label class="form-label">Nhập CSV</label>
             <div class="custom-file-input-sm position-relative">
               <input type="file" id="csv_file" accept=".csv" class="form-control form-control-sm" aria-label="Chọn file CSV">
               <span class="custom-file-label" id="csv_file_label">Chưa chọn tệp</span>
             </div>
           </div>
-          <div class="pt-4">
+          <div class="pt-sm-4">
             <div class="d-flex gap-2">
-              <button id="nhap_csv" class="btn btn-outline-primary btn-sm px-3">Nhập CSV</button>
-              <button id="xuat_csv" class="btn btn-outline-primary btn-sm px-3">Xuất CSV</button>
+              <button id="nhap_csv" class="btn btn-outline-primary btn-sm px-3 flex-fill">Nhập CSV</button>
+              <button id="xuat_csv" class="btn btn-outline-primary btn-sm px-3 flex-fill">Xuất CSV</button>
             </div>
           </div>
         </div>
@@ -82,18 +82,18 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
               <div class="small text-muted"><span id="ct_lop"></span> · <span id="ct_trang_thai"></span></div>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2 mt-2">
+          <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 mt-2">
             <input type="file" id="up_anh" accept="image/*" class="form-control form-control-sm" style="max-width:320px">
             <button id="btn_up_anh" class="btn btn-outline-primary btn-sm">Upload ảnh</button>
             <button id="btn_toggle" class="btn btn-outline-warning btn-sm">Tắt</button>
           </div>
           <div id="ct_msg" class="small text-muted mt-1"></div>
           <div class="row g-2 mt-2">
-            <div class="col-4"><label class="form-label">Mã</label><input id="ct_ma" class="form-control"></div>
-            <div class="col-8"><label class="form-label">Họ tên</label><input id="ct_ho_ten" class="form-control"></div>
-            <div class="col-6"><label class="form-label">Lớp</label><select id="ct_lop" class="form-select"></select></div>
-            <div class="col-3"><label class="form-label">Giới tính</label><select id="ct_gioi" class="form-select"><option value="">--</option><option value="NAM">Nam</option><option value="NU">Nữ</option><option value="KHAC">Khác</option></select></div>
-            <div class="col-3"><label class="form-label">Ngày sinh</label><input id="ct_ngay" type="text" class="form-control date-picker" data-datepicker="1" placeholder="dd/mm/yyyy"></div>
+            <div class="col-12 col-sm-4"><label class="form-label">Mã</label><input id="ct_ma" class="form-control"></div>
+            <div class="col-12 col-sm-8"><label class="form-label">Họ tên</label><input id="ct_ho_ten" class="form-control"></div>
+            <div class="col-12 col-sm-6"><label class="form-label">Lớp</label><select id="ct_lop" class="form-select"></select></div>
+            <div class="col-6 col-sm-3"><label class="form-label">Giới tính</label><select id="ct_gioi" class="form-select"><option value="">--</option><option value="NAM">Nam</option><option value="NU">Nữ</option><option value="KHAC">Khác</option></select></div>
+            <div class="col-6 col-sm-3"><label class="form-label">Ngày sinh</label><input id="ct_ngay" type="text" class="form-control date-picker" data-datepicker="1" placeholder="dd/mm/yyyy"></div>
           </div>
           <div class="mt-2"><button id="btn_luu" class="btn btn-primary btn-sm">Lưu thay đổi</button></div>
         </div>
