@@ -53,14 +53,10 @@ try {
 
 require __DIR__ . '/migration_nghiep_vu.php';
 
-// Nếu DB đã tồn tại, chạy migrate; nếu lần đầu, seed xong rồi migrate để đảm bảo schema mới nhất
+// Nếu DB đã tồn tại, chạy migrate; nếu lần đầu, chỉ tạo schema (không seed tài khoản/dữ liệu mẫu
+// nữa - mỗi giáo viên tự đăng ký tài khoản của mình qua api/dang_nhap.php?hanh_dong=dang_ky).
 if ($lan_dau) {
   $luoc_do = file_get_contents(__DIR__ . '/luoc_do.sql');
   $pdo->exec($luoc_do);
-  $stmt = $pdo->prepare("INSERT INTO giao_vien(ten_dang_nhap, mat_khau_bam, vai_tro, phai_doi_mat_khau) VALUES(?,?,?,1)");
-  $stmt->execute(['gv1', password_hash('123456', PASSWORD_DEFAULT), 'ADMIN']);
-  $pdo->exec("INSERT INTO lop_hoc(ten) VALUES ('4A'),('4B'),('4C')");
-  $pdo->exec("INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong) VALUES ('Giup ban',2,1), ('Hoan thanh som',1,1), ('Noi chuyen rieng',-1,1)");
-  $pdo->exec("INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong) VALUES ('Sticker',3,-1,1), ('But chi',5,50,1), ('Tui mu',8,20,1)");
 }
 chay_migration($pdo);

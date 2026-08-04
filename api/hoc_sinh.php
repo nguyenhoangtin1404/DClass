@@ -10,16 +10,14 @@ $hanh_dong = $_GET['hanh_dong'] ?? '';
 
 if ($method === 'GET') {
   yeu_cau_dang_nhap();
-  $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
   $tu_khoa = trim($_GET['tu_khoa'] ?? '');
   $lop_hoc_id = $_GET['lop_hoc_id'] ?? '';
   $tat_ca = isset($_GET['tat_ca']) ? (int)$_GET['tat_ca'] : 0;
   // Lọc theo lớp mà giáo viên được gán quản lý
-  $lop_duoc_gan = [];
-  if (!$la_admin) {
-    $stL = $pdo->prepare("SELECT lop_hoc_id FROM giao_vien_lop WHERE giao_vien_id=?");
-    $stL->execute([(int)$_SESSION['giao_vien_id']]);
-    $lop_duoc_gan = array_map(fn($r) => (int)$r['lop_hoc_id'], $stL->fetchAll());
+  $lop_duoc_gan = lop_duoc_gan($pdo, (int)$_SESSION['giao_vien_id']);
+  if (!$lop_duoc_gan) {
+    // Chưa sở hữu lớp nào -> không hiển thị học sinh
+    json_phan_hoi(true, []); exit;
   }
   $sql = "SELECT s.id, s.ma, s.ho_ten, s.lop_hoc_id, s.stt,
                  s.anh_dai_dien_url, s.gioi_tinh, s.ngay_sinh,
@@ -32,26 +30,17 @@ if ($method === 'GET') {
   $pr = [];
   if (!$tat_ca) { $sql .= " AND s.dang_hoat_dong=1"; }
   if ($tu_khoa !== '') { $sql .= " AND (s.ho_ten LIKE ? OR s.ma LIKE ?)"; $like = like_mau($tu_khoa); $pr = [ $like, $like ]; }
-  if (!$la_admin) {
-    if ($lop_hoc_id !== '') {
-      $lop_hoc_id = (int)$lop_hoc_id;
-      // Nếu giáo viên không được gán lớp này thì trả rỗng
-      if ($lop_duoc_gan && !in_array($lop_hoc_id, $lop_duoc_gan, true)) {
-        json_phan_hoi(true, []); exit;
-      }
-      $sql .= " AND s.lop_hoc_id = ?"; $pr[] = $lop_hoc_id;
-    } else {
-      if ($lop_duoc_gan) {
-        $place = implode(',', array_fill(0, count($lop_duoc_gan), '?'));
-        $sql .= " AND s.lop_hoc_id IN ($place)";
-        $pr = array_merge($pr, $lop_duoc_gan);
-      } else {
-        // Không được gán lớp nào -> không hiển thị học sinh
-        json_phan_hoi(true, []); exit;
-      }
+  if ($lop_hoc_id !== '') {
+    $lop_hoc_id = (int)$lop_hoc_id;
+    // Nếu giáo viên không được gán lớp này thì trả rỗng
+    if (!in_array($lop_hoc_id, $lop_duoc_gan, true)) {
+      json_phan_hoi(true, []); exit;
     }
+    $sql .= " AND s.lop_hoc_id = ?"; $pr[] = $lop_hoc_id;
   } else {
-    if ($lop_hoc_id !== '') { $sql .= " AND s.lop_hoc_id = ?"; $pr[] = (int)$lop_hoc_id; }
+    $place = implode(',', array_fill(0, count($lop_duoc_gan), '?'));
+    $sql .= " AND s.lop_hoc_id IN ($place)";
+    $pr = array_merge($pr, $lop_duoc_gan);
   }
   $sql .= " ORDER BY s.stt IS NULL, s.stt ASC, s.ho_ten ASC LIMIT 200";
   $st = $pdo->prepare($sql); $st->execute($pr);
@@ -63,8 +52,8 @@ if ($method === 'POST' && $hanh_dong === 'sua') {
   $b = than_json();
   $id = (int)($b['id'] ?? 0);
   if ($id <= 0) json_phan_hoi(false, null, 'thieu_id');
-  $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
-  try { kiem_tra_quyen_lop($pdo, $la_admin, (int)$_SESSION['giao_vien_id'], $id); }
+  $gv_id = (int)$_SESSION['giao_vien_id'];
+  try { kiem_tra_quyen_lop($pdo, $gv_id, $id); }
   catch (Throwable $e) { json_phan_hoi(false, null, 'khong_du_quyen'); }
   $set = [];$pr=[];
   if (array_key_exists('ma',$b)) { $set[]='ma=?'; $pr[] = (trim((string)$b['ma']) ?: null); }
@@ -72,9 +61,9 @@ if ($method === 'POST' && $hanh_dong === 'sua') {
   if (array_key_exists('lop_hoc_id',$b)) {
     $lv = $b['lop_hoc_id'];
     $lop_moi = ($lv===null || $lv==='' ? null : (int)$lv);
-    if (!$la_admin && $lop_moi !== null) {
-      $lop_gan = lop_duoc_gan($pdo, $la_admin, (int)$_SESSION['giao_vien_id']);
-      if ($lop_gan && !in_array($lop_moi, $lop_gan, true)) json_phan_hoi(false, null, 'khong_du_quyen');
+    if ($lop_moi !== null) {
+      $lop_gan = lop_duoc_gan($pdo, $gv_id);
+      if (!in_array($lop_moi, $lop_gan, true)) json_phan_hoi(false, null, 'khong_du_quyen');
     }
     $set[]='lop_hoc_id=?'; $pr[] = $lop_moi;
   }
@@ -95,8 +84,7 @@ if ($method === 'POST' && $hanh_dong === 'bat_tat') {
   $id = (int)($b['id'] ?? 0);
   $trang_thai = (int)($b['dang_hoat_dong'] ?? 1) ? 1 : 0;
   if ($id <= 0) json_phan_hoi(false, null, 'thieu_id');
-  $la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
-  try { kiem_tra_quyen_lop($pdo, $la_admin, (int)$_SESSION['giao_vien_id'], $id); }
+  try { kiem_tra_quyen_lop($pdo, (int)$_SESSION['giao_vien_id'], $id); }
   catch (Throwable $e) { json_phan_hoi(false, null, 'khong_du_quyen'); }
   $pdo->prepare('UPDATE hoc_sinh SET dang_hoat_dong=? WHERE id=?')->execute([$trang_thai, $id]);
   json_phan_hoi(true);
@@ -108,7 +96,11 @@ if ($method === 'POST') {
   $ho_ten = trim($b['ho_ten'] ?? '');
   if ($ho_ten === '') json_phan_hoi(false, null, 'thieu_ho_ten');
   $ma = trim($b['ma'] ?? '');
-  $lop = isset($b['lop_hoc_id']) ? (int)$b['lop_hoc_id'] : null;
+  $lop = isset($b['lop_hoc_id']) && $b['lop_hoc_id'] !== '' ? (int)$b['lop_hoc_id'] : null;
+  if ($lop !== null) {
+    $lop_gan = lop_duoc_gan($pdo, (int)$_SESSION['giao_vien_id']);
+    if (!in_array($lop, $lop_gan, true)) json_phan_hoi(false, null, 'khong_du_quyen');
+  }
   $anh = trim($b['anh_dai_dien_url'] ?? '');
   $gioi_tinh = trim($b['gioi_tinh'] ?? '');
   $ngay_sinh = trim($b['ngay_sinh'] ?? '');

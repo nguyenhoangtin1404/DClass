@@ -1,23 +1,24 @@
 # Mô hình nghiệp vụ
 
-- **Vai trò**: `ADMIN` (toàn quyền, xem thống kê toàn hệ thống, quản trị tài khoản/lớp/lý do/quà, xem nhật ký), `GV` (quyền trong lớp được gán). Session lưu `giao_vien_id`, `ten_dang_nhap`, `vai_tro`.
+- **Không có vai trò quản trị toàn cục**: mỗi giáo viên tự đăng ký tài khoản (`api/dang_nhap.php?hanh_dong=dang_ky`) và chỉ thấy/sửa được lớp, học sinh, lý do, quà tặng do chính mình tạo. Cột `vai_tro` trong `giao_vien` vẫn tồn tại (mặc định `GV`) nhưng không còn cấp quyền đặc biệt nào. Session lưu `giao_vien_id`, `ten_dang_nhap`, `vai_tro`.
 - **Thực thể chính**:
-  - `lop_hoc`: lớp học; có thể bật/tắt; gán nhiều giáo viên qua bảng phụ `giao_vien_lop`.
+  - `lop_hoc`: lớp học; có thể bật/tắt; quyền truy cập xác định qua bảng phụ `giao_vien_lop` (giáo viên tạo lớp tự động được gán vào lớp đó).
   - `hoc_sinh`: thuộc một lớp, có mã, họ tên, STT, giới tính, ngày sinh, avatar, trạng thái hoạt động.
   - `vi_diem`: số dư điểm của từng học sinh (1-1 với `hoc_sinh`).
-  - `ly_do`: lý do cộng/trừ điểm với giá trị `bien_diem` (+ thưởng, - phạt) và trạng thái hoạt động.
-  - `qua_tang`: quà tặng đổi điểm, giá điểm, tồn kho (`-1` nghĩa không giới hạn), trạng thái hoạt động, ảnh minh họa.
+  - `ly_do`: lý do cộng/trừ điểm với giá trị `bien_diem` (+ thưởng, - phạt), trạng thái hoạt động, `nguoi_tao_id` (giáo viên sở hữu).
+  - `qua_tang`: quà tặng đổi điểm, giá điểm, tồn kho (`-1` nghĩa không giới hạn), trạng thái hoạt động, ảnh minh họa, `nguoi_tao_id` (giáo viên sở hữu).
   - `so_cai_diem`: sổ cái ghi mọi giao dịch điểm (cộng/đổi), lưu số dư sau giao dịch để truy vết.
-  - `nhat_ky`: log thao tác quản trị (tạo/sửa/xóa, upload, reset mật khẩu...).
+  - `nhat_ky`: log thao tác của từng giáo viên (tạo/sửa/xóa, upload...), không có màn hình xem tổng hợp toàn hệ thống.
 - **Quy tắc quyền**:
-  - ADMIN bỏ qua mọi ràng buộc lớp; GV chỉ xem/sửa học sinh trong lớp được gán (nếu chưa gán lớp nào thì API học sinh trả danh sách rỗng).
-  - Mọi API cần đăng nhập; upload ảnh quà chỉ dành cho ADMIN.
+  - Giáo viên chỉ xem/sửa học sinh trong lớp mình sở hữu (chưa sở hữu lớp nào thì API học sinh/điểm/CSV trả rỗng hoặc từ chối — không còn hành vi "cho qua" như trước).
+  - Cộng điểm/đổi quà chỉ dùng được `ly_do`/`qua_tang` do chính giáo viên đó tạo (kiểm tra `nguoi_tao_id`), dù học sinh có thuộc lớp mình hay không.
+  - Mọi API cần đăng nhập.
 - **Luồng điểm**:
   - Cộng điểm: chọn học sinh + lý do, hệ thống đảm bảo ví tồn tại (`dam_bao_vi`), cập nhật số dư, ghi `CONG_DIEM` vào `so_cai_diem` trong transaction.
   - Đổi quà: kiểm tồn kho, kiểm số dư bằng cập nhật nguyên tử, trừ tồn (nếu có), ghi `DOI_DIEM` vào sổ cái. Điểm trừ luôn theo `gia_diem` của quà.
   - Thẻ cào: yêu cầu số dư tối thiểu 5 điểm để bắt đầu cào; quà được chọn ngẫu nhiên trong nhóm có `gia_diem <= so_du` hiện tại và khi đổi sẽ trừ theo `gia_diem` của quà đó.
-  - Lịch sử & thống kê: lọc theo lớp GV được gán; thống kê top số dư, top cộng/đổi, tồn kho quà, quà ưa thích.
+  - Lịch sử & thống kê: lọc theo lớp giáo viên sở hữu; thống kê top số dư, top cộng/đổi, tồn kho quà, quà ưa thích (chỉ quà của chính giáo viên).
 - **Nhập/xuất dữ liệu**:
-  - Xuất CSV học sinh kèm số dư, lọc theo lớp/từ khóa; chỉ lớp GV được gán (trừ ADMIN).
-  - Nhập CSV: tự nhận diện delimiter và map cột linh hoạt; chuẩn hóa ngày sinh (`dd/mm/yyyy` → `yyyy-mm-dd`), giới tính (`NAM/NU/KHAC`), mã/lớp; chỉ ghi dữ liệu hợp lệ.
-- **Bảo mật đăng nhập**: giới hạn 3 lần sai → khóa 10 phút (session-based), có bảng `reset_khoa` để bypass khóa tạm thời; hỗ trợ cookie ghi nhớ (HMAC theo user agent).
+  - Xuất CSV học sinh kèm số dư, lọc theo lớp/từ khóa; chỉ lớp giáo viên sở hữu.
+  - Nhập CSV: tự nhận diện delimiter và map cột linh hoạt; chuẩn hóa ngày sinh (`dd/mm/yyyy` → `yyyy-mm-dd`), giới tính (`NAM/NU/KHAC`), mã/lớp; bỏ qua dòng ghi vào lớp không thuộc quyền sở hữu, và bỏ qua nếu `ma` trùng với học sinh của giáo viên khác (tránh ghi đè chéo).
+- **Bảo mật đăng nhập**: giới hạn 5 lần sai → khóa 10 phút (session-based), có bảng `reset_khoa` để bypass khóa tạm thời; hỗ trợ cookie ghi nhớ (HMAC theo user agent). Đăng ký tài khoản cũng giới hạn 5 lần thử/10 phút mỗi IP để chống spam tạo tài khoản.

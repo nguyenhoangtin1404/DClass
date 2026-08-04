@@ -5,10 +5,20 @@
   - Sao chép cấu hình: `cp config/env.php.example config/env.php`, chỉnh `db_path`, `session_name` nếu cần chạy song song nhiều môi trường.
 
 - **Khởi tạo/migrate CSDL**
-  - Chạy `php tools/cai_dat.php --seed` để tạo bảng (đọc từ `config/luoc_do.sql`), seed mẫu nếu DB trống và tự backup nếu file DB đã tồn tại.
+  - Chạy `php tools/cai_dat.php` để tạo bảng (đọc từ `config/luoc_do.sql`) và tự backup nếu file DB đã tồn tại. Không seed tài khoản nào — giáo viên tự đăng ký qua trang đăng nhập. Thêm `--seed` chỉ khi cần 1 tài khoản mẫu cho dev/demo cục bộ (`gv1`/`123456`, bắt buộc đổi mật khẩu ngay lần đăng nhập đầu).
   - Xuất/nhập CSV thủ công khi cần rollback:  
     - Xuất: `php tools/cai_dat.php --export-hoc-sinh --export-so-cai`  
     - Nhập: `php tools/cai_dat.php --import-hoc-sinh=duong_dan.csv --import-so-cai=duong_dan.csv`
+  - Hỗ trợ vận hành (CLI, chỉ người có quyền chạy trên server, không lộ qua web):
+    - Liệt kê tài khoản: `php tools/cai_dat.php --liet-ke-tai-khoan`
+    - Đặt lại mật khẩu cho 1 giáo viên khi được yêu cầu hỗ trợ: `php tools/cai_dat.php --dat-lai-mat-khau=ten_dang_nhap --mat-khau-moi=xxxx`
+
+- **Nâng cấp CSDL production đã có dữ liệu thật (bản trước khi có `nguoi_tao_id`/ownership theo giáo viên)**
+  - Việc này tự chạy 1 lần duy nhất, không cần thao tác gì thêm (xem `docs/DB_SCHEMA.md` mục "Nâng cấp CSDL đã có dữ liệu thật"). Nhưng **trước khi deploy lên server có khách hàng thật**, nên tự kiểm tra trước bằng:
+    ```
+    php tools/kiem_tra_migration.php /duong/dan/toi/backup/ung_dung.db
+    ```
+    Script sao chép file backup ra bản tạm (`*.kiemtra.db`), chạy migration TRÊN BẢN SAO đó, rồi in ra chính xác migration sẽ thay đổi những gì (số lớp/lý do/quà được gán lại quyền) — **không bao giờ đụng tới file backup gốc**. Xem báo cáo hợp lý rồi hẵng deploy code mới lên server thật; xoá file `*.kiemtra.db` khi xong.
 
 - **Kiểm thử & chất lượng**
   - Cài deps: `composer install`
@@ -28,7 +38,7 @@
   - `AllowOverride All` (hoặc tương đương) phải bật cho vhost để các file `.htaccess` trong repo có hiệu lực — nếu không, `config/`, `data/`... sẽ lộ trực tiếp qua URL.
   - Tắt `display_errors`, bật `log_errors` trong `php.ini` production (không để lộ stack trace/đường dẫn server khi có lỗi).
   - Bắt buộc HTTPS: dùng Let's Encrypt/mod_ssl trực tiếp trên Apache, hoặc đặt sau reverse proxy (Nginx/Cloudflare) có TLS termination — code đã tự nhận diện HTTPS qua `X-Forwarded-Proto` khi chạy sau proxy (xem `dang_https()` trong `config/db.php`).
-  - Đổi mật khẩu tài khoản `gv1` mặc định ngay sau lần đăng nhập đầu (hệ thống đã bắt buộc việc này, không cho dùng API/trang khác cho tới khi đổi).
+  - Không có tài khoản mặc định trên môi trường online — mỗi giáo viên tự đăng ký tài khoản riêng qua trang đăng nhập, chỉ thấy/sửa được dữ liệu do chính mình tạo (lớp, học sinh, lý do, quà tặng).
   - Sinh `remember_secret` ngẫu nhiên trong `config/env.php` (`php -r "echo bin2hex(random_bytes(32));"`) trước khi bật tính năng "ghi nhớ đăng nhập".
   - Cấp quyền ghi cho `data/` và `upload/` (user chạy PHP-FPM/mod_php), nhưng đảm bảo cả 2 không lộ qua URL ngoài các file ảnh hợp lệ trong `upload/`.
 

@@ -15,14 +15,11 @@ $st = $pdo->prepare('SELECT lop_hoc_id, anh_dai_dien_url FROM hoc_sinh WHERE id=
 $st->execute([$hoc_sinh_id]);
 $hs = $st->fetch();
 if (!$hs) json_phan_hoi(false, null, 'hoc_sinh_khong_ton_tai');
-$la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
-if (!$la_admin) {
-  $lop_hoc_id = (int)($hs['lop_hoc_id'] ?? 0);
-  if ($lop_hoc_id <= 0) json_phan_hoi(false, null, 'khong_du_quyen');
-  $stL = $pdo->prepare("SELECT 1 FROM giao_vien_lop WHERE giao_vien_id=? AND lop_hoc_id=?");
-  $stL->execute([(int)$_SESSION['giao_vien_id'], $lop_hoc_id]);
-  if (!$stL->fetchColumn()) json_phan_hoi(false, null, 'khong_du_quyen');
-}
+$lop_hoc_id = (int)($hs['lop_hoc_id'] ?? 0);
+if ($lop_hoc_id <= 0) json_phan_hoi(false, null, 'khong_du_quyen');
+$stL = $pdo->prepare("SELECT 1 FROM giao_vien_lop WHERE giao_vien_id=? AND lop_hoc_id=?");
+$stL->execute([(int)$_SESSION['giao_vien_id'], $lop_hoc_id]);
+if (!$stL->fetchColumn()) json_phan_hoi(false, null, 'khong_du_quyen');
 
 if (!isset($_FILES['file']) || !is_uploaded_file($_FILES['file']['tmp_name'])) json_phan_hoi(false, null, 'thieu_file');
 $file = $_FILES['file'];

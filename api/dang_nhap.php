@@ -61,4 +61,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   json_phan_hoi(false, ['so_lan'=>$sl, 'con_lai'=>$con_lai], 'dang_nhap_that_bai');
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_xuat') { xoa_cookie_ghi_nho(); session_destroy(); json_phan_hoi(true); }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_ky') {
+  // Chống spam tạo tài khoản hàng loạt: tối đa 5 lần thử (thành công hay thất bại)/10 phút mỗi IP.
+  $ip = $_SERVER['REMOTE_ADDR'] ?? 'na';
+  $dk = $_SESSION['dk_sai'][$ip] ?? ['so_lan' => 0, 'khoa_den' => 0];
+  if ((int)$dk['khoa_den'] && (int)$dk['khoa_den'] <= time()) { $dk = ['so_lan' => 0, 'khoa_den' => 0]; }
+  if ((int)$dk['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
+  $dk['so_lan'] = (int)$dk['so_lan'] + 1;
+  if ($dk['so_lan'] >= 5) { $dk['khoa_den'] = time() + 10*60; }
+  $_SESSION['dk_sai'][$ip] = $dk;
+
+  $b = than_json();
+  $ten = trim((string)($b['ten_dang_nhap'] ?? ''));
+  $mk = (string)($b['mat_khau'] ?? '');
+  try {
+    $gv = dang_ky_giao_vien($pdo, $ten, $mk);
+    unset($_SESSION['dk_sai'][$ip]);
+    session_regenerate_id(true);
+    $_SESSION['giao_vien_id'] = $gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = 'GV';
+    $_SESSION['phai_doi_mat_khau'] = false;
+    ghi_log($pdo, $gv['id'], 'dang_ky', 'Tự đăng ký tài khoản '.$gv['ten_dang_nhap']);
+    json_phan_hoi(true, ['ten_dang_nhap' => $gv['ten_dang_nhap']]);
+  } catch (Exception $e) {
+    json_phan_hoi(false, null, $e->getMessage());
+  }
+}
+
 http_response_code(404); json_phan_hoi(false, null, 'khong_tim_thay');

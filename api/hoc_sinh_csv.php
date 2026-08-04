@@ -4,14 +4,11 @@ require __DIR__ . '/../config/db.php';
 require __DIR__ . '/../lib/tro_giup.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 
+require __DIR__ . '/../lib/diem_nghiep_vu.php';
+require __DIR__ . '/../lib/hoc_sinh_nghiep_vu.php';
 yeu_cau_dang_nhap();
-$la_admin = (($_SESSION['vai_tro'] ?? '') === 'ADMIN');
-$lop_gan = [];
-if (!$la_admin) {
-  $stG = $pdo->prepare("SELECT lop_hoc_id FROM giao_vien_lop WHERE giao_vien_id=?");
-  $stG->execute([(int)$_SESSION['giao_vien_id']]);
-  $lop_gan = array_map(fn($r)=>(int)$r['lop_hoc_id'], $stG->fetchAll());
-}
+$gv_id = (int)$_SESSION['giao_vien_id'];
+$lop_gan = lop_duoc_gan($pdo, $gv_id);
 
 $hanh_dong = $_GET['hanh_dong'] ?? '';
 $detectDelimiter = function(string $line) {
@@ -98,12 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $hanh_dong === 'xuat') {
   $pr = [];
   if ($tu_khoa !== '') { $sql .= " AND (s.ho_ten LIKE ? OR s.ma LIKE ?)"; $like = like_mau($tu_khoa); $pr = [$like, $like]; }
   if ($lop_hoc_id) { $sql .= " AND s.lop_hoc_id = ?"; $pr[] = $lop_hoc_id; }
-  if (!$la_admin) {
-    if (!$lop_gan) { fclose($out); exit; }
-    $place = implode(',', array_fill(0, count($lop_gan), '?'));
-    $sql .= " AND s.lop_hoc_id IN ($place)";
-    $pr = array_merge($pr, $lop_gan);
-  }
+  if (!$lop_gan) { fclose($out); exit; }
+  $place = implode(',', array_fill(0, count($lop_gan), '?'));
+  $sql .= " AND s.lop_hoc_id IN ($place)";
+  $pr = array_merge($pr, $lop_gan);
   $sql .= " ORDER BY s.ho_ten ASC";
   $st = $pdo->prepare($sql); $st->execute($pr);
   while ($row = $st->fetch()) { fputcsv($out, [
@@ -240,23 +235,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'nhap') {
         $rawStt = trim((string)($row[$idxStt] ?? ''));
         if ($rawStt !== '' && ctype_digit($rawStt)) { $stt = (int)$rawStt; }
       }
-      if (!$la_admin && $lop_hoc_id !== null && $lop_gan && !in_array($lop_hoc_id, $lop_gan, true)) { continue; }
+      if ($lop_hoc_id !== null && !in_array($lop_hoc_id, $lop_gan, true)) { continue; }
       if ($ho_ten === '' && $ma === '') { continue; }
-      // Upsert theo 'ma' nếu có, ngược lại tạo mới theo ho_ten
+      // Upsert theo 'ma' nếu có, ngược lại tạo mới theo ho_ten. 'ma' là duy nhất toàn CSDL (dùng
+      // chung cho mọi giáo viên) - hoc_sinh_upsert_theo_ma() tự kiểm tra học sinh trùng mã đó có
+      // thuộc lớp của mình không trước khi cập nhật, tránh 1 giáo viên ghi đè lên học sinh của
+      // giáo viên khác chỉ bằng cách trùng mã trong file CSV.
       if ($ma !== '') {
-        $st = $pdo->prepare("INSERT INTO hoc_sinh(ma, ho_ten, stt, lop_hoc_id, anh_dai_dien_url, gioi_tinh, ngay_sinh, dang_hoat_dong) VALUES(?,?,?,?,?,?,?,1)
-                              ON CONFLICT(ma) DO UPDATE SET
-                                ho_ten=excluded.ho_ten,
-                                lop_hoc_id=COALESCE(excluded.lop_hoc_id, lop_hoc_id),
-                                anh_dai_dien_url=COALESCE(excluded.anh_dai_dien_url, anh_dai_dien_url),
-                                gioi_tinh=COALESCE(excluded.gioi_tinh, gioi_tinh),
-                                ngay_sinh=COALESCE(excluded.ngay_sinh, ngay_sinh),
-                                stt=COALESCE(excluded.stt, stt)");
-        $ok = $st->execute([$ma ?: null, $ho_ten, $stt, $lop_hoc_id, $anh ?: null, $gioi ?: null, $ngay ?: null]);
-        // Xác định thêm hay cập nhật
-        $st2 = $pdo->prepare("SELECT id FROM hoc_sinh WHERE ma=?"); $st2->execute([$ma]); $id = (int)$st2->fetchColumn();
-        $pdo->prepare("INSERT OR IGNORE INTO vi_diem(hoc_sinh_id, so_du) VALUES(?,0)")->execute([$id]);
-        // Không dễ phân biệt thêm/cập nhật ở SQLite khi upsert; bỏ qua thống kê chi tiết
+        $kq = hoc_sinh_upsert_theo_ma($pdo, $lop_gan, $ma, $ho_ten, $lop_hoc_id, $anh, $gioi, $ngay, $stt);
+        if ($kq === null) { continue; }
+        if ($kq['moi']) { $them++; } else { $cap_nhat++; }
       } else {
         $st = $pdo->prepare("INSERT INTO hoc_sinh(ma, ho_ten, stt, lop_hoc_id, anh_dai_dien_url, gioi_tinh, ngay_sinh, dang_hoat_dong) VALUES(?,?,?,?,?,?,?,1)");
         $st->execute([null, $ho_ten, $stt, $lop_hoc_id, $anh ?: null, $gioi ?: null, $ngay ?: null]);
