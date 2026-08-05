@@ -26,8 +26,11 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
 <div class="container py-3 safe-bottom">
   <div class="row g-3">
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
-      <h5 class="ribbon-title-modern">Danh sách học sinh</h5>
-      <input id="tu_khoa" class="form-control" placeholder="Tìm theo tên hoặc mã học sinh">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h5 class="ribbon-title-modern mb-0">Danh sách học sinh</h5>
+        <button id="btn_goi_ten" type="button" class="btn btn-outline-primary btn-sm" title="Gọi tên ngẫu nhiên">🎲 Gọi tên</button>
+      </div>
+      <input id="tu_khoa" class="form-control mt-2" placeholder="Tìm theo tên hoặc mã học sinh">
       <div id="ds_hs" class="list-group mt-2" style="max-height:300px;overflow:auto"></div>
     </div></div></div>
     <div class="col-md-6"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
@@ -75,6 +78,23 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="qua_modal_body"></div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="goiTenModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="ribbon-title-modern modal-title">Gọi tên ngẫu nhiên</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <div id="goiTenName" class="fs-2 fw-bold text-primary">—</div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button id="goiTenQuay" type="button" class="btn btn-outline-primary">Quay lại</button>
+        <button id="goiTenChon" type="button" class="btn btn-success d-none">Chọn học sinh này</button>
+      </div>
     </div>
   </div>
 </div><script>
@@ -181,10 +201,19 @@ function renderLyDo(){
   const kw = norm(document.getElementById('ly_do_loc')?.value||'');
   (lyDoData||[])
     .filter(ld => !kw || norm(ld.tieu_de).includes(kw))
-    .forEach(ld => {
+    .slice()
+    .sort((a,b) => Number(b.bien_diem) - Number(a.bien_diem))
+    .forEach((ld, idx) => {
       const b=document.createElement('button');
-      b.className='btn btn-outline-primary';
+      b.className = 'btn ' + (Number(ld.bien_diem)<0 ? 'btn-outline-danger' : 'btn-outline-success');
       b.textContent = `${ld.tieu_de} (${ld.bien_diem>0?'+':''}${ld.bien_diem})`;
+      if(idx<12){
+        b.title = `Phím tắt: F${idx+1}`;
+        const kbd=document.createElement('kbd');
+        kbd.className='ms-2 small';
+        kbd.textContent=`F${idx+1}`;
+        b.appendChild(kbd);
+      }
       b.onclick = async()=>{
         if(!hsHienTai){
           showToast('Hãy chọn học sinh.','warning');
@@ -195,13 +224,107 @@ function renderLyDo(){
         if(jj.ok){
           hsHienTai.so_du=jj.du_lieu.so_du;
           hienThongTin(); napHocSinh(); napLichSu(); if(typeof napThongKe==='function') napThongKe();
+          if(Number(ld.bien_diem) > 0){ hieuUngCongDiem(); }
         } else {
           showToast(jj.thong_bao||'L\u1ed7i','danger');
         }
       };
       box.appendChild(b);
     });
-}async function napLyDo(){
+}
+
+// Hi\u1ec7u \u1ee9ng khi c\u1ed9ng \u0111i\u1ec3m: confetti to\u00e0n m\u00e0n h\u00ecnh + ti\u1ebfng v\u1ed7 tay t\u1ed5ng h\u1ee3p (kh\u00f4ng c\u1ea7n file \u00e2m thanh ngo\u00e0i,
+// tr\u00e1nh ph\u1ee5 thu\u1ed9c m\u1ea1ng/b\u1ea3n quy\u1ec1n - d\u00f9ng noise \u0111\u00e3 l\u1ecdc qua Web Audio API \u0111\u1ec3 gi\u1ea3 l\u1eadp ti\u1ebfng v\u1ed7 tay).
+let _confettiOverlayDangChay=null;
+function hieuUngCongDiem(){
+  hieuUngConfetti();
+  phatAmThanhVoTay();
+}
+function hieuUngConfetti(){
+  if(_confettiOverlayDangChay){ _confettiOverlayDangChay(); }
+  const overlay=document.createElement('canvas');
+  overlay.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;z-index:2000;cursor:pointer;';
+  overlay.title='Nh\u1ea5n \u0111\u1ec3 b\u1ecf qua hi\u1ec7u \u1ee9ng';
+  document.body.appendChild(overlay);
+  const ctx=overlay.getContext('2d');
+  function resize(){ overlay.width=window.innerWidth; overlay.height=window.innerHeight; }
+  resize();
+  const mauSac=['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93','#ff924c'];
+  const hat=Array.from({length:140}, () => ({
+    x: Math.random()*overlay.width,
+    y: -20 - Math.random()*overlay.height*0.5,
+    vx: (Math.random()-0.5)*3,
+    vy: 2+Math.random()*3,
+    size: 4+Math.random()*5,
+    mau: mauSac[Math.floor(Math.random()*mauSac.length)],
+    goc: Math.random()*Math.PI*2,
+    vGoc: (Math.random()-0.5)*0.3
+  }));
+  let dangChay=true;
+  const batDauLuc=performance.now();
+  const thoiLuong=2600;
+  function dungLai(){
+    if(!dangChay) return;
+    dangChay=false;
+    window.removeEventListener('resize', resize);
+    overlay.removeEventListener('click', dungLai);
+    overlay.remove();
+    if(_confettiOverlayDangChay===dungLai) _confettiOverlayDangChay=null;
+  }
+  _confettiOverlayDangChay=dungLai;
+  overlay.addEventListener('click', dungLai);
+  window.addEventListener('resize', resize);
+  function ve(now){
+    if(!dangChay) return;
+    ctx.clearRect(0,0,overlay.width,overlay.height);
+    hat.forEach(h=>{
+      h.x+=h.vx; h.y+=h.vy; h.vy+=0.02; h.goc+=h.vGoc;
+      ctx.save();
+      ctx.translate(h.x,h.y);
+      ctx.rotate(h.goc);
+      ctx.fillStyle=h.mau;
+      ctx.fillRect(-h.size/2,-h.size/2,h.size,h.size*0.6);
+      ctx.restore();
+    });
+    if(now-batDauLuc > thoiLuong){ dungLai(); return; }
+    requestAnimationFrame(ve);
+  }
+  requestAnimationFrame(ve);
+}
+function phatAmThanhVoTay(){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    const actx = new AC();
+    const now = actx.currentTime;
+    const master = actx.createGain();
+    master.gain.value = 0.35;
+    master.connect(actx.destination);
+    function taoTiengVo(thoiDiem, doDai, amLuong){
+      const bufferSize = Math.floor(actx.sampleRate*doDai);
+      const buffer = actx.createBuffer(1, bufferSize, actx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i=0;i<bufferSize;i++){ data[i] = (Math.random()*2-1) * Math.pow(1-i/bufferSize, 2); }
+      const nguon = actx.createBufferSource();
+      nguon.buffer = buffer;
+      const loc = actx.createBiquadFilter();
+      loc.type='bandpass';
+      loc.frequency.value = 1800 + Math.random()*1200;
+      loc.Q.value = 0.7;
+      const gain = actx.createGain();
+      gain.gain.value = amLuong;
+      nguon.connect(loc); loc.connect(gain); gain.connect(master);
+      nguon.start(thoiDiem);
+      nguon.stop(thoiDiem+doDai);
+    }
+    for(let i=0;i<40;i++){
+      const t = now + Math.random()*1.8;
+      taoTiengVo(t, 0.05+Math.random()*0.05, 0.15+Math.random()*0.2);
+    }
+    setTimeout(()=>{ try{ actx.close(); }catch(_e){} }, 2500);
+  } catch(_e) { /* Web Audio kh\u00f4ng kh\u1ea3 d\u1ee5ng - b\u1ecf qua \u00e2m thanh, v\u1eabn gi\u1eef hi\u1ec7u \u1ee9ng confetti */ }
+}
+async function napLyDo(){
   const r=await fetch('../api/ly_do.php');
   const j=await r.json();
   if(!j.ok){ lyDoData=[]; renderLyDo(); return; }
@@ -284,15 +407,17 @@ function renderLichSu(){
   lsPage = Math.min(Math.max(1, lsPage), totalPages);
   const start = (lsPage-1)*lsPageSize; const rows = lsData.slice(start, start+lsPageSize);
   rows.forEach(row=>{
+    const delta = Number(row.bien_diem)||0;
     const loaiHtml = (() => {
       switch(String(row.loai||'')){
-        case 'CONG_DIEM': return '<span class="badge bg-success-subtle text-success border border-success-subtle">Cộng điểm</span>';
+        case 'CONG_DIEM': return delta<0
+          ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Trừ điểm</span>'
+          : '<span class="badge bg-success-subtle text-success border border-success-subtle">Cộng điểm</span>';
         case 'DOI_DIEM': return '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Đổi điểm</span>';
         case 'HOAN_TAC': return '<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Hoàn tác</span>';
         default: return `<span class="badge bg-light text-body-secondary">${tenLoai(row.loai)}</span>`;
       }
     })();
-    const delta = Number(row.bien_diem)||0;
     const deltaHtml = `<span class="fw-semibold ${delta>0?'text-success':'text-danger'}">${delta>0?'+':''}${delta}</span>`;
     const soDu = Number(row.so_du_sau)||0;
     const soDuHtml = `<span class="fw-semibold">${new Intl.NumberFormat('vi-VN').format(soDu)}</span>`;
@@ -354,6 +479,66 @@ document.getElementById('dang_xuat').onclick=async()=>{ await fetch('../api/dang
 if(document.getElementById('ly_do_loc')) document.getElementById('ly_do_loc').oninput = renderLyDo;
 document.getElementById('ls_prev').onclick=()=>{ lsPage=Math.max(1, lsPage-1); renderLichSu(); };
 document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu(); };
+
+// Gọi tên ngẫu nhiên (quay số) dựa trên toàn bộ danh sách học sinh, không phụ thuộc ô tìm kiếm
+(function initGoiTen(){
+  const btnMo=document.getElementById('btn_goi_ten');
+  const modalEl=document.getElementById('goiTenModal');
+  const nameEl=document.getElementById('goiTenName');
+  const btnQuay=document.getElementById('goiTenQuay');
+  const btnChon=document.getElementById('goiTenChon');
+  if(!btnMo||!modalEl||!nameEl||!btnQuay||!btnChon) return;
+  let ds=[];
+  let picked=null;
+  function quay(){
+    if(!ds.length) return;
+    btnQuay.disabled=true;
+    btnChon.classList.add('d-none');
+    picked=null;
+    const totalTicks=20+Math.floor(Math.random()*8);
+    let tick=0;
+    (function step(){
+      const s=ds[Math.floor(Math.random()*ds.length)];
+      nameEl.textContent=s.ho_ten;
+      tick++;
+      if(tick<totalTicks){
+        const progress=tick/totalTicks;
+        const delay=60+Math.round(200*progress*progress);
+        setTimeout(step, delay);
+      } else {
+        picked=ds[Math.floor(Math.random()*ds.length)];
+        nameEl.textContent=picked.ho_ten;
+        btnQuay.disabled=false;
+        btnChon.classList.remove('d-none');
+      }
+    })();
+  }
+  btnMo.onclick=async()=>{
+    const r=await fetch('../api/hoc_sinh.php');
+    const j=await r.json();
+    ds=(j.ok && Array.isArray(j.du_lieu))?j.du_lieu:[];
+    if(!ds.length){ showToast('Chưa có học sinh nào.','warning'); return; }
+    new bootstrap.Modal(modalEl).show();
+    quay();
+  };
+  btnQuay.onclick=quay;
+  btnChon.onclick=()=>{
+    if(picked){ chonHS(picked); }
+    const inst=bootstrap.Modal.getInstance(modalEl);
+    if(inst) inst.hide();
+  };
+})();
+
+// Phím tắt F1..F12 cho các nút lý do (chấm điểm nhanh không cần rời tay khỏi bàn phím)
+document.addEventListener('keydown', ev => {
+  if(ev.ctrlKey || ev.altKey || ev.metaKey) return;
+  const m = /^F([1-9]|1[0-2])$/.exec(ev.key);
+  if(!m) return;
+  const box=document.getElementById('ds_ly_do'); if(!box) return;
+  const idx = Number(m[1]) - 1;
+  const btn = box.children[idx];
+  if(btn){ ev.preventDefault(); btn.click(); }
+});
 
 // Hiển thị thông tin học sinh: thêm avatar, giới tính, ngày sinh
 function hienThongTinDep(){
