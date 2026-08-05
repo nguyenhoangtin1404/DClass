@@ -3,7 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_client.dart';
 import 'db/app_database.dart';
+import 'outbox/outbox_repository.dart';
 import 'repositories/danh_muc_repository.dart';
+import 'repositories/diem_repository.dart';
 import 'screens/login_screen.dart';
 import 'screens/students_screen.dart';
 
@@ -37,8 +39,8 @@ class _KhoiDong extends StatefulWidget {
 }
 
 class _KhoiDongState extends State<_KhoiDong> {
-  ApiClient? _client;
   DanhMucRepository? _danhMuc;
+  DiemRepository? _diem;
   bool _dangTai = true;
 
   @override
@@ -58,8 +60,8 @@ class _KhoiDongState extends State<_KhoiDong> {
     final client = ApiClient(baseUrl: baseUrl, token: token);
     final db = await openAppDatabase();
     setState(() {
-      _client = client;
       _danhMuc = DanhMucRepository(api: client, db: db);
+      _diem = DiemRepository(api: client, outbox: OutboxRepository(db));
       _dangTai = false;
     });
   }
@@ -69,8 +71,8 @@ class _KhoiDongState extends State<_KhoiDong> {
     if (_dangTai) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return (_client == null || _danhMuc == null)
+    return (_danhMuc == null || _diem == null)
         ? const LoginScreen()
-        : StudentsScreen(client: _client!, danhMuc: _danhMuc!);
+        : StudentsScreen(danhMuc: _danhMuc!, diem: _diem!);
   }
 }
