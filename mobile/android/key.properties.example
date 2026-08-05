@@ -1,0 +1,10 @@
+## Copy this file to android/key.properties (gitignored - never commit the
+## real one) and fill in the keystore you generated with:
+##   keytool -genkey -v -keystore <path> -alias <alias> -keyalg RSA -keysize 2048 -validity 10000
+## storeFile is resolved relative to android/app, so an absolute path is
+## simplest if the keystore lives outside the repo.
+
+storeFile=/absolute/path/to/upload-keystore.jks
+storePassword=changeme
+keyAlias=upload
+keyPassword=changeme

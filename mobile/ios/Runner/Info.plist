@@ -39,6 +39,10 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<!-- local_auth (issue #101): required for the optional "Dùng sinh trắc
+	     học" button on the unlock screen - PIN entry always works without it. -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Dùng Face ID để mở khoá nhanh thay vì nhập PIN.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
