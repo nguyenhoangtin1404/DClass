@@ -207,11 +207,11 @@ function renderLyDo(){
       const b=document.createElement('button');
       b.className = 'btn ' + (Number(ld.bien_diem)<0 ? 'btn-outline-danger' : 'btn-outline-success');
       b.textContent = `${ld.tieu_de} (${ld.bien_diem>0?'+':''}${ld.bien_diem})`;
-      if(idx<12){
-        b.title = `Phím tắt: F${idx+1}`;
+      if(idx<9){
+        b.title = `Phím tắt: ${idx+1}`;
         const kbd=document.createElement('kbd');
         kbd.className='ms-2 small';
-        kbd.textContent=`F${idx+1}`;
+        kbd.textContent=`${idx+1}`;
         b.appendChild(kbd);
       }
       b.onclick = async()=>{
@@ -529,13 +529,16 @@ document.getElementById('ls_next').onclick=()=>{ lsPage=lsPage+1; renderLichSu()
   };
 })();
 
-// Phím tắt F1..F12 cho các nút lý do (chấm điểm nhanh không cần rời tay khỏi bàn phím)
+// Phím tắt 1..9 cho các nút lý do (chấm điểm nhanh không cần rời tay khỏi bàn phím)
 document.addEventListener('keydown', ev => {
   if(ev.ctrlKey || ev.altKey || ev.metaKey) return;
-  const m = /^F([1-9]|1[0-2])$/.exec(ev.key);
+  const target = ev.target;
+  const tag = target && target.tagName;
+  if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT' || (target && target.isContentEditable)) return;
+  const m = /^[1-9]$/.exec(ev.key);
   if(!m) return;
   const box=document.getElementById('ds_ly_do'); if(!box) return;
-  const idx = Number(m[1]) - 1;
+  const idx = Number(m[0]) - 1;
   const btn = box.children[idx];
   if(btn){ ev.preventDefault(); btn.click(); }
 });
