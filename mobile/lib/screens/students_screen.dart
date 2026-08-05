@@ -11,6 +11,7 @@ import '../repositories/diem_repository.dart';
 import '../session.dart';
 import '../sync/sync_engine.dart';
 import '../widgets/sync_status_badge.dart';
+import 'bao_mat_screen.dart';
 import 'failed_actions_screen.dart';
 import 'history_screen.dart';
 import 'redeem_gift_screen.dart';
@@ -249,6 +250,12 @@ class _StudentsScreenState extends State<StudentsScreen> {
     }
   }
 
+  void _moBaoMat() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const BaoMatScreen()));
+  }
+
   void _moThaoTacLoi() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -290,6 +297,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
             onPressed: _moThaoTacLoi,
           ),
           SyncStatusBadge(syncEngine: widget.syncEngine),
+          IconButton(
+            icon: const Icon(Icons.security),
+            tooltip: 'Bảo mật',
+            onPressed: _moBaoMat,
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Đăng xuất',

@@ -16,6 +16,7 @@ dependencies:
   path: ^1.9.0
   uuid: ^4.4.0
   connectivity_plus: ^6.0.0
+  local_auth: ^3.0.2
 
 dev_dependencies:
   flutter_test:
@@ -24,6 +25,8 @@ dev_dependencies:
   sqflite_common_ffi: ^2.3.0
   flutter_secure_storage_platform_interface: ^1.1.2
   flutter_launcher_icons: ^0.14.4
+  connectivity_plus_platform_interface: ^2.1.0
+  plugin_platform_interface: ^2.1.8
 
 flutter:
   uses-material-design: true

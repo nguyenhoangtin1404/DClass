@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'api_client.dart';
+import 'lock/app_lock_gate.dart';
 import 'outbox/outbox_repository.dart';
 import 'repositories/danh_muc_repository.dart';
 import 'repositories/diem_repository.dart';
@@ -61,10 +62,12 @@ class _PhienDangNhapState extends State<PhienDangNhap> {
   Widget build(BuildContext context) {
     return AppLifecycleSyncTrigger(
       syncEngine: _syncEngine,
-      child: StudentsScreen(
-        danhMuc: _danhMuc,
-        diem: _diem,
-        syncEngine: _syncEngine,
+      child: AppLockGate(
+        child: StudentsScreen(
+          danhMuc: _danhMuc,
+          diem: _diem,
+          syncEngine: _syncEngine,
+        ),
       ),
     );
   }

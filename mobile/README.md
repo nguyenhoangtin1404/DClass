@@ -80,7 +80,7 @@ Then:
 
 ```bash
 flutter pub get
-flutter test      # 37 tests, all against real in-memory SQLite + fakes
+flutter test      # 63 tests, against real in-memory SQLite + fakes
 flutter analyze
 flutter build apk --debug   # Android; iOS needs an actual Mac + Xcode
 ```
@@ -103,6 +103,48 @@ still works fine), the build fails before it ever touches this app's code.
 that environment - it needed a machine without that restriction. Worth
 knowing before assuming a build failure is this app's fault.
 
+### A `flutter test` quirk you might hit on Windows
+
+`students_screen_test.dart` and `failed_actions_screen_test.dart` widget-test
+screens whose `FutureBuilder` reads through a real (if in-memory)
+`sqflite_common_ffi` database. On at least one Windows machine, `flutter
+test` hung indefinitely on exactly that combination - confirmed with a
+minimal repro (a bare `FutureBuilder` awaiting one `db.query(...)` inside
+`pumpWidget`, no app code involved) - regardless of `pumpAndSettle` vs bounded
+`pump()` loops vs `tester.runAsync()`. The same repository code passes
+instantly outside a widget test (`danh_muc_repository_test.dart`,
+`outbox_repository_test.dart`, `sync_engine_test.dart` - all plain `test()`,
+no widget pumping), so the FFI plugin and the schema are not the problem;
+something about combining `sqflite_common_ffi`'s native calls with
+`flutter_test`'s automated binding is. CI runs on `ubuntu-latest`, where this
+has not been observed - if you hit it locally on Windows, run just those two
+files on a Linux machine/WSL/CI instead of assuming the test itself is wrong.
+
+## Release signing
+
+**Android**: `android/app/build.gradle.kts` reads `android/key.properties`
+(gitignored, never commit the real one - copy `android/key.properties.example`)
+if present and wires it into a `release` signing config; falls back to debug
+signing when the file is absent, so `flutter build apk --debug` and CI keep
+working with no local setup. Generate the keystore once, on the machine you
+control, and keep it and its passwords backed up outside the repo:
+
+```bash
+keytool -genkey -v -keystore /path/outside/repo/upload-keystore.jks \
+  -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Then `flutter build apk --release` picks it up automatically once
+`key.properties` exists. This keystore is the app's identity for updates on a
+device/store - losing it means future releases can't be installed as updates
+over an existing one, so treat it like a password, not a build artifact.
+
+**iOS**: needs a Mac + Xcode + an Apple Developer account, none of which an
+agent/CI should generate or hold on your behalf. In Xcode, open
+`ios/Runner.xcworkspace`, select the `Runner` target's Signing & Capabilities
+tab, and set your Team (automatic signing is fine for a start). For CI/CLI
+automation later, look at [Fastlane match](https://docs.fastlane.tools/actions/match/).
+
 ## Not yet implemented
 
 - No background sync (deliberate scope decision - foreground triggers
@@ -111,7 +153,6 @@ knowing before assuming a build failure is this app's fault.
   `pubspec.yaml`, just needs a real 1024x1024 logo dropped at
   `assets/icon/icon.png` (see `assets/icon/README.md`); the display name
   ("DClass") is already set independently and doesn't need an image.
-- No release signing config - `flutter build apk --debug` only so far.
 - No app-level lock screen (PIN/biometric) - the token is Keychain/Keystore-
   protected, but the app itself doesn't re-prompt for auth on resume.
 - No real device testing yet - verified via `flutter test`/`flutter
