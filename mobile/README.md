@@ -1,9 +1,9 @@
 # dclass_mobile
 
 Offline-first companion app for teachers: fast in-class point add/redeem from
-a phone. The web app (`public/`) stays the source of truth for admin,
-reports, and setup (students, classes, reasons, gifts) - this app only needs
-to read that data and push point transactions.
+a phone, even with no connection. The web app (`public/`) stays the source of
+truth for admin, reports, and setup (students, classes, reasons, gifts) -
+this app only reads that data and pushes point transactions.
 
 It talks to the existing JSON API (`api/hoc_sinh.php`, `api/ly_do.php`,
 `api/qua_tang.php`, `api/diem.php`) using the Bearer token auth added in
@@ -11,47 +11,83 @@ It talks to the existing JSON API (`api/hoc_sinh.php`, `api/ly_do.php`,
 the web app (shown once as text and a QR code), paste it into the app's
 login screen along with the server URL.
 
-## What's here
+## Structure
 
-This folder currently has only the Dart side of a Flutter project
-(`pubspec.yaml`, `lib/`, `test/`) - there's no Flutter SDK in this sandbox to
-run `flutter create`, so the platform folders (`android/`, `ios/`, `web/`,
-etc.) haven't been generated yet.
+- `lib/api_client.dart` - HTTP client wrapping the Bearer-token API
+  (`DiemApi` interface for testability), including `client_action_id`
+  support for idempotent point transactions.
+- `lib/db/app_database.dart` - local sqflite schema: read-model caches
+  (students/reasons/gifts) plus the outbox table for queued actions.
+- `lib/outbox/`, `lib/repositories/diem_repository.dart` - the offline
+  queue: point actions try the network first, and only queue when the
+  attempt fails transiently.
+- `lib/sync/sync_engine.dart` - replays the queue in strict order once
+  connectivity returns (or on app resume / pull-to-refresh / manual sync).
+  Foreground-only by design - no background service.
+- `lib/repositories/danh_muc_repository.dart` - students/reasons/gifts
+  cache, network-first with an offline fallback.
+- `lib/screens/` - login, student list (add points / redeem gift), failed
+  actions review.
+- `lib/secure_token_storage.dart` - the Bearer token lives in
+  `flutter_secure_storage` (Keystore/Keychain), not plaintext prefs.
 
-To finish scaffolding on a machine with Flutter installed:
+## Setup
+
+Platform folders (`android/`, `web/`, `windows/`) aren't committed here -
+generate them once on your own machine with a real Flutter SDK:
 
 ```bash
 cd mobile
-flutter create --org com.dclass --project-name dclass_mobile .
+flutter create --platforms=android --org com.dclass --project-name dclass_mobile .
 ```
 
-`flutter create .` on a directory that already has a `pubspec.yaml`/`lib/`
-fills in the missing platform folders; it may also rewrite
-`pubspec.yaml`/`analysis_options.yaml`/`test/widget_test.dart` with its own
-template. Run `git status`/`git diff` afterwards and re-apply anything from
-this version worth keeping (dependencies, lint rule, the login-screen test)
-before committing.
+`flutter create .` on a directory that already has `pubspec.yaml`/`lib/`
+only fills in the missing platform folders - it won't touch existing
+tracked files. After generating `android/`, apply these two manual fixes
+(stock `flutter create` doesn't add them, and the app won't work without
+the first one):
+
+1. **`android/app/src/main/AndroidManifest.xml`** needs
+   `<uses-permission android:name="android.permission.INTERNET" />` and
+   `android.permission.ACCESS_NETWORK_STATE` (used by `connectivity_plus`) -
+   Flutter's template no longer adds these by default.
+2. If the server a teacher points the app at doesn't run HTTPS (common for
+   small self-hosted/intranet deployments), Android blocks cleartext HTTP by
+   default since API 28. Add a `network_security_config.xml` under
+   `res/xml/` permitting cleartext, and reference it via
+   `android:networkSecurityConfig="@xml/network_security_config"` on
+   `<application>`.
 
 Then:
 
 ```bash
 flutter pub get
-flutter run
+flutter test      # 33 tests, all against real in-memory SQLite + fakes
+flutter analyze
+flutter build apk --debug
 ```
 
-## Structure
+### A Gradle build quirk you might hit
 
-- `lib/api_client.dart` - HTTP client wrapping the Bearer-token API, including
-  `client_action_id` support for idempotent point transactions (safe to
-  retry after a dropped connection).
-- `lib/models/` - `HocSinh`, `LyDo`, `QuaTang` matching the JSON shapes those
-  endpoints already return.
-- `lib/screens/login_screen.dart` - enter server URL + token, verified with a
-  real API call before saving (via `shared_preferences`).
-- `lib/screens/students_screen.dart` - student list with a per-row "add
-  points" action.
+On some Windows machines/sandboxes, `flutter build apk` fails with:
 
-Not yet implemented: an offline outbox/replay queue (queuing actions while
-offline and syncing them back with retried `client_action_id`s once
-connectivity returns) - the backend supports it, but the app currently
-requires a live connection for every action.
+```
+java.io.IOException: Unable to establish loopback connection
+Caused by: java.net.SocketException: Invalid argument: connect
+  at java.base/sun.nio.ch.UnixDomainSockets.connect0
+```
+
+This is Gradle's daemon-connection handshake hitting a JDK NIO code path
+that tries a Unix-domain-socket loopback pipe on Windows; if the environment
+blocks `AF_UNIX` sockets (some sandboxes do, while regular TCP loopback
+still works fine), the build fails before it ever touches this app's code.
+`org.gradle.daemon=false` and JDK/JVM-arg overrides did not resolve it in
+that environment - it needed a machine without that restriction. Worth
+knowing before assuming a build failure is this app's fault.
+
+## Not yet implemented
+
+- No background sync (deliberate scope decision - foreground triggers
+  only; see `lib/sync/sync_engine.dart`'s doc comment).
+- No app icon/branding beyond Flutter's defaults.
+- No release signing config - `flutter build apk --debug` only so far.
