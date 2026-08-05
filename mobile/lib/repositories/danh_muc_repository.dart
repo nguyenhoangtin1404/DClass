@@ -79,10 +79,16 @@ class DanhMucRepository {
 
   /// Best-effort local decrement after a redeem syncs (the API response
   /// doesn't echo remaining stock) - corrected for real on the next
-  /// [danhSachQuaTang] refresh.
+  /// [danhSachQuaTang] refresh. Mirrors the server's own rule (see
+  /// quy_doi_qua_tang in lib/diem_nghiep_vu.php): only decrement when stock
+  /// is a real positive count. A negative ton_kho means "unlimited" and is
+  /// never touched - `MAX(x - 1, 0)` would wrongly turn -1 into 0 (looking
+  /// out of stock) after a single redeem.
   Future<void> giamTonKhoQuaTang(int quaTangId) {
     return db.rawUpdate(
-      'UPDATE qua_tang_cache SET ton_kho_may_chu = MAX(ton_kho_may_chu - 1, 0), '
+      'UPDATE qua_tang_cache SET '
+      'ton_kho_may_chu = CASE WHEN ton_kho_may_chu > 0 '
+      'THEN ton_kho_may_chu - 1 ELSE ton_kho_may_chu END, '
       'cap_nhat_luc = ? WHERE id = ?',
       [DateTime.now().toIso8601String(), quaTangId],
     );

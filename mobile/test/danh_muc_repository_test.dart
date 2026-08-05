@@ -1,19 +1,22 @@
 import 'package:dclass_mobile/db/app_database.dart';
 import 'package:dclass_mobile/models/hoc_sinh.dart';
 import 'package:dclass_mobile/models/ly_do.dart';
+import 'package:dclass_mobile/models/qua_tang.dart';
 import 'package:dclass_mobile/repositories/danh_muc_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'fakes/fake_diem_api.dart';
 
 void main() {
   late FakeDiemApi api;
+  late Database db;
   late DanhMucRepository repo;
 
   setUp(() async {
     api = FakeDiemApi();
-    final db = await openAppDatabase(path: inMemoryDatabasePath);
+    db = await openAppDatabase(path: inMemoryDatabasePath);
     repo = DanhMucRepository(api: api, db: db);
   });
 
@@ -109,4 +112,33 @@ void main() {
     final ds = await repo.danhSachLyDo();
     expect(ds.single.tieuDe, 'Phat bieu');
   });
+
+  test('giamTonKhoQuaTang decrements a positive stock by one', () async {
+    final qt = QuaTang(id: 1, ten: 'Keo', giaDiem: 3, tonKho: 5, anhUrl: null);
+    await db.insert('qua_tang_cache', qt.toCacheRow());
+
+    await repo.giamTonKhoQuaTang(1);
+
+    final rows = await db.query('qua_tang_cache', where: 'id = 1');
+    expect(rows.single['ton_kho_may_chu'], 4);
+  });
+
+  test(
+    'giamTonKhoQuaTang leaves unlimited stock (negative) untouched',
+    () async {
+      final qt = QuaTang(
+        id: 1,
+        ten: 'Keo',
+        giaDiem: 3,
+        tonKho: -1,
+        anhUrl: null,
+      );
+      await db.insert('qua_tang_cache', qt.toCacheRow());
+
+      await repo.giamTonKhoQuaTang(1);
+
+      final rows = await db.query('qua_tang_cache', where: 'id = 1');
+      expect(rows.single['ton_kho_may_chu'], -1);
+    },
+  );
 }
