@@ -73,7 +73,7 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
           <button id="btn" class="btn btn-primary w-100 btn-lg shadow-sm">Đăng nhập</button>
           <div id="msg" class="small text-danger mt-2"></div>
           <div class="text-center mt-3">
-            <button type="button" id="btn_toggle_dang_ky" class="btn btn-link btn-sm p-0">Chưa có tài khoản? Đăng ký ngay</button>
+            <button type="button" id="btn_toggle_dang_ky" class="btn btn-outline-primary btn-sm">Chưa có tài khoản? Đăng ký ngay</button>
           </div>
         </div>
       </div>
@@ -115,7 +115,7 @@ if (isset($_SESSION['giao_vien_id']) || thu_cookie_ghi_nho($pdo)) { header('Loca
           <button id="dk_btn" class="btn btn-primary w-100 btn-lg shadow-sm">Đăng ký</button>
           <div id="dk_msg" class="small text-danger mt-2"></div>
           <div class="text-center mt-3">
-            <button type="button" id="btn_toggle_dang_nhap" class="btn btn-link btn-sm p-0">Đã có tài khoản? Đăng nhập</button>
+            <button type="button" id="btn_toggle_dang_nhap" class="btn btn-outline-primary btn-sm">Đã có tài khoản? Đăng nhập</button>
           </div>
         </div>
       </div>

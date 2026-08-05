@@ -21,7 +21,8 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
         <div class="col-md-2 col-sm-6">
           <select id="loc_loai" class="form-select form-select-sm">
             <option value="">Loại: Tất cả</option>
-            <option value="CONG_DIEM">Cộng điểm</option>
+            <option value="CONG_DIEM_POS">Cộng điểm</option>
+            <option value="CONG_DIEM_NEG">Trừ điểm</option>
             <option value="DOI_DIEM">Đổi điểm</option>
             <option value="HOAN_TAC">Hoàn tác</option>
           </select>
@@ -80,10 +81,12 @@ function tenLoai(loai){
     default: return loai;
   }
 }
-function loaiBadge(loai){
+function loaiBadge(loai, bienDiem){
   const base = 'badge rounded-pill';
   switch(String(loai||'')){
-    case 'CONG_DIEM': return `<span class="${base} bg-success-subtle text-success border border-success-subtle">Cộng điểm</span>`;
+    case 'CONG_DIEM': return (Number(bienDiem)||0) < 0
+      ? `<span class="${base} bg-danger-subtle text-danger border border-danger-subtle">Trừ điểm</span>`
+      : `<span class="${base} bg-success-subtle text-success border border-success-subtle">Cộng điểm</span>`;
     case 'DOI_DIEM': return `<span class="${base} bg-warning-subtle text-warning border border-warning-subtle">Đổi điểm</span>`;
     case 'HOAN_TAC': return `<span class="${base} bg-secondary-subtle text-secondary border border-secondary-subtle">Hoàn tác</span>`;
     default: return `<span class="${base} bg-light text-body-secondary">${tenLoai(loai)}</span>`;
@@ -123,7 +126,9 @@ function locVaSapXep(){
   const tuTs = tu ? Date.parse(tu+'T00:00:00') : null;
   const denTs = den ? Date.parse(den+'T23:59:59') : null;
   duLieuLoc = (duLieu||[]).filter(row=>{
-    if (loai && row.loai !== loai) return false;
+    if (loai==='CONG_DIEM_POS' && !(row.loai==='CONG_DIEM' && (Number(row.bien_diem)||0) >= 0)) return false;
+    if (loai==='CONG_DIEM_NEG' && !(row.loai==='CONG_DIEM' && (Number(row.bien_diem)||0) < 0)) return false;
+    if (loai && loai!=='CONG_DIEM_POS' && loai!=='CONG_DIEM_NEG' && row.loai !== loai) return false;
     const ts = parseDate(row.tao_luc);
     if (tuTs !== null && ts && ts < tuTs) return false;
     if (denTs !== null && ts && ts > denTs) return false;
@@ -154,7 +159,7 @@ function veTrang(){
   tb.innerHTML='';
   duLieuLoc.slice(start,end).forEach(row=>{
     const tr=document.createElement('tr');
-    const loaiHtml = loaiBadge(row.loai);
+    const loaiHtml = loaiBadge(row.loai, row.bien_diem);
     const deltaHtml = formatSignedHtml(row.bien_diem);
     const balanceHtml = `<span class="fw-semibold">${row.so_du_sau}</span>`;
     tr.innerHTML=`<td data-label="Thời gian">${dinDangDateTime(row.tao_luc)}</td><td data-label="Học sinh">${row.ho_ten}</td><td data-label="Loại">${loaiHtml}</td><td data-label="Thay đổi">${deltaHtml}</td><td data-label="Số dư">${balanceHtml}</td><td data-label="Ghi chú">${row.ghi_chu||''}</td>`;
