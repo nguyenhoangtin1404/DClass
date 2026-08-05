@@ -33,30 +33,40 @@ login screen along with the server URL.
 
 ## Setup
 
-Platform folders (`android/`, `web/`, `windows/`) aren't committed here -
-generate them once on your own machine with a real Flutter SDK:
+`android/` and `ios/` are committed (generated via `flutter create
+--platforms=android,ios --org com.dclass --project-name dclass_mobile .` on
+a real Flutter SDK). `web/`/`windows/` are not - they're not this app's
+target platforms, only used ad hoc for local verification when no
+Android/iOS device is handy.
 
-```bash
-cd mobile
-flutter create --platforms=android --org com.dclass --project-name dclass_mobile .
-```
+Both platforms needed manual fixes on top of the stock `flutter create`
+template - the app won't function without the first one on either platform:
 
-`flutter create .` on a directory that already has `pubspec.yaml`/`lib/`
-only fills in the missing platform folders - it won't touch existing
-tracked files. After generating `android/`, apply these two manual fixes
-(stock `flutter create` doesn't add them, and the app won't work without
-the first one):
-
-1. **`android/app/src/main/AndroidManifest.xml`** needs
-   `<uses-permission android:name="android.permission.INTERNET" />` and
+**Android** (`android/app/src/main/AndroidManifest.xml`):
+1. Add `<uses-permission android:name="android.permission.INTERNET" />` and
    `android.permission.ACCESS_NETWORK_STATE` (used by `connectivity_plus`) -
    Flutter's template no longer adds these by default.
 2. If the server a teacher points the app at doesn't run HTTPS (common for
    small self-hosted/intranet deployments), Android blocks cleartext HTTP by
-   default since API 28. Add a `network_security_config.xml` under
-   `res/xml/` permitting cleartext, and reference it via
-   `android:networkSecurityConfig="@xml/network_security_config"` on
-   `<application>`.
+   default since API 28. `res/xml/network_security_config.xml` permits it,
+   referenced via `android:networkSecurityConfig` on `<application>`.
+
+**iOS** (`ios/Runner/Info.plist`):
+1. App Transport Security blocks plain HTTP the same way - `Info.plist` sets
+   `NSAppTransportSecurity` / `NSAllowsArbitraryLoads` for the same reason as
+   the Android config above.
+
+Neither cleartext exception touches the Bearer token's own storage, which
+stays in `flutter_secure_storage` (Keystore/Keychain) regardless of what
+protocol the server runs - see `lib/secure_token_storage.dart`.
+
+If regenerating either folder from scratch, `flutter create .` on a
+directory that already has `pubspec.yaml`/`lib/` only fills in missing
+platform folders - it won't touch existing tracked files, so re-running it
+is safe. It does have one quirk worth knowing: generating one platform at a
+time overwrites (rather than appends to) `.metadata`'s migration platform
+list - if you add `ios` after `android` already exists, check
+`.metadata`'s `migration.platforms` still lists both afterward.
 
 Then:
 
@@ -64,7 +74,7 @@ Then:
 flutter pub get
 flutter test      # 33 tests, all against real in-memory SQLite + fakes
 flutter analyze
-flutter build apk --debug
+flutter build apk --debug   # Android; iOS needs an actual Mac + Xcode
 ```
 
 ### A Gradle build quirk you might hit
