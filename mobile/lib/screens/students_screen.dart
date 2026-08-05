@@ -1,23 +1,17 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
-import '../api_client.dart';
 import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
 import '../repositories/danh_muc_repository.dart';
+import '../repositories/diem_repository.dart';
 
 /// Student list with a quick "add points" action per row - the core
 /// in-class flow the mobile app exists for (web stays the tool for
 /// admin/reports/setup).
 class StudentsScreen extends StatefulWidget {
-  final ApiClient client;
   final DanhMucRepository danhMuc;
-  const StudentsScreen({
-    super.key,
-    required this.client,
-    required this.danhMuc,
-  });
+  final DiemRepository diem;
+  const StudentsScreen({super.key, required this.danhMuc, required this.diem});
 
   @override
   State<StudentsScreen> createState() => _StudentsScreenState();
@@ -35,11 +29,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
   Future<void> _lamMoi() async {
     setState(() => _hocSinh = widget.danhMuc.danhSachHocSinh());
     await _hocSinh;
-  }
-
-  String _taoClientActionId() {
-    final r = Random();
-    return '${DateTime.now().microsecondsSinceEpoch}-${r.nextInt(1 << 32)}';
   }
 
   Future<void> _chonLyDoVaCongDiem(HocSinh hs) async {
@@ -75,15 +64,17 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
     if (lyDo == null) return;
     try {
-      await widget.client.congDiem(
+      final ketQua = await widget.diem.themCongDiem(
         hocSinhId: hs.id,
         lyDoId: lyDo.id,
-        clientActionId: _taoClientActionId(),
       );
       if (!mounted) return;
+      final thongBao = ketQua == KetQuaGhiDiem.daApDungNgay
+          ? 'Đã cộng điểm cho ${hs.hoTen}'
+          : 'Đã ghi nhận cho ${hs.hoTen} - sẽ đồng bộ khi có mạng';
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Đã cộng điểm cho ${hs.hoTen}')));
+      ).showSnackBar(SnackBar(content: Text(thongBao)));
       await _lamMoi();
     } catch (e) {
       if (!mounted) return;

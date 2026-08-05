@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api_client.dart';
 import '../db/app_database.dart';
 import '../main.dart';
+import '../outbox/outbox_repository.dart';
 import '../repositories/danh_muc_repository.dart';
+import '../repositories/diem_repository.dart';
 import 'students_screen.dart';
 
 /// Lets a teacher point the app at their DClass server and paste the API
@@ -47,10 +49,11 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString(prefsToken, token);
       final db = await openAppDatabase();
       final danhMuc = DanhMucRepository(api: client, db: db);
+      final diem = DiemRepository(api: client, outbox: OutboxRepository(db));
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => StudentsScreen(client: client, danhMuc: danhMuc),
+          builder: (_) => StudentsScreen(danhMuc: danhMuc, diem: diem),
         ),
       );
     } catch (e) {
