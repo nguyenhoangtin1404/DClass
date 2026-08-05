@@ -29,9 +29,9 @@ class ApiClient {
   }
 
   Map<String, String> get _headers => {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      };
+    'Authorization': 'Bearer $token',
+    'Content-Type': 'application/json',
+  };
 
   dynamic _giaiMa(http.Response res) {
     if (res.statusCode < 200 || res.statusCode >= 300) {
@@ -39,18 +39,28 @@ class ApiClient {
     }
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     if (body['ok'] != true) {
-      throw ApiException((body['thong_bao'] as String?) ?? 'loi_khong_xac_dinh');
+      throw ApiException(
+        (body['thong_bao'] as String?) ?? 'loi_khong_xac_dinh',
+      );
     }
     return body['du_lieu'];
   }
 
-  Future<List<HocSinh>> danhSachHocSinh({int? lopHocId, String tuKhoa = ''}) async {
+  Future<List<HocSinh>> danhSachHocSinh({
+    int? lopHocId,
+    String tuKhoa = '',
+  }) async {
     final query = <String, String>{};
     if (lopHocId != null) query['lop_hoc_id'] = '$lopHocId';
     if (tuKhoa.isNotEmpty) query['tu_khoa'] = tuKhoa;
-    final res = await http.get(_uri('/api/hoc_sinh.php', query), headers: _headers);
+    final res = await http.get(
+      _uri('/api/hoc_sinh.php', query),
+      headers: _headers,
+    );
     final data = _giaiMa(res) as List<dynamic>;
-    return data.map((e) => HocSinh.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => HocSinh.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<LyDo>> danhSachLyDo() async {
@@ -62,7 +72,9 @@ class ApiClient {
   Future<List<QuaTang>> danhSachQuaTang() async {
     final res = await http.get(_uri('/api/qua_tang.php'), headers: _headers);
     final data = _giaiMa(res) as List<dynamic>;
-    return data.map((e) => QuaTang.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => QuaTang.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// [clientActionId] should be a stable id (e.g. a uuid generated once per
