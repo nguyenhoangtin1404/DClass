@@ -80,7 +80,7 @@ Then:
 
 ```bash
 flutter pub get
-flutter test      # 63 tests, against real in-memory SQLite + fakes
+flutter test      # 56 tests, against real in-memory SQLite + fakes
 flutter analyze
 flutter build apk --debug   # Android; iOS needs an actual Mac + Xcode
 ```
@@ -103,22 +103,28 @@ still works fine), the build fails before it ever touches this app's code.
 that environment - it needed a machine without that restriction. Worth
 knowing before assuming a build failure is this app's fault.
 
-### A `flutter test` quirk you might hit on Windows
+### `sqflite_common_ffi` does not mix with widget tests here
 
-`students_screen_test.dart` and `failed_actions_screen_test.dart` widget-test
-screens whose `FutureBuilder` reads through a real (if in-memory)
-`sqflite_common_ffi` database. On at least one Windows machine, `flutter
-test` hung indefinitely on exactly that combination - confirmed with a
-minimal repro (a bare `FutureBuilder` awaiting one `db.query(...)` inside
-`pumpWidget`, no app code involved) - regardless of `pumpAndSettle` vs bounded
-`pump()` loops vs `tester.runAsync()`. The same repository code passes
-instantly outside a widget test (`danh_muc_repository_test.dart`,
-`outbox_repository_test.dart`, `sync_engine_test.dart` - all plain `test()`,
-no widget pumping), so the FFI plugin and the schema are not the problem;
-something about combining `sqflite_common_ffi`'s native calls with
-`flutter_test`'s automated binding is. CI runs on `ubuntu-latest`, where this
-has not been observed - if you hit it locally on Windows, run just those two
-files on a Linux machine/WSL/CI instead of assuming the test itself is wrong.
+Widget tests for `StudentsScreen`/`FailedActionsScreen` - the two screens
+whose `FutureBuilder` reads through a real (if in-memory)
+`sqflite_common_ffi` database instead of a fake - are not present, and were
+deliberately removed rather than shipped broken. `flutter test` reliably
+hangs on that combination on both Windows (a local machine) and Linux
+(`ubuntu-latest` CI): confirmed with a minimal repro (a bare `FutureBuilder`
+awaiting one `db.query(...)` inside `pumpWidget`, no app code involved), and
+unaffected by `pumpAndSettle` vs bounded `pump()` loops vs
+`tester.runAsync()`. On CI specifically, two of `FailedActionsScreen`'s test
+cases never completed at all (not even a timeout) and the job had to be
+force-cancelled at its 9-minute cap - a real hang, not just a slow one. The
+same repository code passes instantly outside a widget test
+(`danh_muc_repository_test.dart`, `outbox_repository_test.dart`,
+`sync_engine_test.dart` - all plain `test()`, no widget pumping), so the FFI
+plugin and the schema are not the problem; something about combining
+`sqflite_common_ffi`'s native calls with `flutter_test`'s pump/settle cycle
+is. Until that's root-caused (or the repositories gain an interface a fake
+can implement, letting these screens be tested the same way
+`students_screen_test.dart` used `FakeDiemApi`), verify these two screens
+manually.
 
 ## Release signing
 
