@@ -23,6 +23,15 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   sqflite_common_ffi: ^2.3.0
   flutter_secure_storage_platform_interface: ^1.1.2
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
+
+# Run `dart run flutter_launcher_icons` to (re)generate android/ios launcher
+# icons from assets/icon/icon.png once a real logo exists there - see
+# assets/icon/README.md. Until then the app uses Flutter's default icon.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"

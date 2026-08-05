@@ -1,5 +1,6 @@
 import 'package:dclass_mobile/api_client.dart';
 import 'package:dclass_mobile/models/hoc_sinh.dart';
+import 'package:dclass_mobile/models/lich_su_giao_dich.dart';
 import 'package:dclass_mobile/models/ly_do.dart';
 import 'package:dclass_mobile/models/qua_tang.dart';
 
@@ -16,6 +17,8 @@ class FakeDiemApi implements DiemApi {
   Object? loiHocSinh;
   Object? loiLyDo;
   Object? loiQuaTang;
+  Object? loiLichSu;
+  List<LichSuGiaoDich> lichSuTraVe = [];
 
   /// Queue of results `congDiem`/`quyDoiQuaTang` return, one per call, in
   /// order. Each entry is either a `Map<String, dynamic>` (success payload)
@@ -32,7 +35,13 @@ class FakeDiemApi implements DiemApi {
     String tuKhoa = '',
   }) async {
     if (loiHocSinh != null) throw loiHocSinh!;
-    return hocSinhTraVe;
+    return hocSinhTraVe.where((hs) {
+      final khopLop = lopHocId == null || hs.lopHocId == lopHocId;
+      final khopTuKhoa = tuKhoa.isEmpty ||
+          hs.hoTen.toLowerCase().contains(tuKhoa.toLowerCase()) ||
+          (hs.ma?.toLowerCase().contains(tuKhoa.toLowerCase()) ?? false);
+      return khopLop && khopTuKhoa;
+    }).toList();
   }
 
   @override
@@ -77,5 +86,11 @@ class FakeDiemApi implements DiemApi {
     final ketQua = _layKetQuaTiepTheo('quyDoiQuaTang', clientActionId);
     if (ketQua is Map<String, dynamic>) return ketQua;
     throw ketQua;
+  }
+
+  @override
+  Future<List<LichSuGiaoDich>> layLichSu({int? hocSinhId}) async {
+    if (loiLichSu != null) throw loiLichSu!;
+    return lichSuTraVe;
   }
 }

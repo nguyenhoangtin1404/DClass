@@ -1,7 +1,7 @@
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
-const int schemaVersion = 1;
+const int schemaVersion = 2;
 
 const String _taoBang = '''
 CREATE TABLE hoc_sinh_cache (
@@ -11,6 +11,10 @@ CREATE TABLE hoc_sinh_cache (
   lop_hoc_id INTEGER,
   ten_lop TEXT,
   so_du_may_chu INTEGER NOT NULL DEFAULT 0,
+  anh_dai_dien_url TEXT,
+  gioi_tinh TEXT,
+  ngay_sinh TEXT,
+  stt INTEGER,
   cap_nhat_luc TEXT
 );
 

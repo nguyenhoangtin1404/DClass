@@ -11,7 +11,11 @@ import '../secure_token_storage.dart';
 /// token generated from cau_hinh.php's "Tài khoản" tab (shown there as text
 /// and a QR code).
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.thongBaoBanDau});
+
+  /// Shown as the error banner immediately, e.g. "phiên đã hết hạn" after
+  /// [dangXuat] redirects here - see `lib/session.dart`.
+  final String? thongBaoBanDau;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -22,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _urlCtrl = TextEditingController(text: 'https://');
   final _tokenCtrl = TextEditingController();
   bool _dangKetNoi = false;
-  String? _loi;
+  late String? _loi = widget.thongBaoBanDau;
 
   @override
   void dispose() {

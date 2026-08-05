@@ -5,6 +5,10 @@ class HocSinh {
   final int? lopHocId;
   final String? tenLop;
   final int soDu;
+  final String? anhDaiDienUrl;
+  final String? gioiTinh;
+  final String? ngaySinh;
+  final int? stt;
 
   HocSinh({
     required this.id,
@@ -13,6 +17,10 @@ class HocSinh {
     required this.lopHocId,
     required this.tenLop,
     required this.soDu,
+    this.anhDaiDienUrl,
+    this.gioiTinh,
+    this.ngaySinh,
+    this.stt,
   });
 
   factory HocSinh.fromJson(Map<String, dynamic> json) {
@@ -23,6 +31,10 @@ class HocSinh {
       lopHocId: json['lop_hoc_id'] as int?,
       tenLop: json['ten_lop'] as String?,
       soDu: (json['so_du'] as num?)?.toInt() ?? 0,
+      anhDaiDienUrl: json['anh_dai_dien_url'] as String?,
+      gioiTinh: json['gioi_tinh'] as String?,
+      ngaySinh: json['ngay_sinh'] as String?,
+      stt: (json['stt'] as num?)?.toInt(),
     );
   }
 
@@ -35,6 +47,10 @@ class HocSinh {
       lopHocId: row['lop_hoc_id'] as int?,
       tenLop: row['ten_lop'] as String?,
       soDu: (row['so_du_may_chu'] as num?)?.toInt() ?? 0,
+      anhDaiDienUrl: row['anh_dai_dien_url'] as String?,
+      gioiTinh: row['gioi_tinh'] as String?,
+      ngaySinh: row['ngay_sinh'] as String?,
+      stt: (row['stt'] as num?)?.toInt(),
     );
   }
 
@@ -46,6 +62,10 @@ class HocSinh {
       'lop_hoc_id': lopHocId,
       'ten_lop': tenLop,
       'so_du_may_chu': soDu,
+      'anh_dai_dien_url': anhDaiDienUrl,
+      'gioi_tinh': gioiTinh,
+      'ngay_sinh': ngaySinh,
+      'stt': stt,
       'cap_nhat_luc': DateTime.now().toIso8601String(),
     };
   }
