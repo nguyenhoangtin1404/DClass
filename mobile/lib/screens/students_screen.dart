@@ -10,6 +10,9 @@ import '../repositories/danh_muc_repository.dart';
 import '../repositories/diem_repository.dart';
 import '../session.dart';
 import '../sync/sync_engine.dart';
+import '../theme/dclass_colors.dart';
+import '../widgets/pill_button.dart';
+import '../widgets/ribbon_header.dart';
 import '../widgets/sync_status_badge.dart';
 import 'bao_mat_screen.dart';
 import 'failed_actions_screen.dart';
@@ -127,10 +130,16 @@ class _StudentsScreenState extends State<StudentsScreen> {
   Future<void> _chonHanhDong(HocSinh hs) async {
     final hanhDong = await showModalBottomSheet<String>(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 8),
+            _sheetGrabber(),
+            _sheetHeader(hs),
             ListTile(
               leading: const Icon(Icons.add_circle_outline),
               title: const Text('Cộng điểm...'),
@@ -146,6 +155,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
               title: const Text('Xem lịch sử...'),
               onTap: () => Navigator.of(ctx).pop('lich_su'),
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -158,6 +168,51 @@ class _StudentsScreenState extends State<StudentsScreen> {
     } else if (hanhDong == 'lich_su') {
       _moLichSu(hocSinhId: hs.id, tieuDe: 'Lịch sử - ${hs.hoTen}');
     }
+  }
+
+  Widget _sheetGrabber() {
+    return Container(
+      width: 36,
+      height: 4,
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: DClassColors.listBorder,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+
+  Widget _sheetHeader(HocSinh hs) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: DClassColors.listBg,
+            foregroundColor: DClassColors.primary,
+            backgroundImage: (hs.anhDaiDienUrl ?? '').isEmpty
+                ? null
+                : NetworkImage(hs.anhDaiDienUrl!),
+            child: (hs.anhDaiDienUrl ?? '').isEmpty
+                ? Text(hs.hoTen.isEmpty ? '?' : hs.hoTen[0].toUpperCase())
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(hs.hoTen, style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(
+                  'Số dư hiện tại · ${hs.soDu} điểm',
+                  style: const TextStyle(color: DClassColors.muted, fontSize: 12.5),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _chonLyDoVaCongDiem(HocSinh hs) async {
@@ -174,20 +229,46 @@ class _StudentsScreenState extends State<StudentsScreen> {
     if (lyDoList == null || !mounted) return;
     final lyDo = await showModalBottomSheet<LyDo>(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: lyDoList!
-              .map(
-                (ld) => ListTile(
-                  title: Text(ld.tieuDe),
-                  trailing: Text(
-                    ld.bienDiem > 0 ? '+${ld.bienDiem}' : '${ld.bienDiem}',
-                  ),
-                  onTap: () => Navigator.of(ctx).pop(ld),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: _sheetGrabber()),
+              _sheetHeader(hs),
+              const SizedBox(height: 4),
+              const Text(
+                'CHỌN LÝ DO CỘNG / TRỪ ĐIỂM',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: .4,
+                  color: DClassColors.muted,
                 ),
-              )
-              .toList(),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: lyDoList!.map((ld) {
+                  final duong = ld.bienDiem > 0;
+                  final mau = duong ? DClassColors.success : DClassColors.danger;
+                  final nhan =
+                      '${ld.tieuDe} ${ld.bienDiem > 0 ? '+' : ''}${ld.bienDiem}';
+                  return PillButton(
+                    label: nhan,
+                    color: mau,
+                    onTap: () => Navigator.of(ctx).pop(ld),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -311,32 +392,38 @@ class _StudentsScreenState extends State<StudentsScreen> {
       ),
       body: Column(
         children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: RibbonHeader(label: 'Học sinh'),
+            ),
+          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
             child: TextField(
               controller: _timKiemCtrl,
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.search),
                 hintText: 'Tìm theo tên hoặc mã học sinh...',
-                border: OutlineInputBorder(),
                 isDense: true,
               ),
             ),
           ),
           if (_dsLop.length > 1)
             SizedBox(
-              height: 48,
+              height: 52,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: const Text('Tất cả lớp'),
+                    child: PillButton(
+                      label: 'Tất cả lớp',
+                      color: DClassColors.primary,
                       selected: _lopLoc == null,
-                      onSelected: (_) => setState(() {
+                      onTap: () => setState(() {
                         _lopLoc = null;
                         _hocSinh = _taiHocSinh();
                       }),
@@ -345,10 +432,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   for (final (id, ten) in _dsLop)
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(ten),
+                      child: PillButton(
+                        label: ten,
+                        color: DClassColors.primary,
                         selected: _lopLoc == id,
-                        onSelected: (_) => setState(() {
+                        onTap: () => setState(() {
                           _lopLoc = id;
                           _hocSinh = _taiHocSinh();
                         }),
@@ -373,33 +461,41 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   if (list.isEmpty) {
                     return const Center(child: Text('Chưa có học sinh nào'));
                   }
-                  return ListView.separated(
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                     itemCount: list.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, i) {
                       final hs = list[i];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: (hs.anhDaiDienUrl ?? '').isEmpty
-                              ? null
-                              : NetworkImage(hs.anhDaiDienUrl!),
-                          child: (hs.anhDaiDienUrl ?? '').isEmpty
-                              ? Text(
-                                  hs.hoTen.isEmpty
-                                      ? '?'
-                                      : hs.hoTen[0].toUpperCase(),
-                                )
-                              : null,
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: DClassColors.listBg,
+                            foregroundColor: DClassColors.primary,
+                            backgroundImage: (hs.anhDaiDienUrl ?? '').isEmpty
+                                ? null
+                                : NetworkImage(hs.anhDaiDienUrl!),
+                            child: (hs.anhDaiDienUrl ?? '').isEmpty
+                                ? Text(
+                                    hs.hoTen.isEmpty
+                                        ? '?'
+                                        : hs.hoTen[0].toUpperCase(),
+                                  )
+                                : null,
+                          ),
+                          title: Text(
+                            hs.hoTen,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          subtitle: Text(
+                            [
+                              if ((hs.ma ?? '').isNotEmpty) hs.ma,
+                              hs.tenLop ?? '',
+                            ].where((s) => (s ?? '').isNotEmpty).join(' · '),
+                          ),
+                          trailing: StatusBadge.warning(label: '${hs.soDu} đ'),
+                          onTap: () => _chonHanhDong(hs),
                         ),
-                        title: Text(hs.hoTen),
-                        subtitle: Text(
-                          [
-                            if ((hs.ma ?? '').isNotEmpty) hs.ma,
-                            hs.tenLop ?? '',
-                          ].where((s) => (s ?? '').isNotEmpty).join(' · '),
-                        ),
-                        trailing: Text('${hs.soDu} điểm'),
-                        onTap: () => _chonHanhDong(hs),
                       );
                     },
                   );

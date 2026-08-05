@@ -7,6 +7,7 @@ import 'db/app_database.dart';
 import 'phien_dang_nhap.dart';
 import 'screens/login_screen.dart';
 import 'secure_token_storage.dart';
+import 'theme/dclass_theme.dart';
 
 const String prefsBaseUrl = 'base_url';
 
@@ -21,7 +22,7 @@ class DClassApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DClass',
-      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+      theme: DClassTheme.themeData,
       home: const _KhoiDong(),
     );
   }

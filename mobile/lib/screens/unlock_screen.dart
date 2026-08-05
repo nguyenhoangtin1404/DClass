@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
 import '../pin_lock_storage.dart' as pin_lock_storage;
+import '../theme/dclass_colors.dart';
 
 /// Full-screen PIN gate shown by `AppLockGate` on cold start and after the
 /// app returns from the background past its threshold - see issue #101:
@@ -93,56 +94,128 @@ class _UnlockScreenState extends State<UnlockScreen> {
     });
   }
 
+  Widget _pinDots(int filled, int total) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(total, (i) {
+        final on = i < filled;
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 5),
+          width: 13,
+          height: 13,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: on ? Colors.white : Colors.transparent,
+            border: Border.all(color: Colors.white.withValues(alpha: on ? 1 : .55), width: 1.8),
+          ),
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.lock_outline, size: 48),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Nhập PIN để mở khoá',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+        body: DecoratedBox(
+          decoration: const BoxDecoration(gradient: DClassColors.gateGradient),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 380),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.fromLTRB(10, 8, 16, 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4C8DFD),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset('assets/brand/star.png', width: 18, height: 18),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'DClass',
+                              style: TextStyle(color: Color(0xFF0B1220), fontWeight: FontWeight.w800),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(colors: [Color(0xFFC7D2FE), Color(0xFF93C5FD)]),
+                        ),
+                        child: const Icon(Icons.lock_outline, color: Color(0xFF0B1220)),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Nhập PIN để mở khoá',
+                        style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white),
+                      ),
+                      const SizedBox(height: 18),
+                      ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _pinCtrl,
+                        builder: (context, value, _) => _pinDots(value.text.length.clamp(0, 8), 8),
+                      ),
+                      const SizedBox(height: 18),
+                      TextField(
+                        controller: _pinCtrl,
+                        autofocus: true,
+                        obscureText: true,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 8,
+                        style: const TextStyle(color: Colors.white, letterSpacing: 6),
+                        decoration: InputDecoration(
+                          labelText: 'PIN',
+                          labelStyle: const TextStyle(color: Colors.white70),
+                          errorText: _loi,
+                          errorStyle: const TextStyle(color: Color(0xFFFFD9DF)),
+                          counterText: '',
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: .14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: .28)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.white.withValues(alpha: .28)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.white, width: 1.6),
+                          ),
+                        ),
+                        onSubmitted: (_) => _kiemTraPin(),
+                      ),
+                      const SizedBox(height: 18),
+                      FilledButton(
+                        onPressed: _dangXuLy ? null : _kiemTraPin,
+                        child: const Text('Mở khoá'),
+                      ),
+                      if (_coTheSinhTracHoc) ...[
+                        const SizedBox(height: 10),
+                        TextButton.icon(
+                          onPressed: _thuSinhTracHoc,
+                          style: TextButton.styleFrom(foregroundColor: Colors.white),
+                          icon: const Icon(Icons.fingerprint),
+                          label: const Text('Dùng sinh trắc học'),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  TextField(
-                    controller: _pinCtrl,
-                    autofocus: true,
-                    obscureText: true,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 8,
-                    decoration: InputDecoration(
-                      labelText: 'PIN',
-                      errorText: _loi,
-                      counterText: '',
-                    ),
-                    onSubmitted: (_) => _kiemTraPin(),
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: _dangXuLy ? null : _kiemTraPin,
-                    child: const Text('Mở khoá'),
-                  ),
-                  if (_coTheSinhTracHoc) ...[
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      onPressed: _thuSinhTracHoc,
-                      icon: const Icon(Icons.fingerprint),
-                      label: const Text('Dùng sinh trắc học'),
-                    ),
-                  ],
-                ],
+                ),
               ),
             ),
           ),
