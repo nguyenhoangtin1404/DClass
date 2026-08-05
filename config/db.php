@@ -49,6 +49,10 @@ try {
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
   $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
   $pdo->exec("PRAGMA foreign_keys = ON");
+  // Web (session) và mobile (token, #81) có thể ghi đồng thời vào cùng 1 file SQLite;
+  // busy_timeout khiến SQLite tự đợi thay vì ném "database is locked" ngay khi tranh chấp khoá ngắn hạn.
+  $pdo->exec("PRAGMA busy_timeout = 5000");
+  $pdo->exec("PRAGMA journal_mode = WAL");
 } catch (Exception $e) { http_response_code(500); echo 'Loi ket noi CSDL'; exit; }
 
 require __DIR__ . '/migration_nghiep_vu.php';
