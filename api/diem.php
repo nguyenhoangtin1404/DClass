@@ -8,18 +8,21 @@ $hanh_dong = $_GET['hanh_dong'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'cong') {
   yeu_cau_dang_nhap(); $gv_id = (int)$_SESSION['giao_vien_id']; $b = than_json();
   $hs_id = (int)($b['hoc_sinh_id'] ?? 0); $ly_do_id = (int)($b['ly_do_id'] ?? 0); $ghi_chu = trim($b['ghi_chu'] ?? '');
+  // client_action_id: khóa idempotency app di động gửi kèm khi đồng bộ giao dịch offline.
+  $client_action_id = isset($b['client_action_id']) ? trim((string)$b['client_action_id']) : null;
   if (!$hs_id || !$ly_do_id) json_phan_hoi(false, null, 'thieu_thong_tin');
   try {
-    $kq = cong_diem_giao_vien($pdo, $gv_id, $hs_id, $ly_do_id, $ghi_chu);
+    $kq = cong_diem_giao_vien($pdo, $gv_id, $hs_id, $ly_do_id, $ghi_chu, $client_action_id);
     json_phan_hoi(true, $kq);
   } catch (Exception $e) { json_phan_hoi(false, null, $e->getMessage()); }
 }
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'quy_doi') {
   yeu_cau_dang_nhap(); $gv_id = (int)$_SESSION['giao_vien_id']; $b = than_json();
   $hs_id = (int)($b['hoc_sinh_id'] ?? 0); $qua_id = (int)($b['qua_tang_id'] ?? 0); $ghi_chu = trim($b['ghi_chu'] ?? '');
+  $client_action_id = isset($b['client_action_id']) ? trim((string)$b['client_action_id']) : null;
   if (!$hs_id || !$qua_id) json_phan_hoi(false, null, 'thieu_thong_tin');
   try {
-    $kq = quy_doi_qua_tang($pdo, $gv_id, $hs_id, $qua_id, $ghi_chu);
+    $kq = quy_doi_qua_tang($pdo, $gv_id, $hs_id, $qua_id, $ghi_chu, $client_action_id);
     json_phan_hoi(true, $kq);
   } catch (Exception $e) { json_phan_hoi(false, null, $e->getMessage()); }
 }

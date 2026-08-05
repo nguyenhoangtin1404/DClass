@@ -10,6 +10,7 @@ CREATE TABLE giao_vien (
   mat_khau_bam TEXT NOT NULL,
   vai_tro TEXT DEFAULT 'GV',
   phai_doi_mat_khau INTEGER DEFAULT 0,
+  api_token_bam TEXT,
   tao_luc TEXT DEFAULT (datetime('now'))
 );
 CREATE TABLE giao_vien_lop (
@@ -70,8 +71,10 @@ CREATE TABLE so_cai_diem (
   bien_diem INTEGER NOT NULL,
   so_du_sau INTEGER NOT NULL,
   ghi_chu TEXT,
+  client_action_id TEXT,
   tao_luc TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (hoc_sinh_id) REFERENCES hoc_sinh(id),
   FOREIGN KEY (giao_vien_id) REFERENCES giao_vien(id)
 );
 CREATE INDEX idx_so_cai_hoc_sinh_thoi_gian ON so_cai_diem(hoc_sinh_id, tao_luc);
+CREATE UNIQUE INDEX idx_so_cai_client_action_id ON so_cai_diem(client_action_id) WHERE client_action_id IS NOT NULL;

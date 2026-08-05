@@ -1,6 +1,11 @@
 # Mở lại quyền truy cập cho api/ (bị chặn mặc định bởi .htaccess ở gốc repo).
 Options -Indexes
 
+# Một số cấu hình Apache mặc định không chuyển header Authorization vào PHP
+# ($_SERVER['HTTP_AUTHORIZATION']) - cần bật tường minh để token API (app di động) hoạt động.
+# Directive lõi từ Apache 2.4.13, an toàn để khai báo không điều kiện.
+CGIPassAuth On
+
 <IfModule mod_authz_core.c>
   Require all granted
 </IfModule>
