@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../api_client.dart';
+import '../loi_phan_loai.dart';
 import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
 import '../models/qua_tang.dart';
@@ -8,26 +9,64 @@ import '../models/qua_tang.dart';
 /// Caches the reference data a teacher needs (students, reasons, gifts) so
 /// the app keeps working with no connection. Strategy: try the network
 /// first - it's the freshest data, and refreshes the cache for next time -
-/// and fall back to whatever was last synced when the network call fails.
+/// and fall back to whatever was last synced when the network call fails
+/// for a reason other than the session being dead (see [laLoiPhienHetHan] -
+/// that's rethrown instead, since silently serving stale cache would hide
+/// that the teacher needs to log in again).
 class DanhMucRepository {
   DanhMucRepository({required this.api, required this.db});
   final DiemApi api;
   final Database db;
 
-  Future<List<HocSinh>> danhSachHocSinh() async {
+  /// [tuKhoa]/[lopHocId] search/filter a live (online) fetch. A filtered
+  /// fetch never touches the cache table - deleting-then-reinserting only
+  /// the matching rows would wrongly wipe out cached students that simply
+  /// weren't part of this filtered result. Only a full (unfiltered) fetch
+  /// is safe to use as a cache replacement.
+  Future<List<HocSinh>> danhSachHocSinh({
+    String tuKhoa = '',
+    int? lopHocId,
+  }) async {
+    final coLoc = tuKhoa.isNotEmpty || lopHocId != null;
     try {
-      final ds = await api.danhSachHocSinh();
-      await db.transaction((txn) async {
-        await txn.delete('hoc_sinh_cache');
-        for (final hs in ds) {
-          await txn.insert('hoc_sinh_cache', hs.toCacheRow());
-        }
-      });
+      final ds = await api.danhSachHocSinh(tuKhoa: tuKhoa, lopHocId: lopHocId);
+      if (!coLoc) {
+        await db.transaction((txn) async {
+          await txn.delete('hoc_sinh_cache');
+          for (final hs in ds) {
+            await txn.insert('hoc_sinh_cache', hs.toCacheRow());
+          }
+        });
+      }
       return ds;
-    } catch (_) {
-      final rows = await db.query('hoc_sinh_cache', orderBy: 'ho_ten ASC');
-      return rows.map(HocSinh.fromCacheRow).toList();
+    } catch (loi) {
+      if (laLoiPhienHetHan(loi)) rethrow;
+      return _timHocSinhTrongCache(tuKhoa: tuKhoa, lopHocId: lopHocId);
     }
+  }
+
+  Future<List<HocSinh>> _timHocSinhTrongCache({
+    String tuKhoa = '',
+    int? lopHocId,
+  }) async {
+    final dieuKien = <String>[];
+    final doiSo = <Object?>[];
+    if (tuKhoa.isNotEmpty) {
+      dieuKien.add('(ho_ten LIKE ? OR ma LIKE ?)');
+      final mau = '%$tuKhoa%';
+      doiSo.addAll([mau, mau]);
+    }
+    if (lopHocId != null) {
+      dieuKien.add('lop_hoc_id = ?');
+      doiSo.add(lopHocId);
+    }
+    final rows = await db.query(
+      'hoc_sinh_cache',
+      where: dieuKien.isEmpty ? null : dieuKien.join(' AND '),
+      whereArgs: doiSo.isEmpty ? null : doiSo,
+      orderBy: 'ho_ten ASC',
+    );
+    return rows.map(HocSinh.fromCacheRow).toList();
   }
 
   Future<List<LyDo>> danhSachLyDo() async {
@@ -40,7 +79,8 @@ class DanhMucRepository {
         }
       });
       return ds;
-    } catch (_) {
+    } catch (loi) {
+      if (laLoiPhienHetHan(loi)) rethrow;
       final rows = await db.query('ly_do_cache', orderBy: 'bien_diem DESC');
       return rows.map(LyDo.fromCacheRow).toList();
     }
@@ -56,10 +96,25 @@ class DanhMucRepository {
         }
       });
       return ds;
-    } catch (_) {
+    } catch (loi) {
+      if (laLoiPhienHetHan(loi)) rethrow;
       final rows = await db.query('qua_tang_cache', orderBy: 'gia_diem ASC');
       return rows.map(QuaTang.fromCacheRow).toList();
     }
+  }
+
+  /// Distinct class ids/names among cached students - used to populate a
+  /// class filter without a dedicated "list my classes" endpoint.
+  Future<List<(int, String)>> danhSachLop() async {
+    final rows = await db.rawQuery(
+      'SELECT DISTINCT lop_hoc_id, ten_lop FROM hoc_sinh_cache '
+      'WHERE lop_hoc_id IS NOT NULL ORDER BY ten_lop ASC',
+    );
+    return rows
+        .map(
+          (r) => (r['lop_hoc_id'] as int, (r['ten_lop'] as String?) ?? ''),
+        )
+        .toList();
   }
 
   /// Reconciles a cached balance after the sync engine confirms an action

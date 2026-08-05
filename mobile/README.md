@@ -25,11 +25,19 @@ login screen along with the server URL.
   connectivity returns (or on app resume / pull-to-refresh / manual sync).
   Foreground-only by design - no background service.
 - `lib/repositories/danh_muc_repository.dart` - students/reasons/gifts
-  cache, network-first with an offline fallback.
-- `lib/screens/` - login, student list (add points / redeem gift), failed
-  actions review.
+  cache, network-first with an offline fallback. A dead/revoked token
+  (`loi_phan_loai.dart`'s `laLoiPhienHetHan`) is rethrown instead of masked
+  by the cache fallback - see `lib/session.dart`.
+- `lib/screens/` - login, student list (search/filter, add points, redeem
+  gift, point history), failed actions review.
+- `lib/screens/history_screen.dart` - reads `api/diem.php?hanh_dong=lich_su`
+  directly (network-only, no offline cache - it's a look-back, not a
+  mid-class necessity the way the student list is).
 - `lib/secure_token_storage.dart` - the Bearer token lives in
   `flutter_secure_storage` (Keystore/Keychain), not plaintext prefs.
+- `lib/session.dart` - `dangXuat()`: the one place that clears the saved
+  token + server URL and returns to the login screen, used both by the
+  explicit logout action and by the dead-token handling above.
 
 ## Setup
 
@@ -72,7 +80,7 @@ Then:
 
 ```bash
 flutter pub get
-flutter test      # 33 tests, all against real in-memory SQLite + fakes
+flutter test      # 37 tests, all against real in-memory SQLite + fakes
 flutter analyze
 flutter build apk --debug   # Android; iOS needs an actual Mac + Xcode
 ```
@@ -99,5 +107,13 @@ knowing before assuming a build failure is this app's fault.
 
 - No background sync (deliberate scope decision - foreground triggers
   only; see `lib/sync/sync_engine.dart`'s doc comment).
-- No app icon/branding beyond Flutter's defaults.
+- No real app icon yet - `flutter_launcher_icons` is wired up in
+  `pubspec.yaml`, just needs a real 1024x1024 logo dropped at
+  `assets/icon/icon.png` (see `assets/icon/README.md`); the display name
+  ("DClass") is already set independently and doesn't need an image.
 - No release signing config - `flutter build apk --debug` only so far.
+- No app-level lock screen (PIN/biometric) - the token is Keychain/Keystore-
+  protected, but the app itself doesn't re-prompt for auth on resume.
+- No real device testing yet - verified via `flutter test`/`flutter
+  analyze`/`flutter build web --release` and the real PHP backend over
+  `curl`, not an actual phone.

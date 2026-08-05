@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'models/hoc_sinh.dart';
+import 'models/lich_su_giao_dich.dart';
 import 'models/ly_do.dart';
 import 'models/qua_tang.dart';
 
@@ -36,6 +37,8 @@ abstract class DiemApi {
     String ghiChu = '',
     String? clientActionId,
   });
+
+  Future<List<LichSuGiaoDich>> layLichSu({int? hocSinhId});
 }
 
 /// Thin client for the DClass teacher-facing JSON API (api/*.php), using the
@@ -144,5 +147,16 @@ class ApiClient implements DiemApi {
       }),
     );
     return _giaiMa(res) as Map<String, dynamic>;
+  }
+
+  @override
+  Future<List<LichSuGiaoDich>> layLichSu({int? hocSinhId}) async {
+    final query = <String, String>{'hanh_dong': 'lich_su'};
+    if (hocSinhId != null) query['hoc_sinh_id'] = '$hocSinhId';
+    final res = await http.get(_uri('/api/diem.php', query), headers: _headers);
+    final data = _giaiMa(res) as List<dynamic>;
+    return data
+        .map((e) => LichSuGiaoDich.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 }

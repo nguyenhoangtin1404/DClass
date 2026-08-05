@@ -35,3 +35,12 @@ bool laLoiTamThoi(Object loi) {
   // ...) is a network-level failure - always transient.
   return true;
 }
+
+/// Whether [loi] means the saved Bearer token is no longer valid (revoked
+/// from cau_hinh.php's "Tài khoản" tab, or otherwise rejected) - the caller
+/// should end the local session and send the user back to the login screen
+/// instead of treating this like any other failure (e.g. silently falling
+/// back to a stale cache, which would hide that the session is dead).
+bool laLoiPhienHetHan(Object loi) {
+  return loi is ApiException && loi.thongBao == 'loi_http_401';
+}
