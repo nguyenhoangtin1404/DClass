@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Allows plain HTTP to the server URL a teacher enters at login. Android
+  blocks cleartext traffic by default since API 28 - without this, the app
+  can't reach a school's self-hosted server unless it happens to run HTTPS,
+  which many small/internal deployments don't. The Bearer token itself is
+  still only ever stored locally via flutter_secure_storage (see
+  lib/secure_token_storage.dart); this only affects traffic to the
+  user-chosen server, not local storage.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
