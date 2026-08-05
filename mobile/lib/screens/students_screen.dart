@@ -1,17 +1,28 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
-import '../api_client.dart';
 import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
+import '../models/qua_tang.dart';
+import '../repositories/danh_muc_repository.dart';
+import '../repositories/diem_repository.dart';
+import '../sync/sync_engine.dart';
+import '../widgets/sync_status_badge.dart';
+import 'failed_actions_screen.dart';
+import 'redeem_gift_screen.dart';
 
 /// Student list with a quick "add points" action per row - the core
 /// in-class flow the mobile app exists for (web stays the tool for
 /// admin/reports/setup).
 class StudentsScreen extends StatefulWidget {
-  final ApiClient client;
-  const StudentsScreen({super.key, required this.client});
+  final DanhMucRepository danhMuc;
+  final DiemRepository diem;
+  final SyncEngine syncEngine;
+  const StudentsScreen({
+    super.key,
+    required this.danhMuc,
+    required this.diem,
+    required this.syncEngine,
+  });
 
   @override
   State<StudentsScreen> createState() => _StudentsScreenState();
@@ -23,23 +34,48 @@ class _StudentsScreenState extends State<StudentsScreen> {
   @override
   void initState() {
     super.initState();
-    _hocSinh = widget.client.danhSachHocSinh();
+    _hocSinh = widget.danhMuc.danhSachHocSinh();
   }
 
   Future<void> _lamMoi() async {
-    setState(() => _hocSinh = widget.client.danhSachHocSinh());
+    await widget.syncEngine.chaySync();
+    setState(() => _hocSinh = widget.danhMuc.danhSachHocSinh());
     await _hocSinh;
   }
 
-  String _taoClientActionId() {
-    final r = Random();
-    return '${DateTime.now().microsecondsSinceEpoch}-${r.nextInt(1 << 32)}';
+  Future<void> _chonHanhDong(HocSinh hs) async {
+    final hanhDong = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: const Text('Cộng điểm...'),
+              onTap: () => Navigator.of(ctx).pop('cong_diem'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.card_giftcard),
+              title: const Text('Đổi quà...'),
+              onTap: () => Navigator.of(ctx).pop('doi_qua'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || hanhDong == null) return;
+    if (hanhDong == 'cong_diem') {
+      await _chonLyDoVaCongDiem(hs);
+    } else {
+      await _chonQuaVaDoiDiem(hs);
+    }
   }
 
   Future<void> _chonLyDoVaCongDiem(HocSinh hs) async {
     List<LyDo> lyDoList;
     try {
-      lyDoList = await widget.client.danhSachLyDo();
+      lyDoList = await widget.danhMuc.danhSachLyDo();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -69,15 +105,17 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
     if (lyDo == null) return;
     try {
-      await widget.client.congDiem(
+      final ketQua = await widget.diem.themCongDiem(
         hocSinhId: hs.id,
         lyDoId: lyDo.id,
-        clientActionId: _taoClientActionId(),
       );
       if (!mounted) return;
+      final thongBao = ketQua == KetQuaGhiDiem.daApDungNgay
+          ? 'Đã cộng điểm cho ${hs.hoTen}'
+          : 'Đã ghi nhận cho ${hs.hoTen} - sẽ đồng bộ khi có mạng';
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Đã cộng điểm cho ${hs.hoTen}')));
+      ).showSnackBar(SnackBar(content: Text(thongBao)));
       await _lamMoi();
     } catch (e) {
       if (!mounted) return;
@@ -87,10 +125,67 @@ class _StudentsScreenState extends State<StudentsScreen> {
     }
   }
 
+  Future<void> _chonQuaVaDoiDiem(HocSinh hs) async {
+    List<QuaTang> quaTangList;
+    try {
+      quaTangList = await widget.danhMuc.danhSachQuaTang();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi tải quà: $e')));
+      return;
+    }
+    if (!mounted) return;
+    final quaTang = await chonQuaTangDeDoi(context, quaTangList);
+    if (quaTang == null) return;
+    try {
+      final ketQua = await widget.diem.themDoiQua(
+        hocSinhId: hs.id,
+        quaTangId: quaTang.id,
+      );
+      if (!mounted) return;
+      final thongBao = ketQua == KetQuaGhiDiem.daApDungNgay
+          ? 'Đã đổi ${quaTang.ten} cho ${hs.hoTen}'
+          : 'Đã ghi nhận cho ${hs.hoTen} - sẽ đồng bộ khi có mạng';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(thongBao)));
+      await _lamMoi();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+    }
+  }
+
+  void _moThaoTacLoi() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FailedActionsScreen(
+          outbox: widget.diem.outbox,
+          syncEngine: widget.syncEngine,
+          danhMuc: widget.danhMuc,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Học sinh')),
+      appBar: AppBar(
+        title: const Text('Học sinh'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.error_outline),
+            tooltip: 'Thao tác lỗi',
+            onPressed: _moThaoTacLoi,
+          ),
+          SyncStatusBadge(syncEngine: widget.syncEngine),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _lamMoi,
         child: FutureBuilder<List<HocSinh>>(
@@ -115,7 +210,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   title: Text(hs.hoTen),
                   subtitle: Text(hs.tenLop ?? ''),
                   trailing: Text('${hs.soDu} điểm'),
-                  onTap: () => _chonLyDoVaCongDiem(hs),
+                  onTap: () => _chonHanhDong(hs),
                 );
               },
             );
