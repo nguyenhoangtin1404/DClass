@@ -61,4 +61,4 @@ rule_dat_ten_tieng_viet.txt  Quy tắc đặt tên/dự án
 - Kiểm thử thủ công các luồng: đăng nhập/ghi nhớ, cộng/đổi điểm, import CSV, upload ảnh, phân quyền, báo cáo.
 
 ## License
-Nội bộ/Chưa khai báo. Thêm giấy phép nếu phát hành.
+MIT — xem file [LICENSE](LICENSE).

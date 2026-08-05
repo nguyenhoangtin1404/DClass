@@ -3,4 +3,3 @@
 /config/env.php
 /data/registry.db
 /data/*.db
-!/data/ung_dung.db
