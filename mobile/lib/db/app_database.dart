@@ -52,12 +52,17 @@ CREATE INDEX idx_hang_doi_trang_thai ON hang_doi_thao_tac(trang_thai);
 ///
 /// [path] overrides the on-device storage location - tests pass
 /// `inMemoryDatabasePath` (from `sqflite_common_ffi`) to get an isolated
-/// in-memory database per test instead of touching disk.
+/// in-memory database per test instead of touching disk. `singleInstance` is
+/// forced off whenever [path] is given: sqflite otherwise caches connections
+/// by path, and every test using the same literal `:memory:` constant would
+/// share one leftover database instead of each getting a fresh one.
 Future<Database> openAppDatabase({String? path}) async {
+  final laDuongDanTuyChinh = path != null;
   final duongDan = path ?? p.join(await getDatabasesPath(), 'dclass_mobile.db');
   return openDatabase(
     duongDan,
     version: schemaVersion,
+    singleInstance: !laDuongDanTuyChinh,
     onCreate: (db, version) async {
       for (final cauLenh in _taoBang.split(';')) {
         final sql = cauLenh.trim();
