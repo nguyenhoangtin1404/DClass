@@ -2,6 +2,12 @@
 require __DIR__ . '/../config/db.php'; require __DIR__ . '/../lib/tro_giup.php';
 if (!isset($_SESSION['giao_vien_id'])) { header('Location: dang_nhap.php'); exit; }
 $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
+// URL gốc của api/ (cùng cấp public/ theo quy ước docroot của app) - dùng để nhúng vào mã QR
+// token cho app di động, để app biết kết nối vào server nào (hỗ trợ tự host ở domain bất kỳ).
+$scheme = dang_https() ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$goc_duong_dan = preg_replace('#/public/[^/]*$#', '', $_SERVER['SCRIPT_NAME'] ?? '/public/cau_hinh.php');
+$api_goc_url = $scheme . '://' . $host . $goc_duong_dan . '/api/';
 ?><!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cấu hình hệ thống</title>
 <link rel="stylesheet" href="vendor/bootswatch/bootstrap.min.css"><link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css"><link rel="stylesheet" href="vendor/aos/aos.css"><link rel="stylesheet" href="vendor/theme.css"><link rel="stylesheet" href="vendor/custom_file.css"><link rel="stylesheet" href="vendor/date_picker.css"><style>.ld-stepper .ld-stepper-btns{min-width:38px;height:100%;}.ld-stepper .ld-stepper-btns .btn{padding:4px 0;line-height:1;height:50%;border-radius:0;}.ld-stepper .ld-stepper-btns .btn:first-child{border-top-right-radius:.375rem;}.ld-stepper .ld-stepper-btns .btn:last-child{border-bottom-right-radius:.375rem;}.ld-bd-wrap{position:relative;}.ld-bd-wrap input{padding-left:24px;}#ld_bien_diem::-webkit-outer-spin-button,#ld_bien_diem::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}#ld_bien_diem{-moz-appearance:textfield;}.ld-bd-plus{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#0d6efd;font-weight:600;pointer-events:none;font-size:.95rem;}</style></head><body><?php include __DIR__ . '/_nav.php'; ?>
@@ -185,10 +191,16 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
                 <div class="small text-muted mb-2">Dùng để đăng nhập ứng dụng di động (chấm điểm ngoại tuyến, đồng bộ khi có mạng). Tạo token mới sẽ vô hiệu token cũ trên thiết bị khác.</div>
                 <div id="gv_token_trang_thai" class="small mb-2"></div>
                 <div id="gv_token_box" class="d-none alert alert-warning py-2 px-3 small mb-2">
-                  <div class="fw-semibold mb-1">Token mới (chỉ hiển thị 1 lần, hãy sao chép và lưu ngay):</div>
-                  <div class="d-flex align-items-center gap-2">
-                    <code id="gv_token_gia_tri" class="text-break flex-grow-1"></code>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="gv_token_copy">Sao chép</button>
+                  <div class="fw-semibold mb-1">Token mới (chỉ hiển thị 1 lần, hãy lưu ngay):</div>
+                  <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
+                    <div id="gv_token_qr" class="bg-white p-2 rounded-3 border flex-shrink-0"></div>
+                    <div class="flex-grow-1 w-100">
+                      <div class="small text-muted mb-1">Mở app DClass trên điện thoại, chọn "Quét mã để đăng nhập" và quét mã này. Không quét được thì dùng token bên dưới:</div>
+                      <div class="d-flex align-items-center gap-2">
+                        <code id="gv_token_gia_tri" class="text-break flex-grow-1"></code>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="gv_token_copy">Sao chép</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -641,17 +653,34 @@ function hsSyncLopSelectOnce(){
 (function(){
   const trangThai = document.getElementById('gv_token_trang_thai');
   const box = document.getElementById('gv_token_box');
+  const qrEl = document.getElementById('gv_token_qr');
   const gtEl = document.getElementById('gv_token_gia_tri');
   const msg = document.getElementById('gv_token_msg');
   const btnTao = document.getElementById('gv_token_tao');
   const btnThuHoi = document.getElementById('gv_token_thu_hoi');
   const btnCopy = document.getElementById('gv_token_copy');
+  const apiGocUrl = <?php echo json_encode($api_goc_url, JSON_UNESCAPED_SLASHES); ?>;
   if (!trangThai || !btnTao || !btnThuHoi) return;
 
   function ve(coToken){
     trangThai.innerHTML = coToken
       ? '<span class="text-success fw-semibold">Đã có token đang hoạt động</span>'
       : '<span class="text-muted">Chưa tạo token nào</span>';
+  }
+
+  function veQr(token){
+    if (!qrEl) return;
+    qrEl.innerHTML = '';
+    if (typeof qrcode === 'undefined') return; // thư viện lỗi tải thì vẫn còn token chữ để dùng
+    // Payload gồm cả token lẫn địa chỉ server, để app di động biết kết nối vào đâu (hỗ trợ tự host).
+    const payload = JSON.stringify({ token: token, api_url: apiGocUrl });
+    // typeNumber=0: tự chọn phiên bản QR nhỏ nhất vừa đủ chứa payload.
+    const qr = qrcode(0, 'M');
+    qr.addData(payload);
+    qr.make();
+    qrEl.innerHTML = qr.createSvgTag({ scalable: true });
+    const svg = qrEl.querySelector('svg');
+    if (svg) { svg.style.width = '160px'; svg.style.height = '160px'; svg.style.display = 'block'; }
   }
 
   async function napTrangThai(){
@@ -667,6 +696,7 @@ function hsSyncLopSelectOnce(){
     const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=tao_token_api',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     if (j.ok) {
       gtEl.textContent = j.du_lieu.token;
+      veQr(j.du_lieu.token);
       box.classList.remove('d-none');
       ve(true);
     } else { msg.textContent = j.thong_bao || 'Lỗi'; }
@@ -782,6 +812,7 @@ ldNap(); qNap(); lNap();
 <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="vendor/aos/aos.js"></script>
 <script src="vendor/date_picker.js"></script>
+<script src="vendor/qrcode/qrcode.js"></script>
 <script>AOS.init({ duration: 350, once: true, easing: 'ease-out' });</script>
 </body></html>
 
