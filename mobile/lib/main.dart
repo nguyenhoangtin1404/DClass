@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'api_client.dart';
+import 'db/app_database.dart';
+import 'phien_dang_nhap.dart';
 import 'screens/login_screen.dart';
-import 'screens/students_screen.dart';
+import 'secure_token_storage.dart';
 
 const String prefsBaseUrl = 'base_url';
-const String prefsToken = 'api_token';
 
 void main() {
   runApp(const DClassApp());
@@ -36,6 +38,7 @@ class _KhoiDong extends StatefulWidget {
 
 class _KhoiDongState extends State<_KhoiDong> {
   ApiClient? _client;
+  Database? _db;
   bool _dangTai = true;
 
   @override
@@ -47,11 +50,16 @@ class _KhoiDongState extends State<_KhoiDong> {
   Future<void> _nap() async {
     final prefs = await SharedPreferences.getInstance();
     final baseUrl = prefs.getString(prefsBaseUrl);
-    final token = prefs.getString(prefsToken);
+    final token = await docToken();
+    if (baseUrl == null || token == null) {
+      setState(() => _dangTai = false);
+      return;
+    }
+    final client = ApiClient(baseUrl: baseUrl, token: token);
+    final db = await openAppDatabase();
     setState(() {
-      _client = (baseUrl != null && token != null)
-          ? ApiClient(baseUrl: baseUrl, token: token)
-          : null;
+      _client = client;
+      _db = db;
       _dangTai = false;
     });
   }
@@ -61,8 +69,8 @@ class _KhoiDongState extends State<_KhoiDong> {
     if (_dangTai) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return _client == null
+    return (_client == null || _db == null)
         ? const LoginScreen()
-        : StudentsScreen(client: _client!);
+        : PhienDangNhap(client: _client!, db: _db!);
   }
 }
