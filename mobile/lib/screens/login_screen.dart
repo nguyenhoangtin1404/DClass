@@ -5,6 +5,7 @@ import '../api_client.dart';
 import '../db/app_database.dart';
 import '../main.dart';
 import '../phien_dang_nhap.dart';
+import '../secure_token_storage.dart';
 
 /// Lets a teacher point the app at their DClass server and paste the API
 /// token generated from cau_hinh.php's "Tài khoản" tab (shown there as text
@@ -43,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await client.danhSachHocSinh();
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(prefsBaseUrl, baseUrl);
-      await prefs.setString(prefsToken, token);
+      await luuToken(token);
       final db = await openAppDatabase();
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
