@@ -179,6 +179,25 @@ $can_doi_mk_bat_buoc = !empty($_SESSION['phai_doi_mat_khau']);
                 </div>
               </div>
             </div>
+            <div class="col-md-6">
+              <div class="border rounded-3 p-3 h-100">
+                <h5 class="ribbon-title-modern mb-3">Token API (app di động)</h5>
+                <div class="small text-muted mb-2">Dùng để đăng nhập ứng dụng di động (chấm điểm ngoại tuyến, đồng bộ khi có mạng). Tạo token mới sẽ vô hiệu token cũ trên thiết bị khác.</div>
+                <div id="gv_token_trang_thai" class="small mb-2"></div>
+                <div id="gv_token_box" class="d-none alert alert-warning py-2 px-3 small mb-2">
+                  <div class="fw-semibold mb-1">Token mới (chỉ hiển thị 1 lần, hãy sao chép và lưu ngay):</div>
+                  <div class="d-flex align-items-center gap-2">
+                    <code id="gv_token_gia_tri" class="text-break flex-grow-1"></code>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="gv_token_copy">Sao chép</button>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <button class="btn btn-outline-primary btn-sm" id="gv_token_tao">Tạo token mới</button>
+                  <button class="btn btn-outline-danger btn-sm" id="gv_token_thu_hoi">Thu hồi token</button>
+                  <span id="gv_token_msg" class="small text-muted"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -616,6 +635,57 @@ function hsSyncLopSelectOnce(){
     }
     else { msg.textContent=j.thong_bao||'Lỗi'; }
   };
+})();
+
+// Token API cho app di động
+(function(){
+  const trangThai = document.getElementById('gv_token_trang_thai');
+  const box = document.getElementById('gv_token_box');
+  const gtEl = document.getElementById('gv_token_gia_tri');
+  const msg = document.getElementById('gv_token_msg');
+  const btnTao = document.getElementById('gv_token_tao');
+  const btnThuHoi = document.getElementById('gv_token_thu_hoi');
+  const btnCopy = document.getElementById('gv_token_copy');
+  if (!trangThai || !btnTao || !btnThuHoi) return;
+
+  function ve(coToken){
+    trangThai.innerHTML = coToken
+      ? '<span class="text-success fw-semibold">Đã có token đang hoạt động</span>'
+      : '<span class="text-muted">Chưa tạo token nào</span>';
+  }
+
+  async function napTrangThai(){
+    try {
+      const j = await jfetch('../api/giao_vien_quan_tri.php');
+      if (j.ok) ve(!!j.du_lieu.co_token_api);
+    } catch(_e){}
+  }
+
+  btnTao.onclick = async()=>{
+    msg.textContent=''; box.classList.add('d-none');
+    if (!confirm('Tạo token mới sẽ vô hiệu token cũ (nếu có) trên mọi thiết bị đang dùng. Tiếp tục?')) return;
+    const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=tao_token_api',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    if (j.ok) {
+      gtEl.textContent = j.du_lieu.token;
+      box.classList.remove('d-none');
+      ve(true);
+    } else { msg.textContent = j.thong_bao || 'Lỗi'; }
+  };
+
+  btnThuHoi.onclick = async()=>{
+    msg.textContent='';
+    if (!confirm('Thu hồi token hiện tại? Ứng dụng di động đang dùng token này sẽ không đăng nhập được nữa.')) return;
+    const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=thu_hoi_token_api',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    if (j.ok) { box.classList.add('d-none'); ve(false); msg.textContent='Đã thu hồi token'; }
+    else { msg.textContent = j.thong_bao || 'Lỗi'; }
+  };
+
+  if (btnCopy) btnCopy.onclick = async()=>{
+    try { await navigator.clipboard.writeText(gtEl.textContent||''); msg.textContent='Đã sao chép'; }
+    catch(_e){ msg.textContent='Không sao chép được, hãy chọn thủ công'; }
+  };
+
+  napTrangThai();
 })();
 
 // Popup nhập liệu (Bootstrap modal)

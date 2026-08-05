@@ -29,8 +29,21 @@ if (!function_exists('chay_migration')) {
     ]);
     $ensureCols('giao_vien', [
       'vai_tro' => "vai_tro TEXT DEFAULT 'GV'",
-      'phai_doi_mat_khau' => 'phai_doi_mat_khau INTEGER DEFAULT 0'
+      'phai_doi_mat_khau' => 'phai_doi_mat_khau INTEGER DEFAULT 0',
+      // Token API cho app di động (offline-first): 1 token đang hoạt động/giáo viên, lưu dạng
+      // hash (sha256) - không lưu token gốc, chỉ hiển thị 1 lần lúc tạo.
+      'api_token_bam' => 'api_token_bam TEXT'
     ]);
+    // Khóa idempotency cho giao dịch đồng bộ từ app di động: app sinh 1 client_action_id ngẫu
+    // nhiên cho mỗi hành động cộng/đổi điểm trước khi có mạng; khi đồng bộ lại, nếu gửi trùng
+    // (do mất mạng giữa chừng, app retry) thì bỏ qua thay vì cộng/trừ điểm 2 lần.
+    $ensureCols('so_cai_diem', [
+      'client_action_id' => 'client_action_id TEXT'
+    ]);
+    try {
+      $pdo->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_so_cai_client_action_id
+                  ON so_cai_diem(client_action_id) WHERE client_action_id IS NOT NULL");
+    } catch (Throwable $e) { /* ignore */ }
     $ensureCols('qua_tang', [
       'anh_url' => 'anh_url TEXT',
       'nguoi_tao_id' => 'nguoi_tao_id INTEGER REFERENCES giao_vien(id) ON DELETE CASCADE'

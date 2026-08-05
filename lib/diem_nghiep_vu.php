@@ -55,9 +55,25 @@ function doc_so_du(PDO $pdo, int $hoc_sinh_id): int
   return (int)$so_du;
 }
 
-function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $ly_do_id, string $ghi_chu = ''): array
+/**
+ * Nếu client_action_id đã tồn tại (giao dịch này đã được áp dụng trước đó - app di động gửi lại
+ * do mất mạng giữa chừng khi đồng bộ), trả về kết quả cũ thay vì báo lỗi hoặc cộng/trừ điểm lần 2.
+ */
+function tim_giao_dich_da_ap_dung(PDO $pdo, string $client_action_id): ?array
+{
+  $st = $pdo->prepare('SELECT so_du_sau FROM so_cai_diem WHERE client_action_id = ?');
+  $st->execute([$client_action_id]);
+  $r = $st->fetch();
+  return $r ? ['so_du' => (int)$r['so_du_sau']] : null;
+}
+
+function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $ly_do_id, string $ghi_chu = '', ?string $client_action_id = null): array
 {
   kiem_tra_quyen_lop($pdo, $giao_vien_id, $hoc_sinh_id);
+  if ($client_action_id !== null && $client_action_id !== '') {
+    $da_co = tim_giao_dich_da_ap_dung($pdo, $client_action_id);
+    if ($da_co !== null) { return $da_co; }
+  }
   $pdo->beginTransaction();
   try {
     dam_bao_vi($pdo, $hoc_sinh_id);
@@ -65,9 +81,9 @@ function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int 
     $stUp = $pdo->prepare('UPDATE vi_diem SET so_du = so_du + ? WHERE hoc_sinh_id = ?');
     $stUp->execute([$bien, $hoc_sinh_id]);
     $so_du_moi = doc_so_du($pdo, $hoc_sinh_id);
-    $pdo->prepare('INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, ly_do_id, bien_diem, so_du_sau, ghi_chu)
-                   VALUES(?,?,?,?,?,?,?)')
-        ->execute([$hoc_sinh_id, $giao_vien_id, 'CONG_DIEM', $ly_do_id, $bien, $so_du_moi, $ghi_chu]);
+    $pdo->prepare('INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, ly_do_id, bien_diem, so_du_sau, ghi_chu, client_action_id)
+                   VALUES(?,?,?,?,?,?,?,?)')
+        ->execute([$hoc_sinh_id, $giao_vien_id, 'CONG_DIEM', $ly_do_id, $bien, $so_du_moi, $ghi_chu, $client_action_id ?: null]);
     $pdo->commit();
     return ['so_du' => $so_du_moi];
   } catch (Throwable $e) {
@@ -78,9 +94,13 @@ function cong_diem_giao_vien(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int 
   }
 }
 
-function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $qua_tang_id, string $ghi_chu = ''): array
+function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $qua_tang_id, string $ghi_chu = '', ?string $client_action_id = null): array
 {
   kiem_tra_quyen_lop($pdo, $giao_vien_id, $hoc_sinh_id);
+  if ($client_action_id !== null && $client_action_id !== '') {
+    $da_co = tim_giao_dich_da_ap_dung($pdo, $client_action_id);
+    if ($da_co !== null) { return $da_co; }
+  }
   $st = $pdo->prepare('SELECT gia_diem, ton_kho FROM qua_tang WHERE id = ? AND dang_hoat_dong = 1 AND nguoi_tao_id = ?');
   $st->execute([$qua_tang_id, $giao_vien_id]);
   $q = $st->fetch();
@@ -106,9 +126,9 @@ function quy_doi_qua_tang(PDO $pdo, int $giao_vien_id, int $hoc_sinh_id, int $qu
     if ($ton > 0) {
       $pdo->prepare('UPDATE qua_tang SET ton_kho = ton_kho - 1 WHERE id = ?')->execute([$qua_tang_id]);
     }
-    $pdo->prepare('INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, qua_tang_id, bien_diem, so_du_sau, ghi_chu)
-                   VALUES(?,?,?,?,?,?,?)')
-        ->execute([$hoc_sinh_id, $giao_vien_id, 'DOI_DIEM', $qua_tang_id, -$gia, $so_du_moi, $ghi_chu]);
+    $pdo->prepare('INSERT INTO so_cai_diem(hoc_sinh_id, giao_vien_id, loai, qua_tang_id, bien_diem, so_du_sau, ghi_chu, client_action_id)
+                   VALUES(?,?,?,?,?,?,?,?)')
+        ->execute([$hoc_sinh_id, $giao_vien_id, 'DOI_DIEM', $qua_tang_id, -$gia, $so_du_moi, $ghi_chu, $client_action_id ?: null]);
     $pdo->commit();
     return ['so_du' => $so_du_moi];
   } catch (Throwable $e) {

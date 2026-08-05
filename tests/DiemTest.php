@@ -85,6 +85,49 @@ final class DiemTest extends TestCase
     cong_diem_giao_vien($pdo, $gv_id, $hs_id, $ly_do_id, 'thu');
   }
 
+  public function testCongDiemVoiClientActionIdTrungKhongCongDupLan2(): void
+  {
+    $pdo = tao_pdo_test();
+    $gv_id = chen_giao_vien($pdo);
+    $lop_id = chen_lop($pdo, '4A');
+    $hs_id = chen_hoc_sinh($pdo, 'HS 1', $lop_id);
+    $ly_do_id = chen_ly_do($pdo, 'Cham chi', 2, $gv_id);
+    gan_giao_vien_vao_lop($pdo, $gv_id, $lop_id);
+
+    $client_action_id = 'phone-action-abc-123';
+    $lan_1 = cong_diem_giao_vien($pdo, $gv_id, $hs_id, $ly_do_id, 'thu nghiem', $client_action_id);
+    // Mô phỏng app di động gửi lại đúng hành động này (mất mạng giữa chừng khi đồng bộ, retry).
+    $lan_2 = cong_diem_giao_vien($pdo, $gv_id, $hs_id, $ly_do_id, 'thu nghiem', $client_action_id);
+
+    $this->assertSame(2, $lan_1['so_du']);
+    $this->assertSame(2, $lan_2['so_du']);
+    $st = $pdo->query('SELECT COUNT(*) FROM so_cai_diem WHERE loai="CONG_DIEM"');
+    $this->assertSame(1, (int)$st->fetchColumn());
+  }
+
+  public function testQuyDoiVoiClientActionIdTrungKhongTruDupLan2(): void
+  {
+    $pdo = tao_pdo_test();
+    $gv_id = chen_giao_vien($pdo);
+    $lop_id = chen_lop($pdo, '4A');
+    $hs_id = chen_hoc_sinh($pdo, 'HS 1', $lop_id);
+    $qua_id = chen_qua($pdo, 'Sticker', 3, 5, $gv_id);
+    gan_giao_vien_vao_lop($pdo, $gv_id, $lop_id);
+    $pdo->prepare('INSERT INTO vi_diem(hoc_sinh_id, so_du) VALUES(?, ?)')->execute([$hs_id, 10]);
+
+    $client_action_id = 'phone-action-doi-qua-1';
+    $lan_1 = quy_doi_qua_tang($pdo, $gv_id, $hs_id, $qua_id, 'doi qua', $client_action_id);
+    $lan_2 = quy_doi_qua_tang($pdo, $gv_id, $hs_id, $qua_id, 'doi qua', $client_action_id);
+
+    $this->assertSame(7, $lan_1['so_du']);
+    $this->assertSame(7, $lan_2['so_du']);
+    $st = $pdo->prepare('SELECT ton_kho FROM qua_tang WHERE id = ?');
+    $st->execute([$qua_id]);
+    $this->assertSame(4, (int)$st->fetchColumn());
+    $st = $pdo->query('SELECT COUNT(*) FROM so_cai_diem WHERE loai="DOI_DIEM"');
+    $this->assertSame(1, (int)$st->fetchColumn());
+  }
+
   public function testKiemTraDangNhapThanhCongVaThatBai(): void
   {
     $pdo = tao_pdo_test();
