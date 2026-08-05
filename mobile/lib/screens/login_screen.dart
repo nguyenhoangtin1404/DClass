@@ -73,8 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: 'https://truong-cua-ban.vn',
                 ),
                 keyboardType: TextInputType.url,
-                validator: (v) =>
-                    (v == null || v.trim().length < 8) ? 'Nhập địa chỉ hợp lệ' : null,
+                validator: (v) => (v == null || v.trim().length < 8)
+                    ? 'Nhập địa chỉ hợp lệ'
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -84,19 +85,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: 'Lấy trong Cấu hình > Tài khoản',
                 ),
                 obscureText: true,
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Nhập token' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Nhập token' : null,
               ),
               const SizedBox(height: 24),
               if (_loi != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(_loi!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  child: Text(
+                    _loi!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
                 ),
               FilledButton(
                 onPressed: _dangKetNoi ? null : _dangNhap,
                 child: _dangKetNoi
                     ? const SizedBox(
-                        height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Kết nối'),
               ),
             ],
