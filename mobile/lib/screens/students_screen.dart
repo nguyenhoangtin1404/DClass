@@ -4,6 +4,7 @@ import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
 import '../repositories/danh_muc_repository.dart';
 import '../repositories/diem_repository.dart';
+import '../sync/sync_engine.dart';
 
 /// Student list with a quick "add points" action per row - the core
 /// in-class flow the mobile app exists for (web stays the tool for
@@ -11,7 +12,13 @@ import '../repositories/diem_repository.dart';
 class StudentsScreen extends StatefulWidget {
   final DanhMucRepository danhMuc;
   final DiemRepository diem;
-  const StudentsScreen({super.key, required this.danhMuc, required this.diem});
+  final SyncEngine syncEngine;
+  const StudentsScreen({
+    super.key,
+    required this.danhMuc,
+    required this.diem,
+    required this.syncEngine,
+  });
 
   @override
   State<StudentsScreen> createState() => _StudentsScreenState();
@@ -27,6 +34,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
   }
 
   Future<void> _lamMoi() async {
+    await widget.syncEngine.chaySync();
     setState(() => _hocSinh = widget.danhMuc.danhSachHocSinh());
     await _hocSinh;
   }
