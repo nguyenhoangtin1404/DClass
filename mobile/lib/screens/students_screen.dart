@@ -5,13 +5,19 @@ import 'package:flutter/material.dart';
 import '../api_client.dart';
 import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
+import '../repositories/danh_muc_repository.dart';
 
 /// Student list with a quick "add points" action per row - the core
 /// in-class flow the mobile app exists for (web stays the tool for
 /// admin/reports/setup).
 class StudentsScreen extends StatefulWidget {
   final ApiClient client;
-  const StudentsScreen({super.key, required this.client});
+  final DanhMucRepository danhMuc;
+  const StudentsScreen({
+    super.key,
+    required this.client,
+    required this.danhMuc,
+  });
 
   @override
   State<StudentsScreen> createState() => _StudentsScreenState();
@@ -23,11 +29,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
   @override
   void initState() {
     super.initState();
-    _hocSinh = widget.client.danhSachHocSinh();
+    _hocSinh = widget.danhMuc.danhSachHocSinh();
   }
 
   Future<void> _lamMoi() async {
-    setState(() => _hocSinh = widget.client.danhSachHocSinh());
+    setState(() => _hocSinh = widget.danhMuc.danhSachHocSinh());
     await _hocSinh;
   }
 
@@ -39,7 +45,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
   Future<void> _chonLyDoVaCongDiem(HocSinh hs) async {
     List<LyDo> lyDoList;
     try {
-      lyDoList = await widget.client.danhSachLyDo();
+      lyDoList = await widget.danhMuc.danhSachLyDo();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
