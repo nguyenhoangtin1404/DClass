@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../api_client.dart';
+import '../db/app_database.dart';
 import '../main.dart';
+import '../repositories/danh_muc_repository.dart';
 import 'students_screen.dart';
 
 /// Lets a teacher point the app at their DClass server and paste the API
@@ -43,9 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(prefsBaseUrl, baseUrl);
       await prefs.setString(prefsToken, token);
+      final db = await openAppDatabase();
+      final danhMuc = DanhMucRepository(api: client, db: db);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => StudentsScreen(client: client)),
+        MaterialPageRoute(
+          builder: (_) => StudentsScreen(client: client, danhMuc: danhMuc),
+        ),
       );
     } catch (e) {
       setState(() => _loi = 'Không kết nối được: $e');

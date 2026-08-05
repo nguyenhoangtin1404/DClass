@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_client.dart';
+import 'db/app_database.dart';
+import 'repositories/danh_muc_repository.dart';
 import 'screens/login_screen.dart';
 import 'screens/students_screen.dart';
 
@@ -36,6 +38,7 @@ class _KhoiDong extends StatefulWidget {
 
 class _KhoiDongState extends State<_KhoiDong> {
   ApiClient? _client;
+  DanhMucRepository? _danhMuc;
   bool _dangTai = true;
 
   @override
@@ -48,10 +51,15 @@ class _KhoiDongState extends State<_KhoiDong> {
     final prefs = await SharedPreferences.getInstance();
     final baseUrl = prefs.getString(prefsBaseUrl);
     final token = prefs.getString(prefsToken);
+    if (baseUrl == null || token == null) {
+      setState(() => _dangTai = false);
+      return;
+    }
+    final client = ApiClient(baseUrl: baseUrl, token: token);
+    final db = await openAppDatabase();
     setState(() {
-      _client = (baseUrl != null && token != null)
-          ? ApiClient(baseUrl: baseUrl, token: token)
-          : null;
+      _client = client;
+      _danhMuc = DanhMucRepository(api: client, db: db);
       _dangTai = false;
     });
   }
@@ -61,8 +69,8 @@ class _KhoiDongState extends State<_KhoiDong> {
     if (_dangTai) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return _client == null
+    return (_client == null || _danhMuc == null)
         ? const LoginScreen()
-        : StudentsScreen(client: _client!);
+        : StudentsScreen(client: _client!, danhMuc: _danhMuc!);
   }
 }
