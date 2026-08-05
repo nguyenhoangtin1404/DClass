@@ -40,5 +40,8 @@ jobs:
       - name: Analyze (lint)
         run: flutter analyze
 
+      - name: Ensure libsqlite3 is present (sqflite_common_ffi needs it for tests)
+        run: sudo apt-get update -y && sudo apt-get install -y libsqlite3-0
+
       - name: Run tests
         run: flutter test
