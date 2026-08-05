@@ -29,9 +29,9 @@ class ApiClient {
   }
 
   Map<String, String> get _headers => {
-    'Authorization': 'Bearer $token',
-    'Content-Type': 'application/json',
-  };
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      };
 
   dynamic _giaiMa(http.Response res) {
     if (res.statusCode < 200 || res.statusCode >= 300) {
