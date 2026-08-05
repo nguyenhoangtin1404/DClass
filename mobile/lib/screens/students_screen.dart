@@ -42,7 +42,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
       lyDoList = await widget.client.danhSachLyDo();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải lý do: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi tải lý do: $e')));
       return;
     }
     if (!mounted) return;
@@ -52,11 +54,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
         child: ListView(
           shrinkWrap: true,
           children: lyDoList
-              .map((ld) => ListTile(
-                    title: Text(ld.tieuDe),
-                    trailing: Text(ld.bienDiem > 0 ? '+${ld.bienDiem}' : '${ld.bienDiem}'),
-                    onTap: () => Navigator.of(ctx).pop(ld),
-                  ))
+              .map(
+                (ld) => ListTile(
+                  title: Text(ld.tieuDe),
+                  trailing: Text(
+                    ld.bienDiem > 0 ? '+${ld.bienDiem}' : '${ld.bienDiem}',
+                  ),
+                  onTap: () => Navigator.of(ctx).pop(ld),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -69,12 +75,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
         clientActionId: _taoClientActionId(),
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Đã cộng điểm cho ${hs.hoTen}')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Đã cộng điểm cho ${hs.hoTen}')));
       await _lamMoi();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
     }
   }
 

@@ -1,0 +1,22 @@
+flutter:
+  - changed-files:
+      - any-glob-to-any-file: 'mobile/**'
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'api/**'
+          - 'lib/**'
+          - 'config/**'
+          - 'public/**'
+          - 'tests/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
