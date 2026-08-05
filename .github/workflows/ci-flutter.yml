@@ -33,7 +33,9 @@ jobs:
         run: flutter pub get
 
       - name: Format check
-        run: dart format --output=none --set-exit-if-changed .
+        run: |
+          dart format .
+          git diff --exit-code
 
       - name: Analyze (lint)
         run: flutter analyze
