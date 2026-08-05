@@ -4,10 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../api_client.dart';
 import '../db/app_database.dart';
 import '../main.dart';
-import '../outbox/outbox_repository.dart';
-import '../repositories/danh_muc_repository.dart';
-import '../repositories/diem_repository.dart';
-import 'students_screen.dart';
+import '../phien_dang_nhap.dart';
 
 /// Lets a teacher point the app at their DClass server and paste the API
 /// token generated from cau_hinh.php's "Tài khoản" tab (shown there as text
@@ -48,12 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString(prefsBaseUrl, baseUrl);
       await prefs.setString(prefsToken, token);
       final db = await openAppDatabase();
-      final danhMuc = DanhMucRepository(api: client, db: db);
-      final diem = DiemRepository(api: client, outbox: OutboxRepository(db));
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => StudentsScreen(danhMuc: danhMuc, diem: diem),
+          builder: (_) => PhienDangNhap(client: client, db: db),
         ),
       );
     } catch (e) {

@@ -61,4 +61,30 @@ class DanhMucRepository {
       return rows.map(QuaTang.fromCacheRow).toList();
     }
   }
+
+  /// Reconciles a cached balance after the sync engine confirms an action
+  /// applied - the server's response is authoritative (it may differ from
+  /// what was assumed offline, e.g. a gift's price changed in the meantime).
+  Future<void> capNhatSoDuHocSinh(int hocSinhId, int soDuMoi) {
+    return db.update(
+      'hoc_sinh_cache',
+      {
+        'so_du_may_chu': soDuMoi,
+        'cap_nhat_luc': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [hocSinhId],
+    );
+  }
+
+  /// Best-effort local decrement after a redeem syncs (the API response
+  /// doesn't echo remaining stock) - corrected for real on the next
+  /// [danhSachQuaTang] refresh.
+  Future<void> giamTonKhoQuaTang(int quaTangId) {
+    return db.rawUpdate(
+      'UPDATE qua_tang_cache SET ton_kho_may_chu = MAX(ton_kho_may_chu - 1, 0), '
+      'cap_nhat_luc = ? WHERE id = ?',
+      [DateTime.now().toIso8601String(), quaTangId],
+    );
+  }
 }

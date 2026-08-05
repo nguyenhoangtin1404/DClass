@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'api_client.dart';
 import 'db/app_database.dart';
-import 'outbox/outbox_repository.dart';
-import 'repositories/danh_muc_repository.dart';
-import 'repositories/diem_repository.dart';
+import 'phien_dang_nhap.dart';
 import 'screens/login_screen.dart';
-import 'screens/students_screen.dart';
 
 const String prefsBaseUrl = 'base_url';
 const String prefsToken = 'api_token';
@@ -39,8 +37,8 @@ class _KhoiDong extends StatefulWidget {
 }
 
 class _KhoiDongState extends State<_KhoiDong> {
-  DanhMucRepository? _danhMuc;
-  DiemRepository? _diem;
+  ApiClient? _client;
+  Database? _db;
   bool _dangTai = true;
 
   @override
@@ -60,8 +58,8 @@ class _KhoiDongState extends State<_KhoiDong> {
     final client = ApiClient(baseUrl: baseUrl, token: token);
     final db = await openAppDatabase();
     setState(() {
-      _danhMuc = DanhMucRepository(api: client, db: db);
-      _diem = DiemRepository(api: client, outbox: OutboxRepository(db));
+      _client = client;
+      _db = db;
       _dangTai = false;
     });
   }
@@ -71,8 +69,8 @@ class _KhoiDongState extends State<_KhoiDong> {
     if (_dangTai) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return (_danhMuc == null || _diem == null)
+    return (_client == null || _db == null)
         ? const LoginScreen()
-        : StudentsScreen(danhMuc: _danhMuc!, diem: _diem!);
+        : PhienDangNhap(client: _client!, db: _db!);
   }
 }
