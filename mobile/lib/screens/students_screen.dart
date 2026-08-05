@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
+import '../models/qua_tang.dart';
 import '../repositories/danh_muc_repository.dart';
 import '../repositories/diem_repository.dart';
 import '../sync/sync_engine.dart';
+import '../widgets/sync_status_badge.dart';
+import 'failed_actions_screen.dart';
+import 'redeem_gift_screen.dart';
 
 /// Student list with a quick "add points" action per row - the core
 /// in-class flow the mobile app exists for (web stays the tool for
@@ -37,6 +41,35 @@ class _StudentsScreenState extends State<StudentsScreen> {
     await widget.syncEngine.chaySync();
     setState(() => _hocSinh = widget.danhMuc.danhSachHocSinh());
     await _hocSinh;
+  }
+
+  Future<void> _chonHanhDong(HocSinh hs) async {
+    final hanhDong = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: const Text('Cộng điểm...'),
+              onTap: () => Navigator.of(ctx).pop('cong_diem'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.card_giftcard),
+              title: const Text('Đổi quà...'),
+              onTap: () => Navigator.of(ctx).pop('doi_qua'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || hanhDong == null) return;
+    if (hanhDong == 'cong_diem') {
+      await _chonLyDoVaCongDiem(hs);
+    } else {
+      await _chonQuaVaDoiDiem(hs);
+    }
   }
 
   Future<void> _chonLyDoVaCongDiem(HocSinh hs) async {
@@ -92,10 +125,67 @@ class _StudentsScreenState extends State<StudentsScreen> {
     }
   }
 
+  Future<void> _chonQuaVaDoiDiem(HocSinh hs) async {
+    List<QuaTang> quaTangList;
+    try {
+      quaTangList = await widget.danhMuc.danhSachQuaTang();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi tải quà: $e')));
+      return;
+    }
+    if (!mounted) return;
+    final quaTang = await chonQuaTangDeDoi(context, quaTangList);
+    if (quaTang == null) return;
+    try {
+      final ketQua = await widget.diem.themDoiQua(
+        hocSinhId: hs.id,
+        quaTangId: quaTang.id,
+      );
+      if (!mounted) return;
+      final thongBao = ketQua == KetQuaGhiDiem.daApDungNgay
+          ? 'Đã đổi ${quaTang.ten} cho ${hs.hoTen}'
+          : 'Đã ghi nhận cho ${hs.hoTen} - sẽ đồng bộ khi có mạng';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(thongBao)));
+      await _lamMoi();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+    }
+  }
+
+  void _moThaoTacLoi() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FailedActionsScreen(
+          outbox: widget.diem.outbox,
+          syncEngine: widget.syncEngine,
+          danhMuc: widget.danhMuc,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Học sinh')),
+      appBar: AppBar(
+        title: const Text('Học sinh'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.error_outline),
+            tooltip: 'Thao tác lỗi',
+            onPressed: _moThaoTacLoi,
+          ),
+          SyncStatusBadge(syncEngine: widget.syncEngine),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _lamMoi,
         child: FutureBuilder<List<HocSinh>>(
@@ -120,7 +210,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   title: Text(hs.hoTen),
                   subtitle: Text(hs.tenLop ?? ''),
                   trailing: Text('${hs.soDu} điểm'),
-                  onTap: () => _chonLyDoVaCongDiem(hs),
+                  onTap: () => _chonHanhDong(hs),
                 );
               },
             );
