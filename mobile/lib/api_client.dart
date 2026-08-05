@@ -69,6 +69,7 @@ class ApiClient implements DiemApi {
     return body['du_lieu'];
   }
 
+  @override
   Future<List<HocSinh>> danhSachHocSinh({
     int? lopHocId,
     String tuKhoa = '',
@@ -86,12 +87,14 @@ class ApiClient implements DiemApi {
         .toList();
   }
 
+  @override
   Future<List<LyDo>> danhSachLyDo() async {
     final res = await http.get(_uri('/api/ly_do.php'), headers: _headers);
     final data = _giaiMa(res) as List<dynamic>;
     return data.map((e) => LyDo.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  @override
   Future<List<QuaTang>> danhSachQuaTang() async {
     final res = await http.get(_uri('/api/qua_tang.php'), headers: _headers);
     final data = _giaiMa(res) as List<dynamic>;
@@ -103,6 +106,7 @@ class ApiClient implements DiemApi {
   /// [clientActionId] should be a stable id (e.g. a uuid generated once per
   /// offline action) so a retried sync after a dropped connection doesn't
   /// double-apply the same transaction. See so_cai_diem.client_action_id.
+  @override
   Future<Map<String, dynamic>> congDiem({
     required int hocSinhId,
     required int lyDoId,
@@ -122,6 +126,7 @@ class ApiClient implements DiemApi {
     return _giaiMa(res) as Map<String, dynamic>;
   }
 
+  @override
   Future<Map<String, dynamic>> quyDoiQuaTang({
     required int hocSinhId,
     required int quaTangId,
