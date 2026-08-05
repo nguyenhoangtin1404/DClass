@@ -15,10 +15,33 @@ class ApiException implements Exception {
   String toString() => thongBao;
 }
 
+/// Contract for the DClass teacher-facing JSON API, extracted so tests (the
+/// sync engine and repositories) can depend on this instead of [ApiClient]
+/// directly and substitute a fake with scripted responses/exceptions.
+abstract class DiemApi {
+  Future<List<HocSinh>> danhSachHocSinh({int? lopHocId, String tuKhoa = ''});
+  Future<List<LyDo>> danhSachLyDo();
+  Future<List<QuaTang>> danhSachQuaTang();
+
+  Future<Map<String, dynamic>> congDiem({
+    required int hocSinhId,
+    required int lyDoId,
+    String ghiChu = '',
+    String? clientActionId,
+  });
+
+  Future<Map<String, dynamic>> quyDoiQuaTang({
+    required int hocSinhId,
+    required int quaTangId,
+    String ghiChu = '',
+    String? clientActionId,
+  });
+}
+
 /// Thin client for the DClass teacher-facing JSON API (api/*.php), using the
 /// Bearer token auth added for the mobile app (see api/dang_nhap.php and
 /// lib/tro_giup.php::thu_xac_thuc_bang_token).
-class ApiClient {
+class ApiClient implements DiemApi {
   final String baseUrl;
   final String token;
 
@@ -46,6 +69,7 @@ class ApiClient {
     return body['du_lieu'];
   }
 
+  @override
   Future<List<HocSinh>> danhSachHocSinh({
     int? lopHocId,
     String tuKhoa = '',
@@ -63,12 +87,14 @@ class ApiClient {
         .toList();
   }
 
+  @override
   Future<List<LyDo>> danhSachLyDo() async {
     final res = await http.get(_uri('/api/ly_do.php'), headers: _headers);
     final data = _giaiMa(res) as List<dynamic>;
     return data.map((e) => LyDo.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  @override
   Future<List<QuaTang>> danhSachQuaTang() async {
     final res = await http.get(_uri('/api/qua_tang.php'), headers: _headers);
     final data = _giaiMa(res) as List<dynamic>;
@@ -80,6 +106,7 @@ class ApiClient {
   /// [clientActionId] should be a stable id (e.g. a uuid generated once per
   /// offline action) so a retried sync after a dropped connection doesn't
   /// double-apply the same transaction. See so_cai_diem.client_action_id.
+  @override
   Future<Map<String, dynamic>> congDiem({
     required int hocSinhId,
     required int lyDoId,
@@ -99,6 +126,7 @@ class ApiClient {
     return _giaiMa(res) as Map<String, dynamic>;
   }
 
+  @override
   Future<Map<String, dynamic>> quyDoiQuaTang({
     required int hocSinhId,
     required int quaTangId,
