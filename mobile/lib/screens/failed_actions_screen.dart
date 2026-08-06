@@ -4,7 +4,10 @@ import '../outbox/hanh_dong_cho.dart';
 import '../outbox/outbox_repository.dart';
 import '../repositories/danh_muc_repository.dart';
 import '../sync/sync_engine.dart';
+import '../theme/dclass_colors.dart';
 import '../utils/thong_bao_loi.dart';
+import '../widgets/pill_button.dart';
+import '../widgets/ribbon_header.dart';
 
 class _DuLieuManHinh {
   _DuLieuManHinh(this.danhSach, this.tenTheoId);
@@ -65,7 +68,13 @@ class _FailedActionsScreenState extends State<FailedActionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Thao tác lỗi')),
+      appBar: AppBar(
+        title: const RibbonHeader(
+          label: 'Thao tác lỗi',
+          gradient:
+              LinearGradient(colors: [Color(0xFFFFE0DF), Color(0xFFFFE9C9)]),
+        ),
+      ),
       body: FutureBuilder<_DuLieuManHinh>(
         future: _duLieu,
         builder: (context, snap) {
@@ -76,33 +85,54 @@ class _FailedActionsScreenState extends State<FailedActionsScreen> {
           if (duLieu.danhSach.isEmpty) {
             return const Center(child: Text('Không có thao tác lỗi nào'));
           }
-          return ListView.separated(
-            itemCount: duLieu.danhSach.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, i) {
-              final hd = duLieu.danhSach[i];
-              final ten =
-                  duLieu.tenTheoId[hd.hocSinhId] ?? 'Học sinh #${hd.hocSinhId}';
-              return ListTile(
-                title: Text(ten),
-                subtitle: Text(thongBaoLoi(hd.loiMa)),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.refresh),
-                      tooltip: 'Thử lại',
-                      onPressed: () => _thuLai(hd.id!),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Xóa',
-                      onPressed: () => _xoa(hd.id!),
-                    ),
-                  ],
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+                  itemCount: duLieu.danhSach.length,
+                  itemBuilder: (context, i) {
+                    final hd = duLieu.danhSach[i];
+                    final ten = duLieu.tenTheoId[hd.hocSinhId] ??
+                        'Học sinh #${hd.hocSinhId}';
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(ten,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: Text(thongBaoLoi(hd.loiMa)),
+                        isThreeLine: true,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PillButton.icon(
+                              icon: const Icon(Icons.refresh),
+                              color: DClassColors.primary,
+                              onTap: () => _thuLai(hd.id!),
+                            ),
+                            const SizedBox(width: 6),
+                            PillButton.icon(
+                              icon: const Icon(Icons.delete_outline),
+                              color: DClassColors.danger,
+                              onTap: () => _xoa(hd.id!),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                child: Text(
+                  'Các thao tác này sẽ không tự đồng bộ lại - chọn thử lại hoặc xoá.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: DClassColors.muted, fontSize: 12.5),
+                ),
+              ),
+            ],
           );
         },
       ),
