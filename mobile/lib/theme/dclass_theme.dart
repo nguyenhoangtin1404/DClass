@@ -45,8 +45,10 @@ class DClassTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: DClassColors.background,
       textTheme: const TextTheme(
-        titleLarge: TextStyle(fontWeight: FontWeight.w800, color: DClassColors.ink),
-        titleMedium: TextStyle(fontWeight: FontWeight.w800, color: DClassColors.ink),
+        titleLarge:
+            TextStyle(fontWeight: FontWeight.w800, color: DClassColors.ink),
+        titleMedium:
+            TextStyle(fontWeight: FontWeight.w800, color: DClassColors.ink),
         bodyLarge: TextStyle(color: DClassColors.ink),
         bodyMedium: TextStyle(color: DClassColors.ink),
       ),
@@ -65,20 +67,26 @@ class DClassTheme {
         iconTheme: IconThemeData(color: DClassColors.primary),
         actionsIconTheme: IconThemeData(color: DClassColors.primary),
       ),
-      filledButtonTheme: FilledButtonThemeData(style: pillButtonStyle(DClassColors.primary)),
+      filledButtonTheme:
+          FilledButtonThemeData(style: pillButtonStyle(DClassColors.primary)),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        hintStyle: const TextStyle(color: DClassColors.muted, fontWeight: FontWeight.w600),
-        labelStyle: const TextStyle(color: DClassColors.muted, fontWeight: FontWeight.w700),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        hintStyle: const TextStyle(
+            color: DClassColors.muted, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(
+            color: DClassColors.muted, fontWeight: FontWeight.w700),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: DClassColors.fieldBorder, width: 1.6),
+          borderSide:
+              const BorderSide(color: DClassColors.fieldBorder, width: 1.6),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: DClassColors.fieldBorder, width: 1.6),
+          borderSide:
+              const BorderSide(color: DClassColors.fieldBorder, width: 1.6),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -118,7 +126,8 @@ class DClassTheme {
       ),
       snackBarTheme: const SnackBarThemeData(
         backgroundColor: DClassColors.ink,
-        contentTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        contentTextStyle:
+            TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -75,7 +75,8 @@ class _LoginScreenState extends State<LoginScreen> {
       prefixIcon: Icon(icon, color: Colors.white70, size: 20),
       filled: true,
       fillColor: Colors.white.withValues(alpha: .14),
-      labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+      labelStyle:
+          const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
       hintStyle: const TextStyle(color: Colors.white60),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -89,7 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Colors.white, width: 1.6),
       ),
-      errorStyle: const TextStyle(color: Color(0xFFFFD9DF), fontWeight: FontWeight.w700),
+      errorStyle: const TextStyle(
+          color: Color(0xFFFFD9DF), fontWeight: FontWeight.w700),
     );
   }
 
@@ -120,7 +122,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Image.asset('assets/brand/star.png', width: 20, height: 20),
+                                Image.asset('assets/brand/star.png',
+                                    width: 20, height: 20),
                                 const SizedBox(width: 7),
                                 const Text(
                                   'DClass',
@@ -172,8 +175,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           icon: Icons.vpn_key_outlined,
                         ),
                         obscureText: true,
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Nhập token' : null,
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Nhập token'
+                            : null,
                       ),
                       const SizedBox(height: 24),
                       if (_loi != null)
@@ -190,7 +194,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Kết nối'),
                       ),

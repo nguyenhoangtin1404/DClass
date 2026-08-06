@@ -44,7 +44,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: RibbonHeader(label: widget.tieuDe ?? 'Lịch sử điểm')),
+      appBar:
+          AppBar(title: RibbonHeader(label: widget.tieuDe ?? 'Lịch sử điểm')),
       body: RefreshIndicator(
         onRefresh: _lamMoi,
         child: FutureBuilder<List<LichSuGiaoDich>>(
@@ -89,9 +90,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: ListTile(
                     leading: Icon(
                       laCong ? Icons.add_circle : Icons.card_giftcard,
-                      color: laCong ? DClassColors.success : DClassColors.warning,
+                      color:
+                          laCong ? DClassColors.success : DClassColors.warning,
                     ),
-                    title: Text(tieuDe, style: const TextStyle(fontWeight: FontWeight.w700)),
+                    title: Text(tieuDe,
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(phuDe),
                     trailing: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -103,7 +106,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         const SizedBox(height: 5),
                         Text(
                           'còn ${gd.soDuSau} đ',
-                          style: const TextStyle(color: DClassColors.muted, fontSize: 12),
+                          style: const TextStyle(
+                              color: DClassColors.muted, fontSize: 12),
                         ),
                       ],
                     ),

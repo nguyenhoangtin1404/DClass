@@ -28,9 +28,11 @@ Future<QuaTang?> chonQuaTangDeDoi(BuildContext context, List<QuaTang> ds) {
                       color: const Color(0xFFF5ECD9),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.card_giftcard, color: DClassColors.warning),
+                    child: const Icon(Icons.card_giftcard,
+                        color: DClassColors.warning),
                   ),
-                  title: Text(qt.ten, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  title: Text(qt.ten,
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text('Còn ${qt.tonKho} - ${qt.giaDiem} điểm'),
                   trailing: qt.tonKho == 0
                       ? const StatusBadge.danger(label: 'Hết hàng')

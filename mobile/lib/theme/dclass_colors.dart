@@ -31,7 +31,12 @@ abstract final class DClassColors {
   static const gateGradient = RadialGradient(
     center: Alignment(-0.5, -0.6),
     radius: 1.1,
-    colors: [Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF111827), Color(0xFF0B1220)],
+    colors: [
+      Color(0xFF3B82F6),
+      Color(0xFF2563EB),
+      Color(0xFF111827),
+      Color(0xFF0B1220)
+    ],
     stops: [0.0, 0.28, 0.65, 1.0],
   );
 }

@@ -20,7 +20,8 @@ class DashedPillBorder extends OutlinedBorder {
   final double dashGap;
 
   @override
-  DashedPillBorder copyWith({BorderSide? side, Color? color, double? strokeWidth}) {
+  DashedPillBorder copyWith(
+      {BorderSide? side, Color? color, double? strokeWidth}) {
     return DashedPillBorder(
       color: color ?? this.color,
       strokeWidth: strokeWidth ?? this.strokeWidth,

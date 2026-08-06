@@ -71,7 +71,8 @@ class _FailedActionsScreenState extends State<FailedActionsScreen> {
       appBar: AppBar(
         title: const RibbonHeader(
           label: 'Thao tác lỗi',
-          gradient: LinearGradient(colors: [Color(0xFFFFE0DF), Color(0xFFFFE9C9)]),
+          gradient:
+              LinearGradient(colors: [Color(0xFFFFE0DF), Color(0xFFFFE9C9)]),
         ),
       ),
       body: FutureBuilder<_DuLieuManHinh>(
@@ -97,7 +98,9 @@ class _FailedActionsScreenState extends State<FailedActionsScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
-                        title: Text(ten, style: const TextStyle(fontWeight: FontWeight.w700)),
+                        title: Text(ten,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
                         subtitle: Text(thongBaoLoi(hd.loiMa)),
                         isThreeLine: true,
                         trailing: Row(

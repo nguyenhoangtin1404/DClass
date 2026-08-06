@@ -57,15 +57,19 @@ class PillButton extends StatelessWidget {
     final child = _iconOnly
         ? Padding(
             padding: const EdgeInsets.all(8),
-            child: IconTheme(data: IconThemeData(color: fg, size: 18), child: leading!),
+            child: IconTheme(
+                data: IconThemeData(color: fg, size: 18), child: leading!),
           )
         : Padding(
-            padding: EdgeInsets.symmetric(horizontal: dense ? 13 : 18, vertical: dense ? 8 : 11),
+            padding: EdgeInsets.symmetric(
+                horizontal: dense ? 13 : 18, vertical: dense ? 8 : 11),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (leading != null) ...[
-                  IconTheme(data: IconThemeData(color: fg, size: 16), child: leading!),
+                  IconTheme(
+                      data: IconThemeData(color: fg, size: 16),
+                      child: leading!),
                   const SizedBox(width: 6),
                 ],
                 Text(label, style: textStyle),
@@ -111,10 +115,12 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(
+          color: background, borderRadius: BorderRadius.circular(999)),
       child: Text(
         label,
-        style: TextStyle(color: foreground, fontWeight: FontWeight.w800, fontSize: 12),
+        style: TextStyle(
+            color: foreground, fontWeight: FontWeight.w800, fontSize: 12),
       ),
     );
   }

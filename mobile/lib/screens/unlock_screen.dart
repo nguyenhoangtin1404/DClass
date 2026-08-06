@@ -106,7 +106,9 @@ class _UnlockScreenState extends State<UnlockScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: on ? Colors.white : Colors.transparent,
-            border: Border.all(color: Colors.white.withValues(alpha: on ? 1 : .55), width: 1.8),
+            border: Border.all(
+                color: Colors.white.withValues(alpha: on ? 1 : .55),
+                width: 1.8),
           ),
         );
       }),
@@ -138,11 +140,14 @@ class _UnlockScreenState extends State<UnlockScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Image.asset('assets/brand/star.png', width: 18, height: 18),
+                            Image.asset('assets/brand/star.png',
+                                width: 18, height: 18),
                             const SizedBox(width: 6),
                             const Text(
                               'DClass',
-                              style: TextStyle(color: Color(0xFF0B1220), fontWeight: FontWeight.w800),
+                              style: TextStyle(
+                                  color: Color(0xFF0B1220),
+                                  fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),
@@ -153,19 +158,25 @@ class _UnlockScreenState extends State<UnlockScreen> {
                         height: 56,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: LinearGradient(colors: [Color(0xFFC7D2FE), Color(0xFF93C5FD)]),
+                          gradient: LinearGradient(
+                              colors: [Color(0xFFC7D2FE), Color(0xFF93C5FD)]),
                         ),
-                        child: const Icon(Icons.lock_outline, color: Color(0xFF0B1220)),
+                        child: const Icon(Icons.lock_outline,
+                            color: Color(0xFF0B1220)),
                       ),
                       const SizedBox(height: 16),
                       const Text(
                         'Nhập PIN để mở khoá',
-                        style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: Colors.white),
+                        style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white),
                       ),
                       const SizedBox(height: 18),
                       ValueListenableBuilder<TextEditingValue>(
                         valueListenable: _pinCtrl,
-                        builder: (context, value, _) => _pinDots(value.text.length.clamp(0, 8), 8),
+                        builder: (context, value, _) =>
+                            _pinDots(value.text.length.clamp(0, 8), 8),
                       ),
                       const SizedBox(height: 18),
                       TextField(
@@ -175,7 +186,8 @@ class _UnlockScreenState extends State<UnlockScreen> {
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         maxLength: 8,
-                        style: const TextStyle(color: Colors.white, letterSpacing: 6),
+                        style: const TextStyle(
+                            color: Colors.white, letterSpacing: 6),
                         decoration: InputDecoration(
                           labelText: 'PIN',
                           labelStyle: const TextStyle(color: Colors.white70),
@@ -186,15 +198,18 @@ class _UnlockScreenState extends State<UnlockScreen> {
                           fillColor: Colors.white.withValues(alpha: .14),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.white.withValues(alpha: .28)),
+                            borderSide: BorderSide(
+                                color: Colors.white.withValues(alpha: .28)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.white.withValues(alpha: .28)),
+                            borderSide: BorderSide(
+                                color: Colors.white.withValues(alpha: .28)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Colors.white, width: 1.6),
+                            borderSide: const BorderSide(
+                                color: Colors.white, width: 1.6),
                           ),
                         ),
                         onSubmitted: (_) => _kiemTraPin(),
@@ -208,7 +223,8 @@ class _UnlockScreenState extends State<UnlockScreen> {
                         const SizedBox(height: 10),
                         TextButton.icon(
                           onPressed: _thuSinhTracHoc,
-                          style: TextButton.styleFrom(foregroundColor: Colors.white),
+                          style: TextButton.styleFrom(
+                              foregroundColor: Colors.white),
                           icon: const Icon(Icons.fingerprint),
                           label: const Text('Dùng sinh trắc học'),
                         ),

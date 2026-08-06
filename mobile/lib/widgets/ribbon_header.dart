@@ -22,7 +22,10 @@ class RibbonHeader extends StatelessWidget {
             gradient: gradient ?? DClassColors.ribbonGradient,
             borderRadius: BorderRadius.circular(16),
             boxShadow: const [
-              BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, 4)),
+              BoxShadow(
+                  color: Color(0x14000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 4)),
             ],
           ),
           child: Text(

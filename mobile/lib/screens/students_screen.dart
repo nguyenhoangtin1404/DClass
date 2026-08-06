@@ -202,10 +202,12 @@ class _StudentsScreenState extends State<StudentsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(hs.hoTen, style: const TextStyle(fontWeight: FontWeight.w800)),
+                Text(hs.hoTen,
+                    style: const TextStyle(fontWeight: FontWeight.w800)),
                 Text(
                   'Số dư hiện tại · ${hs.soDu} điểm',
-                  style: const TextStyle(color: DClassColors.muted, fontSize: 12.5),
+                  style: const TextStyle(
+                      color: DClassColors.muted, fontSize: 12.5),
                 ),
               ],
             ),
@@ -257,7 +259,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
                 runSpacing: 8,
                 children: lyDoList!.map((ld) {
                   final duong = ld.bienDiem > 0;
-                  final mau = duong ? DClassColors.success : DClassColors.danger;
+                  final mau =
+                      duong ? DClassColors.success : DClassColors.danger;
                   final nhan =
                       '${ld.tieuDe} ${ld.bienDiem > 0 ? '+' : ''}${ld.bienDiem}';
                   return PillButton(
@@ -415,7 +418,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
               height: 52,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
