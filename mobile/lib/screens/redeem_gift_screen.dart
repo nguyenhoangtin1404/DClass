@@ -26,41 +26,38 @@ Future<QuaTang?> chonQuaTangDeDoi(
       child: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
-        children: ds
-            .map(
-              (qt) {
-                final hetHang = qt.tonKho == 0;
-                final khongDuDiem = qt.giaDiem > soDuHienTai;
-                final coTheDoi = !hetHang && !khongDuDiem;
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: ListTile(
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5ECD9),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.card_giftcard,
-                          color: DClassColors.warning),
-                    ),
-                    title: Text(qt.ten,
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text('Còn ${qt.tonKho} - ${qt.giaDiem} điểm'),
-                    trailing: hetHang
-                        ? const StatusBadge.danger(label: 'Hết hàng')
-                        : khongDuDiem
-                            ? const StatusBadge.danger(label: 'Không đủ điểm')
-                            : StatusBadge.warning(label: '${qt.giaDiem} đ'),
-                    enabled: coTheDoi,
-                    onTap: () => Navigator.of(ctx).pop(qt),
+        children: ds.map(
+          (qt) {
+            final hetHang = qt.tonKho == 0;
+            final khongDuDiem = qt.giaDiem > soDuHienTai;
+            final coTheDoi = !hetHang && !khongDuDiem;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5ECD9),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-            )
-            .toList(),
+                  child: const Icon(Icons.card_giftcard,
+                      color: DClassColors.warning),
+                ),
+                title: Text(qt.ten,
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text('Còn ${qt.tonKho} - ${qt.giaDiem} điểm'),
+                trailing: hetHang
+                    ? const StatusBadge.danger(label: 'Hết hàng')
+                    : khongDuDiem
+                        ? const StatusBadge.danger(label: 'Không đủ điểm')
+                        : StatusBadge.warning(label: '${qt.giaDiem} đ'),
+                enabled: coTheDoi,
+                onTap: () => Navigator.of(ctx).pop(qt),
+              ),
+            );
+          },
+        ).toList(),
       ),
     ),
   );
