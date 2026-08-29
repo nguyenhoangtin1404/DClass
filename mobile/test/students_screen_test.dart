@@ -6,6 +6,7 @@ import 'package:dclass_mobile/repositories/danh_muc_repository.dart';
 import 'package:dclass_mobile/repositories/diem_repository.dart';
 import 'package:dclass_mobile/screens/students_screen.dart';
 import 'package:dclass_mobile/sync/sync_engine.dart';
+import 'package:dclass_mobile/widgets/pill_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
@@ -159,7 +160,9 @@ void main() {
 
     expect(find.text('Tất cả lớp'), findsOneWidget);
 
-    await tester.tap(find.text('4B'));
+    // Not find.text('4B') - Binh's own row also shows "4B" as her class,
+    // so that finder ambiguously matches both the pill and the row.
+    await tester.tap(find.widgetWithText(PillButton, '4B'));
     await doiManHinhOnDinh(tester);
 
     expect(find.text('Binh'), findsOneWidget);
