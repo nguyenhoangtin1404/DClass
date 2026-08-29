@@ -79,6 +79,15 @@ $an_toan_csv = function ($v) {
   if ($s !== '' && strpbrk($s[0], "=+-@\t\r") !== false) { return "'" . $s; }
   return $s;
 };
+// Ngược lại của $an_toan_csv, dùng khi ĐỌC một file CSV để nhập: nếu chính hệ thống này đã xuất
+// ra 1 dấu nháy đơn ở đầu ô để chặn formula injection, bỏ dấu đó đi khi nhập lại - nếu không, xuất
+// rồi nhập lại chính file đó sẽ tạo học sinh trùng (mã bị đổi thành "'=HS01") hoặc làm bẩn tên
+// học sinh vĩnh viễn bằng dấu nháy thừa.
+$bo_tien_to_an_toan_csv = function ($v) {
+  $s = (string)($v ?? '');
+  if (strlen($s) >= 2 && $s[0] === "'" && strpbrk($s[1], '=+-@') !== false) { return substr($s, 1); }
+  return $s;
+};
 $chuan_lop_id = function ($v) {
   $raw = trim((string)$v);
   if ($raw === '' || $raw === '0') return null;
@@ -162,8 +171,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'xem_truoc') {
   $dong = 0; $mau = [];
   while (($row = fgetcsv($fh, 0, $delimiter)) !== false) {
     $dong++;
-    $ho_ten = trim((string)($row[$idxHoTen] ?? ''));
-    $ma = $idxMa !== null ? trim((string)($row[$idxMa] ?? '')) : '';
+    $ho_ten = $bo_tien_to_an_toan_csv(trim((string)($row[$idxHoTen] ?? '')));
+    $ma = $idxMa !== null ? $bo_tien_to_an_toan_csv(trim((string)($row[$idxMa] ?? ''))) : '';
     $lop_hoc_id = $idxLop !== null ? $chuan_lop_id($row[$idxLop] ?? '') : null;
     $gioi = $idxGioi !== null ? $chuan_gioi((string)($row[$idxGioi] ?? '')) : '';
     $ngay = $idxNgay !== null ? $chuan_ngay((string)($row[$idxNgay] ?? '')) : '';
@@ -235,10 +244,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'nhap') {
   try {
     while (($row = fgetcsv($fh, 0, $delimiter)) !== false) {
       $dong++;
-      $ho_ten = trim((string)($row[$idxHoTen] ?? ''));
-      $ma = $idxMa !== null ? trim((string)($row[$idxMa] ?? '')) : '';
+      $ho_ten = $bo_tien_to_an_toan_csv(trim((string)($row[$idxHoTen] ?? '')));
+      $ma = $idxMa !== null ? $bo_tien_to_an_toan_csv(trim((string)($row[$idxMa] ?? ''))) : '';
       $lop_hoc_id = $idxLop !== null ? $chuan_lop_id($row[$idxLop] ?? '') : null;
-      $anh = $idxAnh !== null ? trim((string)($row[$idxAnh] ?? '')) : '';
+      $anh = $idxAnh !== null ? $bo_tien_to_an_toan_csv(trim((string)($row[$idxAnh] ?? ''))) : '';
       $gioi = $idxGioi !== null ? $chuan_gioi((string)($row[$idxGioi] ?? '')) : '';
       $ngay = $idxNgay !== null ? $chuan_ngay((string)($row[$idxNgay] ?? '')) : '';
       $stt = null;
