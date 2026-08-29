@@ -39,11 +39,18 @@ void main() {
     db = await openAppDatabase(path: inMemoryDatabasePath);
   });
 
+  // Uses two plain pump()s rather than pumpAndSettle() throughout this file:
+  // SyncStatusBadge's connectivity icon never "settles" the way
+  // pumpAndSettle() wants (same reason sync_status_badge_test.dart never
+  // uses it either) - one pump lets the FutureBuilder's data through, the
+  // second lets the resulting setState rebuild land.
+
   testWidgets('shows an empty state when there are no students', (
     tester,
   ) async {
     await tester.pumpWidget(dungLen());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Chưa có học sinh nào'), findsOneWidget);
   });
@@ -65,7 +72,8 @@ void main() {
       ),
     ];
     await tester.pumpWidget(dungLen());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Nguyen Van An'), findsOneWidget);
     expect(find.textContaining('STT 3'), findsOneWidget);
@@ -89,7 +97,8 @@ void main() {
         ),
       ];
       await tester.pumpWidget(dungLen());
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump();
 
       expect(find.textContaining('·'), findsNothing);
     },
@@ -104,14 +113,16 @@ void main() {
           id: 2, ma: null, hoTen: 'Binh', lopHocId: 1, tenLop: '4A', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('An'), findsOneWidget);
     expect(find.text('Binh'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).first, 'an');
     await tester.pump(const Duration(milliseconds: 350));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('An'), findsOneWidget);
     expect(find.text('Binh'), findsNothing);
@@ -124,7 +135,8 @@ void main() {
       HocSinh(id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Tất cả lớp'), findsNothing);
   });
@@ -136,12 +148,14 @@ void main() {
           id: 2, ma: null, hoTen: 'Binh', lopHocId: 2, tenLop: '4B', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Tất cả lớp'), findsOneWidget);
 
     await tester.tap(find.text('4B'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Binh'), findsOneWidget);
     expect(find.text('An'), findsNothing);
