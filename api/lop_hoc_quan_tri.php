@@ -73,6 +73,12 @@ if ($method === 'POST') {
     $id = (int)($b['id'] ?? 0);
     if ($id <= 0) return json_phan_hoi(false, null, 'thieu_id');
     if (!so_huu_lop($pdo, $gv_id, $id)) return json_phan_hoi(false, null, 'khong_du_quyen');
+    // hoc_sinh.lop_hoc_id tham chiếu lop_hoc(id) không có ON DELETE - xoá thẳng khi còn học sinh
+    // (kể cả đã tắt) sẽ ném PDOException do vi phạm khoá ngoại (PRAGMA foreign_keys=ON), không
+    // được bắt ở đâu khác -> lỗi 500 thay vì thông báo rõ ràng. Kiểm tra trước để trả lỗi sạch sẽ.
+    $stCon = $pdo->prepare('SELECT COUNT(1) FROM hoc_sinh WHERE lop_hoc_id=?');
+    $stCon->execute([$id]);
+    if ((int)$stCon->fetchColumn() > 0) return json_phan_hoi(false, null, 'lop_con_hoc_sinh');
     $pdo->prepare('DELETE FROM lop_hoc WHERE id=?')->execute([$id]);
     ghi_log($pdo, $gv_id, 'xoa_lop', 'Xóa lớp id '.$id);
     return json_phan_hoi(true);

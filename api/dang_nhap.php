@@ -68,10 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_xuat') { xoa_c
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_ky') {
   // Chống spam tạo tài khoản hàng loạt: tối đa 5 lần thử (thành công hay thất bại)/10 phút mỗi IP.
   // Đếm lưu bền theo IP (lib/gioi_han_toc_do.php), không dùng $_SESSION - lý do như ở đăng nhập.
+  // Chỉ chặn nếu ĐÃ bị khoá TỪ TRƯỚC request này - không kiểm tra lại khoa_den sau khi ghi nhận:
+  // lần thử thứ 5 chính là lần khiến ghi_nhan_that_bai() đặt khoá, nhưng vẫn phải được tính (giới
+  // hạn là 5 lần thử, không phải 4) - kiểm tra lại ngay sau ghi nhận sẽ tự chặn nhầm đúng lần thử
+  // hợp lệ cuối cùng.
   $k = 'dk|' . ($_SERVER['REMOTE_ADDR'] ?? 'na');
   if (doc_dem_that_bai($pdo, $k)['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
-  $dem_moi = ghi_nhan_that_bai($pdo, $k, 5);
-  if ($dem_moi['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
+  ghi_nhan_that_bai($pdo, $k, 5);
 
   $b = than_json();
   $ten = trim((string)($b['ten_dang_nhap'] ?? ''));

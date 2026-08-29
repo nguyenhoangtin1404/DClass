@@ -74,18 +74,30 @@ $chuan_gioi = function ($s) use ($chuan_key) {
 // thô) nhưng nguy hiểm cho người mở file .csv xuất ra bằng phần mềm bảng tính. Tiền tố bằng dấu
 // nháy đơn buộc phần mềm đó hiển thị nguyên văn thay vì tính công thức - không đổi dữ liệu trong
 // CSDL, chỉ áp dụng lúc xuất.
-$an_toan_csv = function ($v) {
+//
+// Luôn thêm ĐÚNG 1 dấu nháy (kể cả khi giá trị gốc trong CSDL đã tự bắt đầu bằng nháy+ký tự công
+// thức, vd "'=HS01") thay vì chỉ kiểm tra ký tự đầu tiên - nếu không, giá trị gốc kiểu đó sẽ đi
+// qua export mà không bị đổi, rồi bo_tien_to_an_toan_csv() lúc nhập lại sẽ tưởng nhầm dấu nháy đó
+// là do chính nó thêm vào và xoá mất, biến "'=HS01" thành "=HS01" - một mã học sinh khác hẳn
+// (nhập lại theo mã sẽ tạo bản ghi trùng/đè nhầm học sinh khác). Đếm số dấu nháy dẫn đầu để luôn
+// thêm/bớt đúng 1 dấu, khớp nhau ở cả hai chiều bất kể giá trị gốc có bao nhiêu dấu nháy.
+$can_an_toan_csv = function (string $s): bool {
+  $sauKhiBoNhay = ltrim($s, "'");
+  return $sauKhiBoNhay !== '' && strpbrk($sauKhiBoNhay[0], "=+-@\t\r") !== false;
+};
+$an_toan_csv = function ($v) use ($can_an_toan_csv) {
   $s = (string)($v ?? '');
-  if ($s !== '' && strpbrk($s[0], "=+-@\t\r") !== false) { return "'" . $s; }
-  return $s;
+  return $can_an_toan_csv($s) ? ("'" . $s) : $s;
 };
 // Ngược lại của $an_toan_csv, dùng khi ĐỌC một file CSV để nhập: nếu chính hệ thống này đã xuất
-// ra 1 dấu nháy đơn ở đầu ô để chặn formula injection, bỏ dấu đó đi khi nhập lại - nếu không, xuất
-// rồi nhập lại chính file đó sẽ tạo học sinh trùng (mã bị đổi thành "'=HS01") hoặc làm bẩn tên
-// học sinh vĩnh viễn bằng dấu nháy thừa.
-$bo_tien_to_an_toan_csv = function ($v) {
+// ra 1 dấu nháy đơn ở đầu ô để chặn formula injection, bỏ ĐÚNG 1 dấu đó đi khi nhập lại - nếu
+// không, xuất rồi nhập lại chính file đó sẽ tạo học sinh trùng (mã bị đổi thành "'=HS01") hoặc
+// làm bẩn tên học sinh vĩnh viễn bằng dấu nháy thừa.
+$bo_tien_to_an_toan_csv = function ($v) use ($can_an_toan_csv) {
   $s = (string)($v ?? '');
-  if (strlen($s) >= 2 && $s[0] === "'" && strpbrk($s[1], '=+-@') !== false) { return substr($s, 1); }
+  if ($s !== '' && $s[0] === "'" && $can_an_toan_csv(substr($s, 1))) {
+    return substr($s, 1);
+  }
   return $s;
 };
 $chuan_lop_id = function ($v) {

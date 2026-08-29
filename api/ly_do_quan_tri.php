@@ -61,6 +61,12 @@ if ($method === 'POST') {
     $co = $pdo->prepare('SELECT 1 FROM ly_do WHERE id=? AND nguoi_tao_id=?');
     $co->execute([$id, $gv_id]);
     if (!$co->fetchColumn()) return json_phan_hoi(false, null, 'khong_du_quyen');
+    // so_cai_diem.ly_do_id không có ràng buộc khoá ngoại nên xoá thẳng không lỗi, nhưng để lại
+    // tham chiếu treo - lịch sử/báo cáo cũ sẽ mất tên lý do (LEFT JOIN ra NULL). Chặn xoá nếu đã
+    // dùng, như quà tặng đã làm (xem qua_tang_quan_tri.php).
+    $stUsed = $pdo->prepare('SELECT COUNT(1) FROM so_cai_diem WHERE ly_do_id=?');
+    $stUsed->execute([$id]);
+    if ((int)$stUsed->fetchColumn() > 0) return json_phan_hoi(false, null, 'ly_do_da_su_dung');
     $pdo->prepare('DELETE FROM ly_do WHERE id=?')->execute([$id]);
     ghi_log($pdo, $gv_id, 'xoa_ly_do', 'Xóa lý do id '.$id);
     return json_phan_hoi(true);
