@@ -160,4 +160,29 @@ final class GioiHanTocDoTest extends TestCase
     $this->assertSame(3, doc_dem_that_bai($pdo, 'dn|1.2.3.4|alice')['so_lan']);
     $this->assertSame(1, doc_dem_that_bai($pdo, 'dn|1.2.3.4|bob')['so_lan']);
   }
+
+  /**
+   * Lỗi đã sửa (Codex): $khoa chứa tên đăng nhập CHƯA xác thực - kẻ tấn công gửi một tên ngẫu
+   * nhiên mỗi lần khiến mỗi request tạo 1 hàng mới, không bao giờ được đọc lại nên không bao giờ
+   * được dọn bởi doc_dem_that_bai(). don_dep_dem_that_bai_qua_han() dọn TOÀN CỤC theo thời gian,
+   * không phụ thuộc việc khoá có được đọc lại hay không.
+   */
+  public function testDonDepQuaHanXoaHangCuBatKeCoDuocDocLaiHayKhong(): void
+  {
+    $pdo = tao_pdo_test();
+    $khoaCu = 'dn|1.2.3.4|khoa-dung-1-lan';
+    $this->chenTho($pdo, $khoaCu, 3, 0, time() - (GIOI_HAN_CUA_SO_GIAY + 10));
+    $khoaMoi = 'dn|1.2.3.4|khoa-con-hieu-luc';
+    $this->chenTho($pdo, $khoaMoi, 2, 0, time() - 10);
+
+    don_dep_dem_that_bai_qua_han($pdo);
+
+    $stCu = $pdo->prepare('SELECT COUNT(*) FROM dem_thu_that_bai WHERE khoa = ?');
+    $stCu->execute([$khoaCu]);
+    $this->assertSame(0, (int)$stCu->fetchColumn());
+
+    $stMoi = $pdo->prepare('SELECT COUNT(*) FROM dem_thu_that_bai WHERE khoa = ?');
+    $stMoi->execute([$khoaMoi]);
+    $this->assertSame(1, (int)$stMoi->fetchColumn());
+  }
 }

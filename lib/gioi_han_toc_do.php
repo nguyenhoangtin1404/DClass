@@ -77,6 +77,15 @@ function ghi_nhan_that_bai(PDO $pdo, string $khoa, int $nguong): array
     // Best-effort: lỗi ghi đếm không nên chặn hẳn đăng nhập. Coi như 1 lần sai, chưa khoá.
     return ['so_lan' => 1, 'khoa_den' => 0];
   }
+  // $khoa chứa tên đăng nhập CHƯA xác thực (vd "dn|<ip>|<ten_dang_nhap_bat_ky>") - kẻ tấn công có
+  // thể gửi một tên ngẫu nhiên mỗi lần để buộc mỗi request tạo 1 hàng mới. doc_dem_that_bai() chỉ
+  // dọn 1 hàng khi CHÍNH khoá đó được đọc lại - một khoá "dùng 1 lần rồi bỏ" như vậy không bao
+  // giờ được đọc lại nên không bao giờ được dọn, làm bảng phình vô hạn. Dọn toàn cục ngẫu nhiên
+  // (không phải mỗi lần, để không tốn 1 DELETE full-scan trên mọi request) để tự giới hạn kích
+  // thước bảng theo thời gian bất kể khoá có bao giờ được đọc lại hay không.
+  if (random_int(1, 20) === 1) {
+    don_dep_dem_that_bai_qua_han($pdo);
+  }
   // Đọc lại trên cùng kết nối - luôn thấy ít nhất lần ghi vừa rồi của chính request này.
   $st2 = $pdo->prepare('SELECT so_lan, khoa_den FROM dem_thu_that_bai WHERE khoa = ?');
   $st2->execute([$khoa]);
@@ -90,4 +99,14 @@ function xoa_dem_that_bai(PDO $pdo, string $khoa): void
 {
   try { $pdo->prepare('DELETE FROM dem_thu_that_bai WHERE khoa = ?')->execute([$khoa]); }
   catch (Throwable $e) { /* ignore */ }
+}
+
+/** Dọn mọi hàng đã quá cửa sổ hiệu lực, bất kể khoá đó có bao giờ được đọc lại hay không. */
+function don_dep_dem_that_bai_qua_han(PDO $pdo): void
+{
+  try {
+    $pdo->prepare(
+      "DELETE FROM dem_thu_that_bai WHERE cap_nhat_luc <= datetime('now', :cua_so)"
+    )->execute(['cua_so' => '-' . GIOI_HAN_CUA_SO_GIAY . ' seconds']);
+  } catch (Throwable $e) { /* ignore */ }
 }
