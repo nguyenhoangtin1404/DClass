@@ -69,6 +69,27 @@ class _StudentsScreenState extends State<StudentsScreen> {
     });
   }
 
+  /// "Nam · 12/05/2016" kiểu hiển thị - cùng cách đọc `gioi_tinh`/`ngay_sinh`
+  /// như `hienThongTinDep()` bên web (`public/trang_chinh.php`).
+  String _moTaGioiTinhNgaySinh(HocSinh hs) {
+    final gioi = (hs.gioiTinh ?? '').toUpperCase();
+    final gioiLbl = gioi == 'NAM'
+        ? 'Nam'
+        : gioi == 'NU'
+            ? 'Nữ'
+            : gioi == 'KHAC'
+                ? 'Khác'
+                : '';
+    final raw = (hs.ngaySinh ?? '');
+    final ngay = raw.length >= 10 ? raw.substring(0, 10) : raw;
+    String ngayLbl = '';
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(ngay)) {
+      final p = ngay.split('-');
+      ngayLbl = '${p[2]}/${p[1]}/${p[0]}';
+    }
+    return [gioiLbl, ngayLbl].where((s) => s.isNotEmpty).join(' · ');
+  }
+
   /// Wraps a repository read: a dead/revoked token ([laLoiPhienHetHan])
   /// ends the local session and sends the user back to login instead of
   /// letting the caller's normal error-handling silently mask it (e.g. a
@@ -489,11 +510,24 @@ class _StudentsScreenState extends State<StudentsScreen> {
                             hs.hoTen,
                             style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          subtitle: Text(
-                            [
-                              if ((hs.ma ?? '').isNotEmpty) hs.ma,
-                              hs.tenLop ?? '',
-                            ].where((s) => (s ?? '').isNotEmpty).join(' · '),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                [
+                                  if (hs.stt != null) 'STT ${hs.stt}',
+                                  if ((hs.ma ?? '').isNotEmpty) hs.ma,
+                                  hs.tenLop ?? '',
+                                ].where((s) => (s ?? '').isNotEmpty).join(' · '),
+                              ),
+                              if (_moTaGioiTinhNgaySinh(hs).isNotEmpty)
+                                Text(
+                                  _moTaGioiTinhNgaySinh(hs),
+                                  style: const TextStyle(
+                                      fontSize: 12, color: Colors.grey),
+                                ),
+                            ],
                           ),
                           trailing: StatusBadge.warning(label: '${hs.soDu} đ'),
                           onTap: () => _chonHanhDong(hs),
