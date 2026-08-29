@@ -13,6 +13,7 @@ require_once __DIR__ . '/../lib/diem_nghiep_vu.php';
 require_once __DIR__ . '/../lib/dang_nhap_nghiep_vu.php';
 require_once __DIR__ . '/../lib/hoc_sinh_nghiep_vu.php';
 require_once __DIR__ . '/../lib/tro_giup.php';
+require_once __DIR__ . '/../lib/gioi_han_toc_do.php';
 require_once __DIR__ . '/../config/migration_nghiep_vu.php';
 
 function tao_pdo_test(): PDO

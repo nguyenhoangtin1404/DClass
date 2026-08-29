@@ -69,6 +69,25 @@ $chuan_gioi = function ($s) use ($chuan_key) {
   if (in_array($ascii, ['KHAC','X','OTHER'], true)) return 'KHAC';
   return $v;
 };
+// Chống "CSV/Formula Injection": Excel/Sheets/LibreOffice diễn giải một ô bắt đầu bằng =, +, -,
+// @ (hoặc tab/CR) như công thức khi mở file - vô hại với chính hệ thống này (chỉ ghi/đọc text
+// thô) nhưng nguy hiểm cho người mở file .csv xuất ra bằng phần mềm bảng tính. Tiền tố bằng dấu
+// nháy đơn buộc phần mềm đó hiển thị nguyên văn thay vì tính công thức - không đổi dữ liệu trong
+// CSDL, chỉ áp dụng lúc xuất.
+$an_toan_csv = function ($v) {
+  $s = (string)($v ?? '');
+  if ($s !== '' && strpbrk($s[0], "=+-@\t\r") !== false) { return "'" . $s; }
+  return $s;
+};
+// Ngược lại của $an_toan_csv, dùng khi ĐỌC một file CSV để nhập: nếu chính hệ thống này đã xuất
+// ra 1 dấu nháy đơn ở đầu ô để chặn formula injection, bỏ dấu đó đi khi nhập lại - nếu không, xuất
+// rồi nhập lại chính file đó sẽ tạo học sinh trùng (mã bị đổi thành "'=HS01") hoặc làm bẩn tên
+// học sinh vĩnh viễn bằng dấu nháy thừa.
+$bo_tien_to_an_toan_csv = function ($v) {
+  $s = (string)($v ?? '');
+  if (strlen($s) >= 2 && $s[0] === "'" && strpbrk($s[1], '=+-@') !== false) { return substr($s, 1); }
+  return $s;
+};
 $chuan_lop_id = function ($v) {
   $raw = trim((string)$v);
   if ($raw === '' || $raw === '0') return null;
@@ -102,8 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $hanh_dong === 'xuat') {
   $sql .= " ORDER BY s.ho_ten ASC";
   $st = $pdo->prepare($sql); $st->execute($pr);
   while ($row = $st->fetch()) { fputcsv($out, [
-    $row['id'],$row['ma'],$row['ho_ten'],$row['lop_hoc_id'],$row['ten_lop'],$row['so_du'],
-    $row['anh_dai_dien_url'],$row['gioi_tinh'],$row['ngay_sinh']
+    $row['id'],$an_toan_csv($row['ma']),$an_toan_csv($row['ho_ten']),$row['lop_hoc_id'],
+    $an_toan_csv($row['ten_lop']),$row['so_du'],$an_toan_csv($row['anh_dai_dien_url']),
+    $an_toan_csv($row['gioi_tinh']),$an_toan_csv($row['ngay_sinh'])
   ]); }
   fclose($out); exit;
 }
@@ -151,8 +171,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'xem_truoc') {
   $dong = 0; $mau = [];
   while (($row = fgetcsv($fh, 0, $delimiter)) !== false) {
     $dong++;
-    $ho_ten = trim((string)($row[$idxHoTen] ?? ''));
-    $ma = $idxMa !== null ? trim((string)($row[$idxMa] ?? '')) : '';
+    $ho_ten = $bo_tien_to_an_toan_csv(trim((string)($row[$idxHoTen] ?? '')));
+    $ma = $idxMa !== null ? $bo_tien_to_an_toan_csv(trim((string)($row[$idxMa] ?? ''))) : '';
     $lop_hoc_id = $idxLop !== null ? $chuan_lop_id($row[$idxLop] ?? '') : null;
     $gioi = $idxGioi !== null ? $chuan_gioi((string)($row[$idxGioi] ?? '')) : '';
     $ngay = $idxNgay !== null ? $chuan_ngay((string)($row[$idxNgay] ?? '')) : '';
@@ -224,10 +244,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'nhap') {
   try {
     while (($row = fgetcsv($fh, 0, $delimiter)) !== false) {
       $dong++;
-      $ho_ten = trim((string)($row[$idxHoTen] ?? ''));
-      $ma = $idxMa !== null ? trim((string)($row[$idxMa] ?? '')) : '';
+      $ho_ten = $bo_tien_to_an_toan_csv(trim((string)($row[$idxHoTen] ?? '')));
+      $ma = $idxMa !== null ? $bo_tien_to_an_toan_csv(trim((string)($row[$idxMa] ?? ''))) : '';
       $lop_hoc_id = $idxLop !== null ? $chuan_lop_id($row[$idxLop] ?? '') : null;
-      $anh = $idxAnh !== null ? trim((string)($row[$idxAnh] ?? '')) : '';
+      $anh = $idxAnh !== null ? $bo_tien_to_an_toan_csv(trim((string)($row[$idxAnh] ?? ''))) : '';
       $gioi = $idxGioi !== null ? $chuan_gioi((string)($row[$idxGioi] ?? '')) : '';
       $ngay = $idxNgay !== null ? $chuan_ngay((string)($row[$idxNgay] ?? '')) : '';
       $stt = null;

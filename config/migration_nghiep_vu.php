@@ -65,6 +65,18 @@ if (!function_exists('chay_migration')) {
     try {
       $pdo->exec("CREATE TABLE IF NOT EXISTS reset_khoa (ten_dang_nhap TEXT PRIMARY KEY, het_han INTEGER)");
     } catch (Throwable $e) { /* ignore */ }
+    // Đếm số lần thử liên tiếp thất bại (đăng nhập/đăng ký) - lưu bền trong CSDL thay vì
+    // $_SESSION: $_SESSION theo trình duyệt/cookie nên một kịch bản không giữ cookie giữa các lần
+    // thử luôn được cấp "phiên mới" với bộ đếm về 0, vô hiệu hoàn toàn giới hạn CAPTCHA-sau-2-lần
+    // -sai và khoá-sau-5-lần-sai (xem lib/gioi_han_toc_do.php).
+    try {
+      $pdo->exec("CREATE TABLE IF NOT EXISTS dem_thu_that_bai (
+        khoa TEXT PRIMARY KEY,
+        so_lan INTEGER NOT NULL DEFAULT 0,
+        khoa_den INTEGER NOT NULL DEFAULT 0,
+        cap_nhat_luc TEXT
+      )");
+    } catch (Throwable $e) { /* ignore */ }
     try {
       $pdo->exec("CREATE TABLE IF NOT EXISTS nhat_ky (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

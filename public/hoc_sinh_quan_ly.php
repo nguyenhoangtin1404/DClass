@@ -103,6 +103,14 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
 </div>
 
 <script>
+// Tên học sinh/lớp là do giáo viên (bất kỳ ai được gán lớp đó) tự nhập - không escape trước khi
+// ghép vào innerHTML thì một giáo viên có thể đặt tên chứa script và nó sẽ chạy trong trình
+// duyệt của giáo viên khác cùng được gán lớp đó khi họ xem trang này.
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
 let hsDangChon = null;
 
 function hienChiTiet(){
@@ -151,7 +159,7 @@ async function nap(keepId=null){
     const a=document.createElement('a'); a.href='#'; a.className='list-group-item list-group-item-action d-flex justify-content-between align-items-center';
     const sttText = (s.stt===null || s.stt===undefined || s.stt==='') ? '' : `${s.stt}. `;
     const active = Number(s.dang_hoat_dong) === 1;
-  a.innerHTML = `<span>${sttText}${s.ho_ten} (${s.ten_lop||''}) · Điểm: ${s.so_du}</span>` + (active? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-warning text-dark">Tắt</span>');
+  a.innerHTML = `<span>${escapeHtml(sttText)}${escapeHtml(s.ho_ten)} (${escapeHtml(s.ten_lop||'')}) · Điểm: ${s.so_du}</span>` + (active? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-warning text-dark">Tắt</span>');
     if(hsDangChon && String(hsDangChon.id)===String(s.id)) a.classList.add('active');
     a.onclick = (ev)=>{ ev.preventDefault(); hsDangChon = s; hienChiTiet(); setChiTietInputs(); setTimeout(syncLopSelectOnce, 0); };
     box.appendChild(a);

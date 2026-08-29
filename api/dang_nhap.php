@@ -5,6 +5,7 @@ require __DIR__ . '/../lib/tro_giup.php';
 require __DIR__ . '/../lib/ghi_nho.php';
 require __DIR__ . '/../lib/dang_nhap_nghiep_vu.php';
 require __DIR__ . '/../lib/captcha.php';
+require __DIR__ . '/../lib/gioi_han_toc_do.php';
 /** @var \PDO $pdo Global PDO instance from config/db.php */
 $hanh_dong = $_GET['hanh_dong'] ?? '';
 // Reset khóa đăng nhập (xóa bộ đếm sai trong session của trình duyệt hiện tại)
@@ -13,12 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
   $ten_norm = strtolower(trim((string)$ten));
   $bo_qua_khoa = false;
   try { $stW = $pdo->prepare("SELECT het_han FROM reset_khoa WHERE ten_dang_nhap=?"); $stW->execute([$ten_norm]); $w = $stW->fetch(); if ($w && (int)$w['het_han'] > time()) { $bo_qua_khoa = true; } } catch (Throwable $____w) { /* ignore */ }
-  // Chống dò mật khẩu cơ bản: giới hạn 5 lần sai, khoá 10 phút
-  $k = ($_SERVER['REMOTE_ADDR'] ?? 'na') . '|' . strtolower(trim((string)$ten));
-  $ban = $_SESSION['dn_sai'][$k]['khoa_den'] ?? 0;
-  $sl_hien_tai = (int)($_SESSION['dn_sai'][$k]['so_lan'] ?? 0);
-  // Tự động reset sau khi hết thời gian khoá
-  if ($ban && $ban <= time()) { unset($_SESSION['dn_sai'][$k]); $ban = 0; $sl_hien_tai = 0; }
+  // Chống dò mật khẩu cơ bản: giới hạn 5 lần sai, khoá 10 phút. Đếm lưu bền theo IP+tên đăng
+  // nhập (lib/gioi_han_toc_do.php) - không dùng $_SESSION, vì một client không giữ cookie giữa
+  // các lần thử sẽ luôn được cấp "phiên mới" với bộ đếm về 0, vô hiệu hoàn toàn giới hạn này.
+  $k = 'dn|' . ($_SERVER['REMOTE_ADDR'] ?? 'na') . '|' . strtolower(trim((string)$ten));
+  $dem = doc_dem_that_bai($pdo, $k);
+  $ban = $dem['khoa_den'];
+  $sl_hien_tai = $dem['so_lan'];
   if ($ban > time() && !$bo_qua_khoa) { json_phan_hoi(false, ['so_lan'=>$sl_hien_tai, 'khoa_den'=>$ban], 'qua_so_lan'); }
   
   // Kiểm tra CAPTCHA nếu đã có 2 lần sai trở lên (yêu cầu CAPTCHA từ lần thử thứ 3, chưa bị khóa)
@@ -41,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
     $_SESSION['giao_vien_id'] = (int)$gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = $gv['vai_tro'] ?? 'GV';
     $_SESSION['phai_doi_mat_khau'] = (bool)((int)($gv['phai_doi_mat_khau'] ?? 0));
     // Reset đếm sai và CAPTCHA
-    if (isset($_SESSION['dn_sai'][$k])) unset($_SESSION['dn_sai'][$k]);
+    xoa_dem_that_bai($pdo, $k);
     xoa_captcha();
     if ($bo_qua_khoa) { try { $pdo->prepare("DELETE FROM reset_khoa WHERE ten_dang_nhap=?")->execute([$ten_norm]); } catch (Throwable $____d) { /* ignore */ } }
     // Ghi nhớ nếu có yêu cầu
@@ -49,13 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
     if ($ghi_nho) { dat_cookie_ghi_nho($gv['ten_dang_nhap'], $gv['mat_khau_bam']); }
     json_phan_hoi(true, ['ten_dang_nhap'=>$gv['ten_dang_nhap']]);
   }
-  // Thất bại -> tăng đếm và khoá nếu vượt quá
-  $sl = (int)($_SESSION['dn_sai'][$k]['so_lan'] ?? 0) + 1;
-  $ban_den = ($sl >= 5 && !$bo_qua_khoa) ? time() + 10*60 : 0; // khóa 10 phút sau 5 lần sai
-  $_SESSION['dn_sai'][$k] = ['so_lan' => $sl, 'khoa_den' => $ban_den];
-  if ($ban_den) { 
+  // Thất bại -> tăng đếm (nguyên tử) và khoá nếu vượt quá. $bo_qua_khoa (admin đã reset) vẫn ghi
+  // nhận lần sai này bình thường - chỉ bỏ qua việc CHẶN request hiện tại, không tắt hẳn bộ đếm.
+  $dem_moi = ghi_nhan_that_bai($pdo, $k, 5);
+  $sl = $dem_moi['so_lan'];
+  $ban_den = $bo_qua_khoa ? 0 : $dem_moi['khoa_den'];
+  if ($ban_den) {
     // Đã bị khóa, không cần CAPTCHA nữa
-    json_phan_hoi(false, ['so_lan'=>$sl, 'khoa_den'=>$ban_den], 'qua_so_lan'); 
+    json_phan_hoi(false, ['so_lan'=>$sl, 'khoa_den'=>$ban_den], 'qua_so_lan');
   }
   $con_lai = max(0, 5 - $sl);
   json_phan_hoi(false, ['so_lan'=>$sl, 'con_lai'=>$con_lai], 'dang_nhap_that_bai');
@@ -64,20 +67,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_xuat') { xoa_c
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_ky') {
   // Chống spam tạo tài khoản hàng loạt: tối đa 5 lần thử (thành công hay thất bại)/10 phút mỗi IP.
-  $ip = $_SERVER['REMOTE_ADDR'] ?? 'na';
-  $dk = $_SESSION['dk_sai'][$ip] ?? ['so_lan' => 0, 'khoa_den' => 0];
-  if ((int)$dk['khoa_den'] && (int)$dk['khoa_den'] <= time()) { $dk = ['so_lan' => 0, 'khoa_den' => 0]; }
-  if ((int)$dk['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
-  $dk['so_lan'] = (int)$dk['so_lan'] + 1;
-  if ($dk['so_lan'] >= 5) { $dk['khoa_den'] = time() + 10*60; }
-  $_SESSION['dk_sai'][$ip] = $dk;
+  // Đếm lưu bền theo IP (lib/gioi_han_toc_do.php), không dùng $_SESSION - lý do như ở đăng nhập.
+  $k = 'dk|' . ($_SERVER['REMOTE_ADDR'] ?? 'na');
+  if (doc_dem_that_bai($pdo, $k)['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
+  $dem_moi = ghi_nhan_that_bai($pdo, $k, 5);
+  if ($dem_moi['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
 
   $b = than_json();
   $ten = trim((string)($b['ten_dang_nhap'] ?? ''));
   $mk = (string)($b['mat_khau'] ?? '');
   try {
     $gv = dang_ky_giao_vien($pdo, $ten, $mk);
-    unset($_SESSION['dk_sai'][$ip]);
+    xoa_dem_that_bai($pdo, $k);
     session_regenerate_id(true);
     $_SESSION['giao_vien_id'] = $gv['id']; $_SESSION['ten_dang_nhap'] = $gv['ten_dang_nhap']; $_SESSION['vai_tro'] = 'GV';
     $_SESSION['phai_doi_mat_khau'] = false;

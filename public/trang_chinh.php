@@ -161,6 +161,14 @@ function showToast(message='',variant='info',delay=4000){
   toastInstance.show();
 }
 function norm(s){ try { return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); } catch(_e){ return String(s||'').toLowerCase(); } }
+// T\u00ean h\u1ecdc sinh/qu\u00e0/l\u00fd do v\u00e0 ghi ch\u00fa giao d\u1ecbch l\u00e0 d\u1eef li\u1ec7u gi\u00e1o vi\u00ean t\u1ef1 nh\u1eadp - kh\u00f4ng escape tr\u01b0\u1edbc
+// khi gh\u00e9p v\u00e0o innerHTML th\u00ec m\u1ed9t gi\u00e1o vi\u00ean c\u00f3 th\u1ec3 \u0111\u1eb7t t\u00ean/ghi ch\u00fa ch\u1ee9a script, ch\u1ea1y trong tr\u00ecnh
+// duy\u1ec7t c\u1ee7a gi\u00e1o vi\u00ean kh\u00e1c c\u00f9ng \u0111\u01b0\u1ee3c g\u00e1n l\u1edbp \u0111\u00f3 khi h\u1ecd xem trang n\u00e0y.
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
 function tenLoai(loai){
   switch(String(loai||'')){
     case 'CONG_DIEM': return 'Cộng Điểm';
@@ -434,11 +442,11 @@ function renderLichSu(){
     const tr=document.createElement('tr');
     tr.innerHTML = `
       <td class="text-muted small" data-label="Thời gian">${formatDateTime(row.tao_luc)}</td>
-      <td data-label="Học sinh">${row.ho_ten||''}</td>
+      <td data-label="Học sinh">${escapeHtml(row.ho_ten||'')}</td>
       <td data-label="Loại">${loaiHtml}</td>
       <td data-label="Thay đổi">${deltaHtml}</td>
       <td data-label="Số dư">${soDuHtml}</td>
-      <td class="cell-notes" data-label="Ghi chú"><span class="truncate">${ghiChu}</span></td>`;
+      <td class="cell-notes" data-label="Ghi chú"><span class="truncate">${escapeHtml(ghiChu)}</span></td>`;
     tb.appendChild(tr);
   });
   const info=document.getElementById('ls_info'); if(info){ const from=total?start+1:0; const to=Math.min(start+rows.length,total); info.textContent=`Trang ${lsPage}/${totalPages} · ${from}-${to}/${total}`; }
@@ -463,7 +471,7 @@ function moQuaDaDoi(){
           item.className = 'list-group-item d-flex justify-content-between align-items-center';
           const ten = x.qua || 'Quà';
           const tg = formatDateTime(x.tao_luc);
-          item.innerHTML = `<span>${ten}</span><span class="text-muted small">${tg}</span>`;
+          item.innerHTML = `<span>${escapeHtml(ten)}</span><span class="text-muted small">${tg}</span>`;
           ul.appendChild(item);
         });
         el.innerHTML = '';
@@ -567,10 +575,10 @@ function hienThongTinDep(){
   }
   if(el) el.innerHTML = `
     <div class="d-flex align-items-center gap-3">
-      <img class="avatar" src="${av}" alt="avatar" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';">
+      <img class="avatar" src="${escapeHtml(av)}" alt="avatar" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';">
       <div>
-        <div class="fw-semibold">${hsHienTai.ho_ten||''}</div>
-        <div class="small text-muted">Lớp: ${hsHienTai.ten_lop||''} · Điểm: ${hsHienTai.so_du}</div>
+        <div class="fw-semibold">${escapeHtml(hsHienTai.ho_ten||'')}</div>
+        <div class="small text-muted">Lớp: ${escapeHtml(hsHienTai.ten_lop||'')} · Điểm: ${hsHienTai.so_du}</div>
         <div class="small text-muted">Giới tính: ${gioiLbl||'-'}${ngayLbl? ' · Ngày sinh: '+ngayLbl : ''}</div>
       </div>
     </div>`;
