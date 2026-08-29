@@ -27,6 +27,14 @@ class SyncEngine extends ChangeNotifier {
   int soLuongChoXuLy = 0;
   String? loiGanNhat;
 
+  /// Set when a queued item is rejected with a dead/revoked token (see
+  /// [laLoiPhienHetHan]). Listeners (see `phien_dang_nhap.dart`) watch this
+  /// to force a logout - otherwise a 401 hit during a background sync
+  /// (connectivity regained, app resumed) would just pile the whole queue
+  /// into "permanent failure" one 401 at a time, with the teacher never told
+  /// the actual cause is a dead session.
+  bool phienHetHan = false;
+
   Future<void>? _dangChay;
 
   /// Runs a sync pass. Concurrent callers while one is already in flight
@@ -41,6 +49,7 @@ class SyncEngine extends ChangeNotifier {
 
   Future<void> _chayThuc() async {
     dangDongBo = true;
+    phienHetHan = false;
     notifyListeners();
     try {
       // An app kill mid-send can leave a row stuck "dang_gui" - safe to
@@ -96,6 +105,17 @@ class SyncEngine extends ChangeNotifier {
         // Order must not be skipped over here: a later item running before
         // this unresolved one would break the replay-in-order guarantee.
         await outbox.datLaiChoXuLy(id);
+        loiGanNhat = loi.toString();
+        return false;
+      }
+      if (laLoiPhienHetHan(loi)) {
+        // A dead token isn't a business failure to record - it's a reason
+        // to stop the whole batch. Every remaining item would fail with the
+        // exact same 401, so there's no point burning through them into
+        // FailedActionsScreen one by one. Leave this item pending so it
+        // sends automatically once the teacher logs back in.
+        await outbox.datLaiChoXuLy(id);
+        phienHetHan = true;
         loiGanNhat = loi.toString();
         return false;
       }

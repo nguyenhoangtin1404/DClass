@@ -9,6 +9,7 @@ import 'outbox/outbox_repository.dart';
 import 'repositories/danh_muc_repository.dart';
 import 'repositories/diem_repository.dart';
 import 'screens/students_screen.dart';
+import 'session.dart';
 import 'sync/app_lifecycle_sync_trigger.dart';
 import 'sync/connectivity_watcher.dart';
 import 'sync/sync_engine.dart';
@@ -45,6 +46,7 @@ class _PhienDangNhapState extends State<PhienDangNhap> {
       outbox: outbox,
       danhMuc: _danhMuc,
     );
+    _syncEngine.addListener(_kiemTraPhienHetHan);
     _dangKyKetNoi = ConnectivityWatcher().thayDoi.listen((coKetNoi) {
       if (coKetNoi) _syncEngine.chaySync();
     });
@@ -52,8 +54,24 @@ class _PhienDangNhapState extends State<PhienDangNhap> {
     _syncEngine.chaySync();
   }
 
+  /// A sync pass (possibly triggered in the background - connectivity
+  /// regained, app resumed - not just a manual refresh) can discover the
+  /// saved token is dead. Force the same logout the read/write paths use so
+  /// the teacher isn't left staring at an app that looks fine but can no
+  /// longer actually sync.
+  void _kiemTraPhienHetHan() {
+    if (_syncEngine.phienHetHan && mounted) {
+      dangXuat(
+        context,
+        thongBao: 'Phiên đăng nhập đã hết hạn hoặc bị thu hồi. '
+            'Vui lòng đăng nhập lại.',
+      );
+    }
+  }
+
   @override
   void dispose() {
+    _syncEngine.removeListener(_kiemTraPhienHetHan);
     _dangKyKetNoi?.cancel();
     super.dispose();
   }

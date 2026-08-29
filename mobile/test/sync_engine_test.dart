@@ -133,6 +133,25 @@ void main() {
   });
 
   test(
+    'a dead token halts the batch, re-queues the item, and sets '
+    'phienHetHan instead of marking loi_vinh_vien',
+    () async {
+      await outbox.themMoi(_hanhDongCongDiem(clientActionId: 'ca-1'));
+      await outbox.themMoi(_hanhDongCongDiem(clientActionId: 'ca-2'));
+      api.hangDoiKetQua.add(ApiException('loi_http_401'));
+      // Only one scripted result: proves ca-2 is never attempted.
+
+      await engine.chaySync();
+
+      expect(api.lenhDaGoi, ['congDiem:ca-1']); // ca-2 not attempted
+      expect(engine.phienHetHan, isTrue);
+      expect(await outbox.layDanhSachLoiVinhVien(), isEmpty);
+      final choXuLy = await outbox.layDanhSachChoXuLy();
+      expect(choXuLy.map((e) => e.clientActionId), ['ca-1', 'ca-2']);
+    },
+  );
+
+  test(
     'a leftover dang_gui row is swept back to pending on the next run',
     () async {
       final id = await outbox.themMoi(
