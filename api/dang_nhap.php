@@ -51,13 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_nhap') {
     if ($ghi_nho) { dat_cookie_ghi_nho($gv['ten_dang_nhap'], $gv['mat_khau_bam']); }
     json_phan_hoi(true, ['ten_dang_nhap'=>$gv['ten_dang_nhap']]);
   }
-  // Thất bại -> tăng đếm và khoá nếu vượt quá
-  $sl = $sl_hien_tai + 1;
-  $ban_den = ($sl >= 5 && !$bo_qua_khoa) ? time() + 10*60 : 0; // khóa 10 phút sau 5 lần sai
-  ghi_dem_that_bai($pdo, $k, $sl, $ban_den);
+  // Thất bại -> tăng đếm (nguyên tử) và khoá nếu vượt quá. $bo_qua_khoa (admin đã reset) vẫn ghi
+  // nhận lần sai này bình thường - chỉ bỏ qua việc CHẶN request hiện tại, không tắt hẳn bộ đếm.
+  $dem_moi = ghi_nhan_that_bai($pdo, $k, 5);
+  $sl = $dem_moi['so_lan'];
+  $ban_den = $bo_qua_khoa ? 0 : $dem_moi['khoa_den'];
   if ($ban_den) {
     // Đã bị khóa, không cần CAPTCHA nữa
-    json_phan_hoi(false, ['so_lan'=>$sl, 'khoa_den'=>$ban_den], 'qua_so_lan'); 
+    json_phan_hoi(false, ['so_lan'=>$sl, 'khoa_den'=>$ban_den], 'qua_so_lan');
   }
   $con_lai = max(0, 5 - $sl);
   json_phan_hoi(false, ['so_lan'=>$sl, 'con_lai'=>$con_lai], 'dang_nhap_that_bai');
@@ -68,11 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $hanh_dong === 'dang_ky') {
   // Chống spam tạo tài khoản hàng loạt: tối đa 5 lần thử (thành công hay thất bại)/10 phút mỗi IP.
   // Đếm lưu bền theo IP (lib/gioi_han_toc_do.php), không dùng $_SESSION - lý do như ở đăng nhập.
   $k = 'dk|' . ($_SERVER['REMOTE_ADDR'] ?? 'na');
-  $dk = doc_dem_that_bai($pdo, $k);
-  if ($dk['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
-  $sl = $dk['so_lan'] + 1;
-  $khoa_den = ($sl >= 5) ? time() + 10*60 : 0;
-  ghi_dem_that_bai($pdo, $k, $sl, $khoa_den);
+  if (doc_dem_that_bai($pdo, $k)['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
+  $dem_moi = ghi_nhan_that_bai($pdo, $k, 5);
+  if ($dem_moi['khoa_den'] > time()) { json_phan_hoi(false, null, 'qua_so_lan'); }
 
   $b = than_json();
   $ten = trim((string)($b['ten_dang_nhap'] ?? ''));
