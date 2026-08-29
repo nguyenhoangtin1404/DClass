@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../api_client.dart';
 import '../loi_phan_loai.dart';
 import '../models/hoc_sinh.dart';
 import '../models/ly_do.dart';
@@ -11,6 +12,7 @@ import '../repositories/diem_repository.dart';
 import '../session.dart';
 import '../sync/sync_engine.dart';
 import '../theme/dclass_colors.dart';
+import '../utils/thong_bao_loi.dart';
 import '../widgets/pill_button.dart';
 import '../widgets/ribbon_header.dart';
 import '../widgets/sync_status_badge.dart';
@@ -68,6 +70,13 @@ class _StudentsScreenState extends State<StudentsScreen> {
       });
     });
   }
+
+  /// Vietnamese message for an error caught around a repository/API call -
+  /// same translation table as `failed_actions_screen.dart` (see
+  /// `utils/thong_bao_loi.dart`), so a teacher sees "Học sinh không đủ điểm"
+  /// instead of the raw code "khong_du_diem".
+  String _dichLoi(Object e) =>
+      thongBaoLoi(e is ApiException ? e.thongBao : e.toString());
 
   /// "Nam · 12/05/2016" kiểu hiển thị - cùng cách đọc `gioi_tinh`/`ngay_sinh`
   /// như `hienThongTinDep()` bên web (`public/trang_chinh.php`).
@@ -246,7 +255,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi tải lý do: $e')));
+      ).showSnackBar(SnackBar(content: Text('Lỗi tải lý do: ${_dichLoi(e)}')));
       return;
     }
     if (lyDoList == null || !mounted) return;
@@ -313,7 +322,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      ).showSnackBar(SnackBar(content: Text(_dichLoi(e))));
     }
   }
 
@@ -327,11 +336,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi tải quà: $e')));
+      ).showSnackBar(SnackBar(content: Text('Lỗi tải quà: ${_dichLoi(e)}')));
       return;
     }
     if (quaTangList == null || !mounted) return;
-    final quaTang = await chonQuaTangDeDoi(context, quaTangList);
+    final quaTang = await chonQuaTangDeDoi(
+      context,
+      quaTangList,
+      soDuHienTai: hs.soDu,
+    );
     if (quaTang == null) return;
     try {
       final ketQua = await _voiKiemTraPhien(
@@ -349,7 +362,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      ).showSnackBar(SnackBar(content: Text(_dichLoi(e))));
     }
   }
 
@@ -478,7 +491,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snap.hasError) {
-                    return Center(child: Text('Lỗi: ${snap.error}'));
+                    return Center(child: Text(_dichLoi(snap.error!)));
                   }
                   final list = snap.data ?? [];
                   if (list.isEmpty) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -33,17 +35,44 @@ class _UnlockScreenState extends State<UnlockScreen> {
   String? _loi;
   bool _dangXuLy = false;
   bool _coTheSinhTracHoc = false;
+  Duration? _khoaConLai;
+  Timer? _dongHoKhoa;
 
   @override
   void initState() {
     super.initState();
     _kiemTraHoTroSinhTracHoc();
+    _kiemTraKhoa();
   }
 
   @override
   void dispose() {
     _pinCtrl.dispose();
+    _dongHoKhoa?.cancel();
     super.dispose();
+  }
+
+  /// Reads any brute-force lockout already in effect (e.g. the app was
+  /// closed and reopened mid-lockout) and, if locked, starts a 1s countdown
+  /// that re-enables PIN entry the moment it expires.
+  Future<void> _kiemTraKhoa() async {
+    final conLai = await pin_lock_storage.thoiGianConLaiKhoa();
+    if (!mounted) return;
+    setState(() => _khoaConLai = conLai);
+    if (conLai == null) return;
+    _dongHoKhoa?.cancel();
+    _dongHoKhoa = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      final conLai = await pin_lock_storage.thoiGianConLaiKhoa();
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() => _khoaConLai = conLai);
+      if (conLai == null) {
+        timer.cancel();
+        setState(() => _loi = null);
+      }
+    });
   }
 
   /// Biometrics may be unsupported (emulator, no fingerprint/face enrolled,
@@ -76,7 +105,7 @@ class _UnlockScreenState extends State<UnlockScreen> {
   }
 
   Future<void> _kiemTraPin() async {
-    if (_pinCtrl.text.isEmpty) return;
+    if (_pinCtrl.text.isEmpty || _dangBiKhoa) return;
     setState(() {
       _dangXuLy = true;
       _loi = null;
@@ -87,11 +116,23 @@ class _UnlockScreenState extends State<UnlockScreen> {
       widget.onMoKhoaThanhCong();
       return;
     }
+    _pinCtrl.clear();
+    // A wrong attempt may have just crossed the lockout threshold - check
+    // right away instead of waiting for the next attempt to find out. When
+    // it has, the lockout countdown (not _loi) drives the error text.
+    await _kiemTraKhoa();
+    if (!mounted) return;
     setState(() {
       _dangXuLy = false;
-      _loi = 'Sai PIN, vui lòng thử lại.';
-      _pinCtrl.clear();
+      if (_khoaConLai == null) _loi = 'Sai PIN, vui lòng thử lại.';
     });
+  }
+
+  bool get _dangBiKhoa => _khoaConLai != null;
+
+  String _moTaKhoa(Duration conLai) {
+    final giay = conLai.inSeconds + 1; // làm tròn lên, không hiện "0 giây"
+    return 'Nhập sai PIN quá nhiều lần. Thử lại sau $giay giây.';
   }
 
   Widget _pinDots(int filled, int total) {
@@ -181,6 +222,7 @@ class _UnlockScreenState extends State<UnlockScreen> {
                       const SizedBox(height: 18),
                       TextField(
                         controller: _pinCtrl,
+                        enabled: !_dangBiKhoa,
                         autofocus: true,
                         obscureText: true,
                         keyboardType: TextInputType.number,
@@ -191,7 +233,9 @@ class _UnlockScreenState extends State<UnlockScreen> {
                         decoration: InputDecoration(
                           labelText: 'PIN',
                           labelStyle: const TextStyle(color: Colors.white70),
-                          errorText: _loi,
+                          errorText: _khoaConLai != null
+                              ? _moTaKhoa(_khoaConLai!)
+                              : _loi,
                           errorStyle: const TextStyle(color: Color(0xFFFFD9DF)),
                           counterText: '',
                           filled: true,
@@ -216,7 +260,8 @@ class _UnlockScreenState extends State<UnlockScreen> {
                       ),
                       const SizedBox(height: 18),
                       FilledButton(
-                        onPressed: _dangXuLy ? null : _kiemTraPin,
+                        onPressed:
+                            (_dangXuLy || _dangBiKhoa) ? null : _kiemTraPin,
                         child: const Text('Mở khoá'),
                       ),
                       if (_coTheSinhTracHoc) ...[
