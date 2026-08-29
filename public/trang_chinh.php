@@ -101,6 +101,9 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
 let hsHienTai=null;
 let lsData=[]; let lsPage=1; const lsPageSize=10; let lyDoData=[]; let quaData=[]; let thongKe=null;
 let shouldAutoSelectFirstStudent=true;
+// Chặn double-click/gõ phím tắt liên tiếp gửi hai request cộng điểm cùng lúc
+// (server không có client_action_id để chống trùng như app di động).
+let dangGuiCongDiem=false;
 const toastVariantClasses={
   success:'text-bg-success',
   info:'text-bg-primary',
@@ -219,14 +222,20 @@ function renderLyDo(){
           showToast('Hãy chọn học sinh.','warning');
           return;
         }
-        const res=await fetch('../api/diem.php?hanh_dong=cong',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, ly_do_id:ld.id})});
-        const jj=await res.json();
-        if(jj.ok){
-          hsHienTai.so_du=jj.du_lieu.so_du;
-          hienThongTin(); napHocSinh(); napLichSu(); if(typeof napThongKe==='function') napThongKe();
-          if(Number(ld.bien_diem) > 0){ hieuUngCongDiem(); }
-        } else {
-          showToast(jj.thong_bao||'L\u1ed7i','danger');
+        if(dangGuiCongDiem) return;
+        dangGuiCongDiem=true;
+        try{
+          const res=await fetch('../api/diem.php?hanh_dong=cong',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hoc_sinh_id:hsHienTai.id, ly_do_id:ld.id})});
+          const jj=await res.json();
+          if(jj.ok){
+            hsHienTai.so_du=jj.du_lieu.so_du;
+            hienThongTin(); napHocSinh(); napLichSu(); if(typeof napThongKe==='function') napThongKe();
+            if(Number(ld.bien_diem) > 0){ hieuUngCongDiem(); }
+          } else {
+            showToast(jj.thong_bao||'L\u1ed7i','danger');
+          }
+        } finally {
+          dangGuiCongDiem=false;
         }
       };
       box.appendChild(b);
@@ -471,6 +480,7 @@ function moQuaDaDoi(){
   hsHienTai=s;
   hienThongTin();
   napLichSu();
+  if(typeof window._resetScratchOnStudentChange==='function') window._resetScratchOnStudentChange();
   const b=document.getElementById('btn_qua_da_doi');
   if(b) b.removeAttribute('disabled');
 }
@@ -608,6 +618,25 @@ napHocSinh(); napLyDo(); napQua(); napLichSu();
   };
   bindToggle();
   window._bindScratchToggle = bindToggle;
+
+  // Chọn học sinh khác trong khi thẻ cào đang mở phải đóng panel lại - nếu
+  // không, phần thưởng/canvas đã cào của học sinh cũ vẫn hiển thị nguyên như
+  // thể nó thuộc về học sinh mới (không tự mở lại/tự đổi điểm cho học sinh
+  // mới - giáo viên phải bấm "Đổi điểm" lại, như lần đầu).
+  function resetScratchOnStudentChange(){
+    if(scratchSection && !scratchSection.classList.contains('d-none')){
+      scratchSection.classList.add('d-none');
+      const btn=document.getElementById('btnToggleScratch');
+      if(btn) btn.textContent='Đổi điểm';
+    }
+    scratchComplete=false;
+    hasRedeemedCurrent=false;
+    currentReward=null;
+    revealedRewardText='';
+    refreshScratchText();
+    updateRedeemButton();
+  }
+  window._resetScratchOnStudentChange = resetScratchOnStudentChange;
 
   const ctx=scratchCanvas.getContext('2d');
   let isDrawing=false;
