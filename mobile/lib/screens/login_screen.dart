@@ -7,6 +7,7 @@ import '../main.dart';
 import '../phien_dang_nhap.dart';
 import '../secure_token_storage.dart';
 import '../theme/dclass_colors.dart';
+import '../utils/thong_bao_loi.dart';
 
 /// Lets a teacher point the app at their DClass server and paste the API
 /// token generated from cau_hinh.php's "Tài khoản" tab (shown there as text
@@ -58,7 +59,8 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } catch (e) {
-      setState(() => _loi = 'Không kết nối được: $e');
+      final maLoi = e is ApiException ? e.thongBao : e.toString();
+      setState(() => _loi = thongBaoLoi(maLoi));
     } finally {
       if (mounted) setState(() => _dangKetNoi = false);
     }
