@@ -52,6 +52,17 @@ CREATE TABLE hang_doi_thao_tac (
 CREATE INDEX idx_hang_doi_trang_thai ON hang_doi_thao_tac(trang_thai);
 ''';
 
+/// Columns added to `hoc_sinh_cache` in schema v2 (see issue #99) - a device
+/// that installed the app before this change has a v1 database missing
+/// these, so [openAppDatabase]'s `onUpgrade` must add them without touching
+/// existing rows.
+const List<String> _cotV2ThemVaoHocSinhCache = [
+  'ALTER TABLE hoc_sinh_cache ADD COLUMN anh_dai_dien_url TEXT',
+  'ALTER TABLE hoc_sinh_cache ADD COLUMN gioi_tinh TEXT',
+  'ALTER TABLE hoc_sinh_cache ADD COLUMN ngay_sinh TEXT',
+  'ALTER TABLE hoc_sinh_cache ADD COLUMN stt INTEGER',
+];
+
 /// Opens (creating if needed) the app's local cache + outbox database.
 ///
 /// [path] overrides the on-device storage location - tests pass
@@ -72,6 +83,13 @@ Future<Database> openAppDatabase({String? path}) async {
         final sql = cauLenh.trim();
         if (sql.isNotEmpty) {
           await db.execute(sql);
+        }
+      }
+    },
+    onUpgrade: (db, oldVersion, newVersion) async {
+      if (oldVersion < 2) {
+        for (final cauLenh in _cotV2ThemVaoHocSinhCache) {
+          await db.execute(cauLenh);
         }
       }
     },
