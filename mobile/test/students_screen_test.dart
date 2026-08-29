@@ -99,8 +99,7 @@ void main() {
     tester,
   ) async {
     api.hocSinhTraVe = [
-      HocSinh(
-          id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
+      HocSinh(id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
       HocSinh(
           id: 2, ma: null, hoTen: 'Binh', lopHocId: 1, tenLop: '4A', soDu: 0),
     ];
@@ -118,11 +117,11 @@ void main() {
     expect(find.text('Binh'), findsNothing);
   });
 
-  testWidgets('class filter pills only appear when there is more than one class',
+  testWidgets(
+      'class filter pills only appear when there is more than one class',
       (tester) async {
     api.hocSinhTraVe = [
-      HocSinh(
-          id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
+      HocSinh(id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
     await tester.pumpAndSettle();
@@ -132,8 +131,7 @@ void main() {
 
   testWidgets('tapping a class pill filters to that class', (tester) async {
     api.hocSinhTraVe = [
-      HocSinh(
-          id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
+      HocSinh(id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
       HocSinh(
           id: 2, ma: null, hoTen: 'Binh', lopHocId: 2, tenLop: '4B', soDu: 0),
     ];

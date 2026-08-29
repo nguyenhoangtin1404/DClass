@@ -519,7 +519,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                   if (hs.stt != null) 'STT ${hs.stt}',
                                   if ((hs.ma ?? '').isNotEmpty) hs.ma,
                                   hs.tenLop ?? '',
-                                ].where((s) => (s ?? '').isNotEmpty).join(' · '),
+                                ]
+                                    .where((s) => (s ?? '').isNotEmpty)
+                                    .join(' · '),
                               ),
                               if (_moTaGioiTinhNgaySinh(hs).isNotEmpty)
                                 Text(
