@@ -277,11 +277,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
     );
     if (lyDo == null) return;
     try {
-      final ketQua = await widget.diem.themCongDiem(
-        hocSinhId: hs.id,
-        lyDoId: lyDo.id,
+      final ketQua = await _voiKiemTraPhien(
+        () => widget.diem.themCongDiem(hocSinhId: hs.id, lyDoId: lyDo.id),
       );
-      if (!mounted) return;
+      if (ketQua == null || !mounted) return;
       final thongBao = ketQua == KetQuaGhiDiem.daApDungNgay
           ? 'Đã cộng điểm cho ${hs.hoTen}'
           : 'Đã ghi nhận cho ${hs.hoTen} - sẽ đồng bộ khi có mạng';
@@ -314,11 +313,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
     final quaTang = await chonQuaTangDeDoi(context, quaTangList);
     if (quaTang == null) return;
     try {
-      final ketQua = await widget.diem.themDoiQua(
-        hocSinhId: hs.id,
-        quaTangId: quaTang.id,
+      final ketQua = await _voiKiemTraPhien(
+        () => widget.diem.themDoiQua(hocSinhId: hs.id, quaTangId: quaTang.id),
       );
-      if (!mounted) return;
+      if (ketQua == null || !mounted) return;
       final thongBao = ketQua == KetQuaGhiDiem.daApDungNgay
           ? 'Đã đổi ${quaTang.ten} cho ${hs.hoTen}'
           : 'Đã ghi nhận cho ${hs.hoTen} - sẽ đồng bộ khi có mạng';
