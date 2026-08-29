@@ -69,6 +69,16 @@ $chuan_gioi = function ($s) use ($chuan_key) {
   if (in_array($ascii, ['KHAC','X','OTHER'], true)) return 'KHAC';
   return $v;
 };
+// Chống "CSV/Formula Injection": Excel/Sheets/LibreOffice diễn giải một ô bắt đầu bằng =, +, -,
+// @ (hoặc tab/CR) như công thức khi mở file - vô hại với chính hệ thống này (chỉ ghi/đọc text
+// thô) nhưng nguy hiểm cho người mở file .csv xuất ra bằng phần mềm bảng tính. Tiền tố bằng dấu
+// nháy đơn buộc phần mềm đó hiển thị nguyên văn thay vì tính công thức - không đổi dữ liệu trong
+// CSDL, chỉ áp dụng lúc xuất.
+$an_toan_csv = function ($v) {
+  $s = (string)($v ?? '');
+  if ($s !== '' && strpbrk($s[0], "=+-@\t\r") !== false) { return "'" . $s; }
+  return $s;
+};
 $chuan_lop_id = function ($v) {
   $raw = trim((string)$v);
   if ($raw === '' || $raw === '0') return null;
@@ -102,8 +112,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $hanh_dong === 'xuat') {
   $sql .= " ORDER BY s.ho_ten ASC";
   $st = $pdo->prepare($sql); $st->execute($pr);
   while ($row = $st->fetch()) { fputcsv($out, [
-    $row['id'],$row['ma'],$row['ho_ten'],$row['lop_hoc_id'],$row['ten_lop'],$row['so_du'],
-    $row['anh_dai_dien_url'],$row['gioi_tinh'],$row['ngay_sinh']
+    $row['id'],$an_toan_csv($row['ma']),$an_toan_csv($row['ho_ten']),$row['lop_hoc_id'],
+    $an_toan_csv($row['ten_lop']),$row['so_du'],$an_toan_csv($row['anh_dai_dien_url']),
+    $an_toan_csv($row['gioi_tinh']),$an_toan_csv($row['ngay_sinh'])
   ]); }
   fclose($out); exit;
 }
