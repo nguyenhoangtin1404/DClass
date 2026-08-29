@@ -33,16 +33,23 @@ void main() {
     );
   }
 
-  // A bounded number of plain pump()s rather than pumpAndSettle(): the
-  // AppBar's SyncStatusBadge never lets pumpAndSettle() converge (same
-  // reason sync_status_badge_test.dart only ever uses plain pump()), and
-  // the student list goes through several real async hops (repository ->
-  // sqflite FFI cache read/write) that one or two pumps don't reliably
-  // cover.
-  Future<void> bomNhieuLan(WidgetTester tester, [int lan = 20]) async {
-    for (var i = 0; i < lan; i++) {
-      await tester.pump(const Duration(milliseconds: 25));
-    }
+  // Two things this screen needs that plain pump()/pumpAndSettle() don't
+  // reliably give a widget test:
+  // - pumpAndSettle() never converges: the AppBar's SyncStatusBadge (same
+  //   reason sync_status_badge_test.dart only ever uses plain pump()).
+  // - the student list goes through real sqflite (FFI) reads/writes via
+  //   DanhMucRepository, which - unlike the in-memory FakeDiemApi other
+  //   screens depend on - can involve genuine cross-isolate/OS-thread
+  //   completions that the fake-async clock behind pump(duration) does not
+  //   advance. runAsync() drops out of that fake-async zone so real I/O
+  //   actually gets to finish, the way danh_muc_repository_test.dart's
+  //   plain (non-widget) tests already rely on real awaits to work.
+  Future<void> doiManHinhOnDinh(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pump();
+    await tester.pump();
   }
 
   setUp(() async {
@@ -55,7 +62,7 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(dungLen());
-    await bomNhieuLan(tester);
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('Chưa có học sinh nào'), findsOneWidget);
   });
@@ -77,7 +84,7 @@ void main() {
       ),
     ];
     await tester.pumpWidget(dungLen());
-    await bomNhieuLan(tester);
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('Nguyen Van An'), findsOneWidget);
     expect(find.textContaining('STT 3'), findsOneWidget);
@@ -101,7 +108,7 @@ void main() {
         ),
       ];
       await tester.pumpWidget(dungLen());
-      await bomNhieuLan(tester);
+      await doiManHinhOnDinh(tester);
 
       expect(find.textContaining('·'), findsNothing);
     },
@@ -116,13 +123,14 @@ void main() {
           id: 2, ma: null, hoTen: 'Binh', lopHocId: 1, tenLop: '4A', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
-    await bomNhieuLan(tester);
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('An'), findsOneWidget);
     expect(find.text('Binh'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField).first, 'an');
-    await bomNhieuLan(tester);
+    await tester.pump(const Duration(milliseconds: 350));
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('An'), findsOneWidget);
     expect(find.text('Binh'), findsNothing);
@@ -135,7 +143,7 @@ void main() {
       HocSinh(id: 1, ma: null, hoTen: 'An', lopHocId: 1, tenLop: '4A', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
-    await bomNhieuLan(tester);
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('Tất cả lớp'), findsNothing);
   });
@@ -147,12 +155,12 @@ void main() {
           id: 2, ma: null, hoTen: 'Binh', lopHocId: 2, tenLop: '4B', soDu: 0),
     ];
     await tester.pumpWidget(dungLen());
-    await bomNhieuLan(tester);
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('Tất cả lớp'), findsOneWidget);
 
     await tester.tap(find.text('4B'));
-    await bomNhieuLan(tester);
+    await doiManHinhOnDinh(tester);
 
     expect(find.text('Binh'), findsOneWidget);
     expect(find.text('An'), findsNothing);
