@@ -250,6 +250,18 @@ function escapeHtml(s){
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
   }[c]));
 }
+// Mã lỗi trả về từ API (jj.thong_bao) là mã nội bộ (vd "lop_con_hoc_sinh") - dịch sang câu tiếng
+// Việt dễ hiểu trước khi hiện cho giáo viên, thay vì alert() thẳng mã đó ra.
+const THONG_BAO_LOI = {
+  'lop_con_hoc_sinh': 'Lớp này còn học sinh, không thể xoá. Hãy chuyển/tắt học sinh trước, hoặc dùng nút "Tắt" thay vì xoá.',
+  'ly_do_da_su_dung': 'Lý do này đã được dùng để cộng điểm trước đây nên không thể xoá (sẽ mất lịch sử). Dùng nút "Tắt" để ngừng dùng mà vẫn giữ lịch sử.',
+  'qua_da_su_dung': 'Quà này đã có học sinh đổi trước đây nên không thể xoá (sẽ mất lịch sử). Dùng nút "Tắt" để ngừng dùng mà vẫn giữ lịch sử.',
+  'ten_da_ton_tai': 'Tên này đã được dùng, hãy chọn tên khác.',
+  'khong_du_quyen': 'Bạn không có quyền thực hiện thao tác này.',
+};
+function dichLoi(ma, macDinh){
+  return THONG_BAO_LOI[ma] || macDinh || ma || 'Lỗi';
+}
 // Hiển thị dấu + và điều chỉnh Biến điểm bằng nút ngoài
 (function(){
   const input = document.getElementById('ld_bien_diem');
@@ -315,21 +327,21 @@ async function ldNap(){ const j = await jfetch('../api/ly_do_quan_tri.php'); if(
     btnSua.onclick = async()=>{
       const t = prompt('Tiêu đề', x.tieu_de); if(t===null) return; const b = prompt('Biến điểm', x.bien_diem); if(b===null) return;
       const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, tieu_de:t.trim(), bien_diem:parseInt(b,10)||0})});
-      if(jj.ok) ldNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao)); };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
-      if(jj.ok) ldNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao)); };
     btnXoa.onclick = async()=>{
       if(!confirm('Xóa lý do này?')) return;
       const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=xoa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id})});
-      if(jj.ok) ldNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao)); };
     tb.appendChild(tr);
   });
 }
 document.getElementById('ld_them').onclick = async()=>{
   const t = document.getElementById('ld_tieu_de').value.trim(); const b = parseInt(document.getElementById('ld_bien_diem').value,10)||0;
   const j = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tieu_de:t, bien_diem:b})});
-  if(j.ok){ document.getElementById('ld_tieu_de').value=''; ldNap(); } else alert(j.thong_bao||'Lỗi');
+  if(j.ok){ document.getElementById('ld_tieu_de').value=''; ldNap(); } else alert(dichLoi(j.thong_bao));
 };
 
 // Quà tặng
@@ -357,28 +369,28 @@ async function qNap(){ const j = await jfetch('../api/qua_tang_quan_tri.php'); i
       const ten = prompt('Tên', x.ten); if(ten===null) return; const gia = prompt('Giá điểm', x.gia_diem); if(gia===null) return; const ton = prompt('Tồn kho', x.ton_kho); if(ton===null) return;
       const anh = prompt('URL ảnh (bỏ trống để giữ nguyên)', tr.dataset.anh_url||''); if(anh===null) return;
       const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, ten:ten.trim(), gia_diem:parseInt(gia,10)||0, ton_kho:parseInt(ton,10)||0, anh_url:String(anh||'')})});
-      if(jj.ok) qNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao)); };
     btnAnh.onclick = ()=>{
       const input = document.createElement('input'); input.type='file'; input.accept='image/*';
       input.onchange = async()=>{
         if(!input.files || !input.files[0]) return;
         const fd = new FormData(); fd.append('qua_tang_id', x.id); fd.append('file', input.files[0]);
         const r = await fetch('../api/upload_qua.php', { method:'POST', body: fd }); const jj = await r.json();
-        if(jj.ok){ qNap(); } else alert(jj.thong_bao||'Lỗi upload');
+        if(jj.ok){ qNap(); } else alert(dichLoi(jj.thong_bao));
       };
       input.click();
     };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
-      if(jj.ok) qNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao)); };
     btnXoa.onclick = async()=>{
       if(!confirm('Xóa quà tặng này?')) return;
       const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=xoa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id})});
-      if(jj.ok) qNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao)); };
     tb.appendChild(tr);
   });
 }
-document.getElementById('q_them').onclick = async()=>{ const ten = document.getElementById('q_ten').value.trim(); const gia = parseInt(document.getElementById('q_gia').value,10)||0; const ton = parseInt(document.getElementById('q_ton').value,10)||0; const anh = (document.getElementById('q_anh') ? document.getElementById('q_anh').value.trim() : ''); const j = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ten, gia_diem:gia, ton_kho:ton, anh_url:anh})}); if(j.ok){ document.getElementById('q_ten').value=''; if(document.getElementById('q_anh')) document.getElementById('q_anh').value=''; qNap(); } else alert(j.thong_bao||'Loi'); };
+document.getElementById('q_them').onclick = async()=>{ const ten = document.getElementById('q_ten').value.trim(); const gia = parseInt(document.getElementById('q_gia').value,10)||0; const ton = parseInt(document.getElementById('q_ton').value,10)||0; const anh = (document.getElementById('q_anh') ? document.getElementById('q_anh').value.trim() : ''); const j = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ten, gia_diem:gia, ton_kho:ton, anh_url:anh})}); if(j.ok){ document.getElementById('q_ten').value=''; if(document.getElementById('q_anh')) document.getElementById('q_anh').value=''; qNap(); } else alert(dichLoi(j.thong_bao)); };
 
 // Lớp học
 async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if(!j.ok) return; const tb = document.getElementById('l_ds'); tb.innerHTML='';
@@ -401,21 +413,21 @@ async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if
       if(!res) return;
       const body = { id:x.id, ten:res.ten };
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(jj.ok) lNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao)); };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
-      if(jj.ok) lNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao)); };
     btnXoa.onclick = async()=>{
       if(!confirm('Xóa lớp học này?')) return;
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=xoa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id})});
-      if(jj.ok) lNap(); else alert(jj.thong_bao||'Lỗi'); };
+      if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao)); };
     tb.appendChild(tr);
   });
 }
 document.getElementById('l_them').onclick = async()=>{
   const ten = document.getElementById('l_ten').value.trim();
   const j = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ten})});
-  if(j.ok){ document.getElementById('l_ten').value=''; lNap(); } else alert(j.thong_bao||'Lỗi');
+  if(j.ok){ document.getElementById('l_ten').value=''; lNap(); } else alert(dichLoi(j.thong_bao));
 };
 
 // Học sinh
@@ -789,7 +801,7 @@ document.getElementById('ld_ds').addEventListener('click', async (e) => {
   ]});
   if(!res) return;
   const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, tieu_de:String(res.tieu_de||'').trim(), bien_diem:parseInt(res.bien_diem,10)||0})});
-  if(jj.ok) ldNap(); else alert(jj.thong_bao||'Loi');
+  if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao));
 }, true);
 
 document.getElementById('q_ds').addEventListener('click', async (e) => {
@@ -802,7 +814,7 @@ document.getElementById('q_ds').addEventListener('click', async (e) => {
   ]});
   if(!res) return;
   const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, ten:String(res.ten||'').trim(), gia_diem:parseInt(res.gia_diem,10)||0, ton_kho:parseInt(res.ton_kho,10)||0})});
-  if(jj.ok) qNap(); else alert(jj.thong_bao||'Loi');
+  if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao));
 }, true);
 
 document.getElementById('l_ds').addEventListener('click', async (e) => {
@@ -811,7 +823,7 @@ document.getElementById('l_ds').addEventListener('click', async (e) => {
   const res = await openClassModal({ id: parseInt(tr.dataset.id,10)||0, ten: tr.dataset.ten || '' });
   if(!res) return;
   const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, ten:String(res.ten||'').trim()})});
-  if(jj.ok) lNap(); else alert(jj.thong_bao||'Loi');
+  if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao));
 }, true);
 
 // Load

@@ -1,3 +1,12 @@
+** TÀI LIỆU LỊCH SỬ - ĐÃ LỖI THỜI, KHÔNG PHẢN ÁNH CODEBASE HIỆN TẠI **
+File này là bản đặc tả ban đầu (thời điểm mới khởi tạo dự án). Quy tắc đặt tên chung (không dấu,
+snake_case, JSON {ok, du_lieu, thong_bao}...) ở phần đầu vẫn còn đúng, nhưng CẤU TRÚC THƯ MỤC, TÊN
+FILE, VÀ LƯỢC ĐỒ CSDL cụ thể bên dưới đã cũ (vd config/csdl.php, config/luoc_do_sqlite.sql - tên
+file thật hiện là config/db.php, config/luoc_do.sql; thiếu hoàn toàn mô hình sở hữu theo giáo viên
+qua nguoi_tao_id/giao_vien_lop, app di động, cau_hinh.php, bao_cao.php...). Đừng dùng các ví dụ cụ
+thể trong file này làm tham chiếu khi code - xem docs/ARCHITECTURE.md, docs/DB_SCHEMA.md,
+docs/API_CONTRACT.md, docs/DOMAIN.md (được cập nhật theo codebase thật) thay thế.
+
 QUY TẮC ĐẶT TÊN VÀ CẤU TRÚC (PHP + SQLite)
 
 Mục tiêu: thống nhất tiếng Việt không dấu cho toàn bộ tên bảng/cột, file, biến, khóa, API, JSON. Ưu tiên đơn giản, rõ ràng, dễ tra cứu, phù hợp SQLite 3.

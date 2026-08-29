@@ -22,6 +22,6 @@
 4) Hành động của giáo viên (tạo/sửa/xóa lớp, lý do, quà, upload ảnh) ghi nhật ký vào bảng `nhat_ky`, gắn với `giao_vien_id` của người thực hiện.
 
 ## Triển khai & vận hành
-- Chạy bằng PHP built-in: `php -S 0.0.0.0:8000 -t public` (hoặc web server khác trỏ document root tới `public/`).
+- Chạy bằng PHP built-in **tại thư mục gốc repo, không dùng `-t public`**: `php -S 0.0.0.0:8000`, truy cập `http://localhost:8000/public/...` (JS trong `public/*.php` gọi API bằng đường dẫn tương đối `../api/...`, cần `public/` và `api/` là 2 thư mục anh em cùng cấp docroot - xem README.md). Sản xuất: DocumentRoot vhost cũng trỏ vào gốc repo, với `.htaccess` chặn truy cập trực tiếp các thư mục nhạy cảm (xem DEPLOY.md).
 - Thư mục cần quyền ghi: `data/` (DB), `upload/` (ảnh), có thể cần `public/vendor/` nếu cập nhật asset.
 - CI: `.github/workflows/ci.yml` chạy composer install → lint → PHPStan → PHPUnit; deploy FTP có workflow riêng (`deploy.yml`).

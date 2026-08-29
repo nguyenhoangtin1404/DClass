@@ -14,6 +14,7 @@
 - **so_cai_diem**: `id` (PK), `hoc_sinh_id` (FK hoc_sinh), `giao_vien_id` (FK giao_vien), `loai` (TEXT: `CONG_DIEM|DOI_DIEM|HOAN_TAC`), `ly_do_id` (FK ly_do), `qua_tang_id` (FK qua_tang), `bien_diem` (INTEGER), `so_du_sau` (INTEGER), `ghi_chu` (TEXT), `tao_luc` (TEXT default now). Chỉ mục: `idx_so_cai_hoc_sinh_thoi_gian` trên `(hoc_sinh_id, tao_luc)`.
 - **nhat_ky**: `id` (PK), `giao_vien_id` (FK giao_vien), `hanh_dong` (TEXT NOT NULL), `noi_dung` (TEXT), `tao_luc` (TEXT default now). Không có API xem tổng hợp toàn hệ thống.
 - **reset_khoa**: `ten_dang_nhap` (PK TEXT), `het_han` (INTEGER timestamp). Dùng để bypass tạm thời khóa đăng nhập.
+- **dem_thu_that_bai**: `khoa` (PK TEXT, vd `"dn|<ip>|<ten_dang_nhap>"` cho đăng nhập hoặc `"dk|<ip>"` cho đăng ký), `so_lan` (INTEGER), `khoa_den` (INTEGER timestamp, 0 = chưa khoá), `cap_nhat_luc` (TEXT). Đếm số lần thử liên tiếp thất bại cho đăng nhập/đăng ký, lưu bền thay vì `$_SESSION` (xem `lib/gioi_han_toc_do.php`). Tự dọn hàng quá hạn (10 phút không có lần sai mới) khi đọc lại đúng khoá đó, cộng thêm dọn ngẫu nhiên toàn cục để không phình vô hạn với các khoá "dùng 1 lần" (vd tên đăng nhập ngẫu nhiên mỗi lần thử).
 
 **Lưu ý về `hoc_sinh.ma`**: cột này UNIQUE trên toàn CSDL dùng chung, không tách theo giáo viên. `api/hoc_sinh_csv.php` tự kiểm tra `lop_hoc_id` hiện tại của bản ghi trùng `ma` trước khi cho phép cập nhật qua import CSV, để 1 giáo viên không thể ghi đè học sinh của giáo viên khác chỉ bằng cách trùng mã.
 
