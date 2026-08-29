@@ -242,6 +242,14 @@ $api_goc_url = $scheme . '://' . $host . $goc_duong_dan . '/api/';
 async function jfetch(url, opts){ const r = await fetch(url, opts); return await r.json(); }
 function formatSigned(n){ const v = Number(n)||0; return v>0?`+${v}`:String(v); }
 function badge(on){ return `<span class="badge ${on? 'bg-success':'bg-warning text-dark'}">${on?'Bật':'Tắt'}</span>` }
+// Dữ liệu như tên học sinh/lớp/lý do/quà là do giáo viên (bất kỳ ai được gán lớp đó) tự nhập -
+// không escape trước khi ghép vào innerHTML thì một giáo viên có thể đặt tên chứa script và nó
+// sẽ chạy trong trình duyệt của giáo viên khác cùng được gán lớp đó khi họ xem trang này.
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
 // Hiển thị dấu + và điều chỉnh Biến điểm bằng nút ngoài
 (function(){
   const input = document.getElementById('ld_bien_diem');
@@ -275,7 +283,7 @@ async function openClassModal(lop){
   const form = document.getElementById('editModalForm'); const msg = document.getElementById('editModalMsg');
   form.innerHTML=''; msg.textContent='';
   const divTen = document.createElement('div'); divTen.className='mb-2';
-  divTen.innerHTML = `<label class="form-label">Tên lớp</label><input id="f_lop_ten" class="form-control" value="${lop?.ten||''}" required>`;
+  divTen.innerHTML = `<label class="form-label">Tên lớp</label><input id="f_lop_ten" class="form-control" value="${escapeHtml(lop?.ten||'')}" required>`;
   form.appendChild(divTen);
   return await new Promise(resolve=>{
     const onHide = ()=>{ modalEl.removeEventListener('hidden.bs.modal', onHide); document.getElementById('editModalSave').removeEventListener('click', onSave); resolve(null); };
@@ -295,7 +303,7 @@ async function ldNap(){ const j = await jfetch('../api/ly_do_quan_tri.php'); if(
     tr.dataset.id = x.id;
     tr.dataset.tieu_de = x.tieu_de;
     tr.dataset.bien_diem = x.bien_diem;
-    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Tiêu đề">${x.tieu_de}</td><td data-label="Biến điểm">${formatSigned(x.bien_diem)}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
+    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Tiêu đề">${escapeHtml(x.tieu_de)}</td><td data-label="Biến điểm">${formatSigned(x.bien_diem)}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
     <td class="text-end stack-actions">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
@@ -335,7 +343,7 @@ async function qNap(){ const j = await jfetch('../api/qua_tang_quan_tri.php'); i
     tr.dataset.ton_kho = x.ton_kho;
     tr.dataset.anh_url = x.anh_url || '';
     const av = (x.anh_url && String(x.anh_url).trim()!=='') ? x.anh_url : '../upload/avatar/default.svg';
-    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Ảnh"><img src="${av}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';"></td><td data-label="Tên">${x.ten}</td><td data-label="Giá điểm">${x.gia_diem}</td><td data-label="Tồn kho">${x.ton_kho}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
+    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Ảnh"><img src="${escapeHtml(av)}" alt="" style="width:32px;height:32px;object-fit:cover;border:1px solid #ddd;border-radius:6px" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';"></td><td data-label="Tên">${escapeHtml(x.ten)}</td><td data-label="Giá điểm">${x.gia_diem}</td><td data-label="Tồn kho">${x.ton_kho}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
     <td class="text-end stack-actions">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
@@ -379,7 +387,7 @@ async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if
     // Gắn data cho dòng (lop_hoc)
     tr.dataset.id = x.id;
     tr.dataset.ten = x.ten;
-    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Tên">${x.ten}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
+    tr.innerHTML = `<td data-label="#">${x.id}</td><td data-label="Tên">${escapeHtml(x.ten)}</td><td data-label="Trạng thái">${badge(x.dang_hoat_dong)}</td>
     <td class="text-end stack-actions">
       <div class="d-flex flex-nowrap justify-content-end gap-2">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2">Sửa</button>
@@ -470,7 +478,7 @@ async function hsNap(keepId=null){
     const a=document.createElement('a'); a.href='#'; a.className='list-group-item list-group-item-action d-flex justify-content-between align-items-center';
     const sttText = (s.stt===null || s.stt===undefined || s.stt==='') ? '' : `${s.stt}. `;
     const active = Number(s.dang_hoat_dong) === 1;
-    a.innerHTML = `<span>${sttText}${s.ho_ten} (${s.ten_lop||''}) - Điểm: ${s.so_du}</span>` + (active? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-warning text-dark">Tắt</span>');
+    a.innerHTML = `<span>${escapeHtml(sttText)}${escapeHtml(s.ho_ten)} (${escapeHtml(s.ten_lop||'')}) - Điểm: ${s.so_du}</span>` + (active? '<span class="badge bg-success">Bật</span>' : '<span class="badge bg-warning text-dark">Tắt</span>');
     if(hsDangChon && String(hsDangChon.id)===String(s.id)) a.classList.add('active');
     a.onclick = (ev)=>{ ev.preventDefault(); hsDangChon = s; hsHienChiTiet(); hsSetChiTietInputs(); setTimeout(hsSyncLopSelectOnce, 0); };
     box.appendChild(a);

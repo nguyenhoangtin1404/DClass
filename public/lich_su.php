@@ -73,6 +73,15 @@ let duLieu = [];
 let duLieuLoc = [];
 let trang = 1;
 
+// Tên học sinh/ghi chú là dữ liệu giáo viên tự nhập - không escape trước khi ghép vào innerHTML
+// thì một giáo viên có thể đặt tên/ghi chú chứa script, chạy trong trình duyệt của giáo viên
+// khác cùng được gán lớp đó khi họ xem trang lịch sử.
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[c]));
+}
+
 function tenLoai(loai){
   switch(String(loai||'')){
     case 'CONG_DIEM': return 'Cộng Điểm';
@@ -162,7 +171,7 @@ function veTrang(){
     const loaiHtml = loaiBadge(row.loai, row.bien_diem);
     const deltaHtml = formatSignedHtml(row.bien_diem);
     const balanceHtml = `<span class="fw-semibold">${row.so_du_sau}</span>`;
-    tr.innerHTML=`<td data-label="Thời gian">${dinDangDateTime(row.tao_luc)}</td><td data-label="Học sinh">${row.ho_ten}</td><td data-label="Loại">${loaiHtml}</td><td data-label="Thay đổi">${deltaHtml}</td><td data-label="Số dư">${balanceHtml}</td><td data-label="Ghi chú">${row.ghi_chu||''}</td>`;
+    tr.innerHTML=`<td data-label="Thời gian">${dinDangDateTime(row.tao_luc)}</td><td data-label="Học sinh">${escapeHtml(row.ho_ten)}</td><td data-label="Loại">${loaiHtml}</td><td data-label="Thay đổi">${deltaHtml}</td><td data-label="Số dư">${balanceHtml}</td><td data-label="Ghi chú">${escapeHtml(row.ghi_chu||'')}</td>`;
     tb.appendChild(tr);
   });
   pgInfo.textContent = total ? `Trang ${trang}/${totalPages} – hiển thị ${start+1}-${end} / ${total}` : 'Không có dữ liệu';
