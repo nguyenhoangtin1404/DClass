@@ -38,8 +38,10 @@ if ($method === 'POST') {
     $anh_url = isset($b['anh_url']) ? trim((string)$b['anh_url']) : null;
     $st = $pdo->prepare('INSERT INTO qua_tang(ten, gia_diem, ton_kho, dang_hoat_dong, anh_url, nguoi_tao_id) VALUES(?,?,?,?,?,?)');
     $st->execute([$ten, $gia_diem, $ton_kho, 1, ($anh_url?:null), $gv_id]);
-    ghi_log($pdo, $gv_id, 'them_qua', 'Thêm quà '.$ten.' (id '.$pdo->lastInsertId().')');
-    return json_phan_hoi(true, ['id' => (int)$pdo->lastInsertId()]);
+    // Lấy id NGAY sau INSERT: ghi_log() chèn thêm 1 dòng nhat_ky, khiến lastInsertId() trả về id của nhat_ky.
+    $qua_id = (int)$pdo->lastInsertId();
+    ghi_log($pdo, $gv_id, 'them_qua', 'Thêm quà '.$ten.' (id '.$qua_id.')');
+    return json_phan_hoi(true, ['id' => $qua_id]);
   }
   if ($hanh_dong === 'sua') {
     $id = (int)($b['id'] ?? 0);

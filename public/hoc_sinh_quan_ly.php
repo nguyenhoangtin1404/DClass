@@ -42,7 +42,19 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
         <div class="row g-2">
           <div class="col-12 col-sm-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
           <div class="col-12 col-sm-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
+          <div class="col-12 mt-2">
+            <select id="them_lop" class="form-select"><option value="">Chọn lớp học...</option></select>
+            <div id="them_lop_hint" class="small text-danger mt-1 d-none">Chưa có lớp học nào — <a href="cau_hinh.php">tạo lớp học</a> trước khi thêm học sinh.</div>
+          </div>
           <div class="col-12 col-sm-6 mt-2"><input id="anh_dai_dien_url" class="form-control" placeholder="Ảnh đại diện URL"></div>
+          <div class="col-12 mt-2">
+            <label class="form-label mb-1">hoặc tải ảnh lên</label>
+            <input type="file" id="hs_anh_file" accept="image/*" class="form-control form-control-sm">
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <img id="hs_anh_preview" alt="" class="avatar-xs d-none">
+              <span id="hs_anh_msg" class="small text-muted"></span>
+            </div>
+          </div>
           <div class="col-6 col-sm-3 mt-2">
             <select id="gioi_tinh" class="form-select">
               <option value="">Giới tính...</option>
@@ -79,7 +91,7 @@ if (!empty($_SESSION['phai_doi_mat_khau'])) { header('Location: cau_hinh.php'); 
             <img id="ct_avatar" class="avatar" src="../upload/avatar/default.svg" alt="avatar" onerror="this.onerror=null;this.src='../upload/avatar/default.svg';">
             <div>
               <div id="ct_ten" class="fw-semibold"></div>
-              <div class="small text-muted"><span id="ct_lop"></span> · <span id="ct_trang_thai"></span></div>
+              <div class="small text-muted"><span id="ct_lop_text"></span> · <span id="ct_trang_thai"></span></div>
             </div>
           </div>
           <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 mt-2">
@@ -126,14 +138,12 @@ function hienChiTiet(){
   const tt = document.getElementById('ct_trang_thai');
   const av = document.getElementById('ct_avatar');
   if(ten) ten.textContent = hsDangChon.ho_ten || '';
-  if(lopSel && lopSel.tagName === 'SELECT') {
-    if (lopSel.options && lopSel.options.length) {
-      const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
-      lopSel.value = v;
-    }
+  if(lopSel && lopSel.options && lopSel.options.length) {
+    const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
+    lopSel.value = v;
   }
-  const lopText = document.querySelector('span#ct_lop');
-  if(lopText && lopText.tagName !== 'SELECT') { lopText.textContent = 'Lớp: ' + (hsDangChon.ten_lop||''); }
+  const lopText = document.getElementById('ct_lop_text');
+  if(lopText) { lopText.textContent = 'Lớp: ' + (hsDangChon.ten_lop||'(chưa gán)'); }
   const active = Number(hsDangChon.dang_hoat_dong) === 1;
   if(tt) tt.textContent = active ? 'Đang bật' : 'Đang tắt';
   if(av) av.src = (hsDangChon.anh_dai_dien_url && hsDangChon.anh_dai_dien_url.trim()!=='') ? hsDangChon.anh_dai_dien_url : '../upload/avatar/default.svg';
@@ -187,17 +197,74 @@ function toVNDate(v){
   }
   return v;
 }
+// Nạp danh sách lớp vào ô chọn lớp của form "Thêm học sinh".
+async function napThemLopOptions(){
+  const sel=document.getElementById('them_lop'); const hint=document.getElementById('them_lop_hint'); const btn=document.getElementById('them');
+  if(!sel) return;
+  try{
+    const r=await fetch('../api/lop_hoc_quan_tri.php'); const j=await r.json();
+    const ds=(j.ok && Array.isArray(j.du_lieu)) ? j.du_lieu.filter(l=>Number(l.dang_hoat_dong)===1) : [];
+    const cu=sel.value;
+    sel.innerHTML='<option value="">Chọn lớp học...</option>';
+    ds.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); });
+    if(cu && ds.some(l=>String(l.id)===String(cu))) sel.value=cu;
+    const trong = ds.length===0;
+    if(hint) hint.classList.toggle('d-none', !trong);
+    if(btn) btn.disabled = trong;
+  }catch(_e){}
+}
+napThemLopOptions();
+
 document.getElementById('them').onclick=async()=>{
+  const lop = document.getElementById('them_lop').value;
+  if(!lop){ toast('Hãy chọn lớp học cho học sinh', {loai:'canh_bao'}); return; }
   const body = {
     ma: document.getElementById('ma').value,
     ho_ten: document.getElementById('ho_ten').value,
+    lop_hoc_id: lop,
     anh_dai_dien_url: document.getElementById('anh_dai_dien_url').value,
     gioi_tinh: document.getElementById('gioi_tinh').value,
     ngay_sinh: toISODate(document.getElementById('ngay_sinh').value)
   };
   const r=await fetch('../api/hoc_sinh.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const j=await r.json(); const ms=document.getElementById('msg'); if(j.ok){ if(ms) ms.textContent='Đã thêm'; document.getElementById('ho_ten').value=''; document.getElementById('ma').value=''; nap(); } else if(ms) ms.textContent=j.thong_bao||'Lỗi';
+  const j=await r.json();
+  if(j.ok){
+    toast('Đã thêm học sinh', {loai:'success'});
+    document.getElementById('ho_ten').value=''; document.getElementById('ma').value='';
+    document.getElementById('anh_dai_dien_url').value=''; hsResetAnhUpload();
+    nap();
+  } else {
+    toast(j.thong_bao||'Không thêm được học sinh', {loai:'nguy_hiem'});
+  }
 };
+
+// Tải ảnh đại diện lên (dùng chung endpoint upload_anh.php) rồi điền URL vào ô "Ảnh đại diện URL".
+function hsResetAnhUpload(){
+  const fi=document.getElementById('hs_anh_file'); const pv=document.getElementById('hs_anh_preview'); const mg=document.getElementById('hs_anh_msg');
+  if(fi) fi.value=''; if(pv){ pv.classList.add('d-none'); pv.removeAttribute('src'); } if(mg){ mg.textContent=''; mg.className='small text-muted'; }
+}
+(function(){
+  const fi=document.getElementById('hs_anh_file'); if(!fi) return;
+  const pv=document.getElementById('hs_anh_preview'); const mg=document.getElementById('hs_anh_msg');
+  const urlEl=document.getElementById('anh_dai_dien_url');
+  fi.onchange=async()=>{
+    mg.textContent=''; mg.className='small text-muted';
+    const f=fi.files && fi.files[0];
+    if(!f){ pv.classList.add('d-none'); pv.removeAttribute('src'); return; }
+    if(f.size > 2*1024*1024){ mg.textContent='Ảnh quá lớn (tối đa 2MB).'; mg.className='small text-danger'; fi.value=''; pv.classList.add('d-none'); return; }
+    const rd=new FileReader(); rd.onload=()=>{ pv.src=rd.result; pv.classList.remove('d-none'); }; rd.readAsDataURL(f);
+    mg.textContent='Đang tải ảnh lên...';
+    const fd=new FormData(); fd.append('file', f);
+    try{
+      const rr=await fetch('../api/upload_anh.php',{method:'POST',body:fd}); const jj=await rr.json();
+      if(jj.ok){ urlEl.value=jj.du_lieu.url; mg.textContent='Đã tải ảnh lên'; mg.className='small text-success'; }
+      else {
+        const loi={file_qua_lon:'Ảnh quá lớn (tối đa 2MB).',dinh_dang_khong_ho_tro:'Chỉ nhận ảnh JPG, PNG, GIF, WEBP.',anh_khong_hop_le:'File không phải ảnh hợp lệ.',anh_qua_lon:'Kích thước ảnh quá lớn.',qua_so_lan:'Bạn tải ảnh quá nhiều lần, thử lại sau ít phút.',thieu_file:'Chưa chọn file ảnh.'};
+        mg.textContent=loi[jj.thong_bao]||('Lỗi tải ảnh: '+(jj.thong_bao||'thử lại')); mg.className='small text-danger';
+      }
+    }catch(_e){ mg.textContent='Lỗi mạng khi tải ảnh'; mg.className='small text-danger'; }
+  };
+})();
 nap();
 
 // Toggle trạng thái
@@ -209,20 +276,20 @@ document.getElementById('btn_toggle').onclick = async()=>{
   const j = await r.json(); if(j.ok){
     if(newState===0 && document.getElementById('hien_tat_ca')) document.getElementById('hien_tat_ca').checked=true;
     hsDangChon.dang_hoat_dong = !!newState;
-    if(msg) msg.textContent='Đã cập nhật trạng thái';
+    toast(newState ? 'Đã bật học sinh' : 'Đã tắt học sinh', {loai:'success'});
     await nap(hsDangChon.id);
     setChiTietInputs();
-  } else { if(msg) msg.textContent=j.thong_bao||'Lỗi'; }
+  } else { toast(j.thong_bao||'Không cập nhật được', {loai:'nguy_hiem'}); }
 };
 
 // Upload avatar
 document.getElementById('btn_up_anh').onclick = async()=>{
-  const f = document.getElementById('up_anh').files[0]; const msg = document.getElementById('ct_msg'); if(!hsDangChon) return;
-  if(!f){ if(msg) msg.textContent='Chọn ảnh để upload'; return; }
+  const f = document.getElementById('up_anh').files[0]; if(!hsDangChon) return;
+  if(!f){ toast('Chọn ảnh để tải lên', {loai:'canh_bao'}); return; }
   const fd = new FormData(); fd.append('hoc_sinh_id', hsDangChon.id); fd.append('file', f);
   const r = await fetch('../api/upload_avatar.php', { method:'POST', body: fd }); const j = await r.json();
-  if(j.ok){ hsDangChon = { ...hsDangChon, anh_dai_dien_url: j.du_lieu.url }; hienChiTiet(); setChiTietInputs(); if(msg) msg.textContent='Đã cập nhật ảnh'; document.getElementById('up_anh').value=''; }
-  else { if(msg) msg.textContent = j.thong_bao || 'Lỗi upload ảnh'; }
+  if(j.ok){ hsDangChon = { ...hsDangChon, anh_dai_dien_url: j.du_lieu.url }; hienChiTiet(); setChiTietInputs(); toast('Đã cập nhật ảnh đại diện', {loai:'success'}); document.getElementById('up_anh').value=''; }
+  else { toast(j.thong_bao || 'Lỗi tải ảnh', {loai:'nguy_hiem'}); }
 };
 
 // CSV handlers
@@ -244,13 +311,13 @@ document.getElementById('nhap_csv').onclick = async()=>{
   let previewText = mau.map((it,i)=>`${i+1}. ${it.ho_ten||''} | ${it.ma||''} | ${it.ngay_sinh||''} | ${it.gioi_tinh||''}`).join('\n');
   if (!previewText) previewText = '(không có dữ liệu xem trước)';
   const ask = `Đọc được ${tong} dòng (bỏ qua dòng trống).\nMẫu:\n${previewText}\n\nTiếp tục nhập?`;
-  if (!confirm(ask)) { msgEl.textContent = 'Đã hủy nhập CSV'; return; }
+  if (!(await xacNhan(ask, {tieuDe:'Nhập CSV', loai:'hoi', nhanDongY:'Nhập'}))) { msgEl.textContent = 'Đã hủy nhập CSV'; return; }
   msgEl.textContent = 'Đang nhập...';
   const fd = new FormData(); fd.append('file', f);
   const r = await fetch('../api/hoc_sinh_csv.php?hanh_dong=nhap', { method:'POST', body: fd });
   const j = await r.json();
-  if (j.ok) { msgEl.textContent = 'Nhập CSV xong: ' + (j.du_lieu?.tong_dong||0) + ' dòng'; nap(); }
-  else { msgEl.textContent = j.thong_bao || 'Lỗi nhập CSV'; }
+  if (j.ok) { msgEl.textContent=''; toast('Nhập CSV xong: ' + (j.du_lieu?.tong_dong||0) + ' dòng', {loai:'success'}); nap(); }
+  else { msgEl.textContent=''; toast(j.thong_bao || 'Lỗi nhập CSV', {loai:'nguy_hiem'}); }
   if (fileInput) {
     const lbl = document.getElementById('csv_file_label');
     if (lbl) lbl.textContent = 'Chưa chọn tệp';
@@ -272,9 +339,21 @@ if (csvInput) {
 }
 
 // Nạp danh sách lớp và đổ dữ liệu form chi tiết
-async function napLopOptions(){ const sel = document.getElementById('ct_lop'); if(!sel) return; try { const r = await fetch('../api/lop_hoc_quan_tri.php?cua_toi=1'); const j = await r.json(); if(!j.ok) return; sel.innerHTML=''; const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0); j.du_lieu.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); }); } catch(_e){} }
+async function napLopOptions(){
+  const sel = document.querySelector('select#ct_lop'); if(!sel) return;
+  try {
+    const r = await fetch('../api/lop_hoc_quan_tri.php'); const j = await r.json();
+    if(!j.ok) return;
+    const cu = sel.value;
+    sel.innerHTML='';
+    const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='-- Không gán lớp --'; sel.appendChild(opt0);
+    (j.du_lieu||[]).forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); });
+    // Giữ lựa chọn cũ, hoặc set theo học sinh đang chọn
+    if(cu){ sel.value=cu; }
+    else if(hsDangChon && hsDangChon.lop_hoc_id!=null && hsDangChon.lop_hoc_id!==''){ sel.value=String(hsDangChon.lop_hoc_id); }
+  } catch(_e){}
+}
 napLopOptions();
-syncLopSelectOnce();
 function setChiTietInputs(){ const fma=document.getElementById('ct_ma'); const ften=document.getElementById('ct_ho_ten'); const fgioi=document.getElementById('ct_gioi'); const fngay=document.getElementById('ct_ngay'); const flop=document.querySelector('select#ct_lop'); if(!hsDangChon) return; if(fma) fma.value = hsDangChon.ma || ''; if(ften) ften.value = hsDangChon.ho_ten || ''; if(fgioi) fgioi.value = hsDangChon.gioi_tinh || ''; if(fngay) fngay.value = toVNDate((hsDangChon.ngay_sinh || '').substring(0,10)); if(flop && flop.options && typeof flop.options.length==='number' && flop.options.length){ const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id); flop.value = v; } }
 
 // Lưu thay đổi thông tin
@@ -289,8 +368,8 @@ document.getElementById('btn_luu').onclick = async()=>{
     lop_hoc_id: (document.querySelector('select#ct_lop')?.value||'')
   };
   const r = await fetch('../api/hoc_sinh.php?hanh_dong=sua',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  const j = await r.json(); if(j.ok){ if(msg) msg.textContent='Đã lưu'; await nap(); }
-  else { if(msg) msg.textContent=j.thong_bao||'Lỗi lưu'; }
+  const j = await r.json(); if(j.ok){ toast('Đã lưu thay đổi', {loai:'success'}); await nap(); }
+  else { toast(j.thong_bao||'Không lưu được', {loai:'nguy_hiem'}); }
 };
 
 function syncLopSelectOnce(){
@@ -299,14 +378,14 @@ function syncLopSelectOnce(){
   let tries = 0;
   const h = setInterval(()=>{
     tries++;
-    if (sel.options && sel.options.length) {
-      if (hsDangChon && typeof hsDangChon==='object') {
-        const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
-        sel.value = v;
-      }
-      clearInterval(h);
+    const want = (hsDangChon && hsDangChon.lop_hoc_id!=null && hsDangChon.lop_hoc_id!=='') ? String(hsDangChon.lop_hoc_id) : '';
+    // Chỉ dừng khi option cần chọn đã có và set được đúng value (tránh hiển thị trống
+    // do set value trước khi options nạp xong -> selectedIndex=-1).
+    if ([...sel.options].some(o=>o.value===want)) {
+      sel.value = want;
+      if (sel.value === want) { clearInterval(h); }
     }
-    if (tries > 30) clearInterval(h);
+    if (tries > 50) clearInterval(h);
   }, 100);
 }
 </script>

@@ -37,7 +37,9 @@ if (!headers_sent()) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
   }
 }
-$DB_PATH = $env['db_path'] ?? (__DIR__ . '/../data/ung_dung.db');
+// DCLASS_DB_PATH (biến môi trường) ưu tiên cao nhất - dùng cho test HTTP (tests/ApiHttpTest.php)
+// khởi chạy `php -S` trên CSDL tạm, không cần đụng config/env.php của môi trường dev.
+$DB_PATH = getenv('DCLASS_DB_PATH') ?: ($env['db_path'] ?? (__DIR__ . '/../data/ung_dung.db'));
 $DB_DIR = dirname($DB_PATH);
 $lan_dau = !file_exists($DB_PATH);
 // Tự tạo thư mục dữ liệu nếu chưa tồn tại để tránh lỗi kết nối SQLite lần đầu

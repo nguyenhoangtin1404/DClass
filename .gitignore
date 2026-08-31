@@ -3,3 +3,9 @@
 /config/env.php
 /data/registry.db
 /data/*.db
+
+# Ảnh người dùng upload lúc chạy (avatar học sinh, ảnh quà) - không commit.
+# Các file mẫu hs_*.png/jpg sẵn có vẫn được theo dõi bình thường.
+/upload/avatar/up_*
+/upload/avatar/hs_*_20*
+/upload/qua/
