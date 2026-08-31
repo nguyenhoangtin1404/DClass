@@ -60,7 +60,14 @@ $api_goc_url = $scheme . '://' . $host . $goc_duong_dan . '/api/';
           <div class="mb-2"><label class="form-label">Tên</label><input id="q_ten" class="form-control"></div>
           <div class="mb-2"><label class="form-label">Giá điểm</label><input id="q_gia" type="number" class="form-control" value="1"></div>
           <div class="mb-2"><label class="form-label">Tồn kho</label><input id="q_ton" type="number" class="form-control" value="0"></div>
-          <div class="mb-2"><label class="form-label">URL ảnh (tùy chọn)</label><input id="q_anh" class="form-control" placeholder="https://..."></div>
+          <div class="mb-2"><label class="form-label">Ảnh (tùy chọn)</label>
+            <input id="q_anh" class="form-control mb-1" placeholder="Dán URL ảnh https://...">
+            <input type="file" id="q_anh_file" accept="image/*" class="form-control form-control-sm">
+            <div class="d-flex align-items-center gap-2 mt-1">
+              <img id="q_anh_preview" alt="" class="d-none" style="width:56px;height:56px;object-fit:cover;border:1px solid #ddd;border-radius:6px">
+              <span id="q_anh_msg" class="small text-muted"></span>
+            </div>
+          </div>
           <button class="btn btn-primary btn-sm" id="q_them">Thêm</button>
         </div></div></div>
         <div class="col-md-8"><div class="card shadow-sm" data-aos="fade-up"><div class="card-body">
@@ -104,7 +111,19 @@ $api_goc_url = $scheme . '://' . $host . $goc_duong_dan . '/api/';
             <div class="row g-2">
               <div class="col-12 col-sm-4"><input id="ma" class="form-control" placeholder="Mã (tùy chọn)"></div>
               <div class="col-12 col-sm-8"><input id="ho_ten" class="form-control" placeholder="Họ tên"></div>
+              <div class="col-12 mt-2">
+                <select id="them_lop" class="form-select"><option value="">Chọn lớp học...</option></select>
+                <div id="them_lop_hint" class="small text-danger mt-1 d-none">Chưa có lớp học nào — tạo lớp ở tab <b>Lớp học</b> trước khi thêm học sinh.</div>
+              </div>
               <div class="col-12 col-sm-6 mt-2"><input id="anh_dai_dien_url" class="form-control" placeholder="Ảnh đại diện URL"></div>
+              <div class="col-12 mt-2">
+                <label class="form-label mb-1">hoặc tải ảnh lên</label>
+                <input type="file" id="hs_anh_file" accept="image/*" class="form-control form-control-sm">
+                <div class="d-flex align-items-center gap-2 mt-1">
+                  <img id="hs_anh_preview" alt="" class="avatar-xs d-none">
+                  <span id="hs_anh_msg" class="small text-muted"></span>
+                </div>
+              </div>
               <div class="col-6 col-sm-3 mt-2">
                 <select id="gioi_tinh" class="form-select">
                   <option value="">Giới tính...</option>
@@ -258,6 +277,24 @@ const THONG_BAO_LOI = {
   'qua_da_su_dung': 'Quà này đã có học sinh đổi trước đây nên không thể xoá (sẽ mất lịch sử). Dùng nút "Tắt" để ngừng dùng mà vẫn giữ lịch sử.',
   'ten_da_ton_tai': 'Tên này đã được dùng, hãy chọn tên khác.',
   'khong_du_quyen': 'Bạn không có quyền thực hiện thao tác này.',
+  'thieu_tieu_de': 'Vui lòng nhập tiêu đề.',
+  'thieu_ten': 'Vui lòng nhập tên.',
+  'thieu_id': 'Thiếu thông tin dòng cần xử lý, hãy tải lại trang.',
+  'gia_diem_khong_hop_le': 'Giá điểm phải lớn hơn 0 và không quá 1.000.000.',
+  'ton_kho_khong_hop_le': 'Tồn kho phải từ -1 (không giới hạn) đến 1.000.000.',
+  'khong_co_truong_cap_nhat': 'Không có thay đổi nào để lưu.',
+  'khong_tim_thay': 'Không tìm thấy dữ liệu, hãy tải lại trang.',
+  'thieu_file': 'Chưa chọn file ảnh.',
+  'file_qua_lon': 'Ảnh quá lớn (tối đa 2MB).',
+  'anh_qua_lon': 'Kích thước ảnh quá lớn (tối đa 4000x4000).',
+  'dinh_dang_khong_ho_tro': 'Định dạng ảnh không hỗ trợ (chỉ JPG, PNG, GIF, WEBP).',
+  'anh_khong_hop_le': 'File không phải ảnh hợp lệ.',
+  'khong_ho_tro_webp': 'Máy chủ không hỗ trợ ảnh WEBP.',
+  'khong_luu_duoc_file': 'Không lưu được ảnh, thử lại.',
+  'upload_error': 'Tải ảnh lên thất bại, thử lại.',
+  'qua_khong_hoat_dong': 'Quà đang tắt nên không thể đổi ảnh.',
+  'qua_so_lan': 'Bạn tải ảnh quá nhiều lần, thử lại sau ít phút.',
+  'khong_doc_duoc_file': 'Không đọc được file, thử lại.',
 };
 function dichLoi(ma, macDinh){
   return THONG_BAO_LOI[ma] || macDinh || ma || 'Lỗi';
@@ -327,21 +364,21 @@ async function ldNap(){ const j = await jfetch('../api/ly_do_quan_tri.php'); if(
     btnSua.onclick = async()=>{
       const t = prompt('Tiêu đề', x.tieu_de); if(t===null) return; const b = prompt('Biến điểm', x.bien_diem); if(b===null) return;
       const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, tieu_de:t.trim(), bien_diem:parseInt(b,10)||0})});
-      if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok) ldNap(); else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
-      if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok) ldNap(); else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     btnXoa.onclick = async()=>{
-      if(!confirm('Xóa lý do này?')) return;
+      if(!(await xacNhan('Xóa lý do này?', {loai:'nguy_hiem', nhanDongY:'Xóa', nguyHiem:true}))) return;
       const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=xoa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id})});
-      if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok){ toast('Đã xoá lý do', {loai:'success'}); ldNap(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     tb.appendChild(tr);
   });
 }
 document.getElementById('ld_them').onclick = async()=>{
   const t = document.getElementById('ld_tieu_de').value.trim(); const b = parseInt(document.getElementById('ld_bien_diem').value,10)||0;
   const j = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tieu_de:t, bien_diem:b})});
-  if(j.ok){ document.getElementById('ld_tieu_de').value=''; ldNap(); } else alert(dichLoi(j.thong_bao));
+  if(j.ok){ document.getElementById('ld_tieu_de').value=''; toast('Đã thêm lý do', {loai:'success'}); ldNap(); } else thongBao(dichLoi(j.thong_bao), {loai:'canh_bao'});
 };
 
 // Quà tặng
@@ -369,28 +406,74 @@ async function qNap(){ const j = await jfetch('../api/qua_tang_quan_tri.php'); i
       const ten = prompt('Tên', x.ten); if(ten===null) return; const gia = prompt('Giá điểm', x.gia_diem); if(gia===null) return; const ton = prompt('Tồn kho', x.ton_kho); if(ton===null) return;
       const anh = prompt('URL ảnh (bỏ trống để giữ nguyên)', tr.dataset.anh_url||''); if(anh===null) return;
       const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, ten:ten.trim(), gia_diem:parseInt(gia,10)||0, ton_kho:parseInt(ton,10)||0, anh_url:String(anh||'')})});
-      if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok) qNap(); else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     btnAnh.onclick = ()=>{
       const input = document.createElement('input'); input.type='file'; input.accept='image/*';
       input.onchange = async()=>{
         if(!input.files || !input.files[0]) return;
         const fd = new FormData(); fd.append('qua_tang_id', x.id); fd.append('file', input.files[0]);
         const r = await fetch('../api/upload_qua.php', { method:'POST', body: fd }); const jj = await r.json();
-        if(jj.ok){ qNap(); } else alert(dichLoi(jj.thong_bao));
+        if(jj.ok){ qNap(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'});
       };
       input.click();
     };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
-      if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok) qNap(); else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     btnXoa.onclick = async()=>{
-      if(!confirm('Xóa quà tặng này?')) return;
+      if(!(await xacNhan('Xóa quà tặng này?', {loai:'nguy_hiem', nhanDongY:'Xóa', nguyHiem:true}))) return;
       const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=xoa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id})});
-      if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok){ toast('Đã xoá quà tặng', {loai:'success'}); qNap(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     tb.appendChild(tr);
   });
 }
-document.getElementById('q_them').onclick = async()=>{ const ten = document.getElementById('q_ten').value.trim(); const gia = parseInt(document.getElementById('q_gia').value,10)||0; const ton = parseInt(document.getElementById('q_ton').value,10)||0; const anh = (document.getElementById('q_anh') ? document.getElementById('q_anh').value.trim() : ''); const j = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ten, gia_diem:gia, ton_kho:ton, anh_url:anh})}); if(j.ok){ document.getElementById('q_ten').value=''; if(document.getElementById('q_anh')) document.getElementById('q_anh').value=''; qNap(); } else alert(dichLoi(j.thong_bao)); };
+// Xem trước ảnh quà khi chọn file
+(function(){
+  const inp = document.getElementById('q_anh_file');
+  const prev = document.getElementById('q_anh_preview');
+  const msg = document.getElementById('q_anh_msg');
+  if(!inp || !prev) return;
+  inp.onchange = ()=>{
+    msg.textContent=''; msg.className='small text-muted';
+    const f = inp.files && inp.files[0];
+    if(!f){ prev.classList.add('d-none'); prev.removeAttribute('src'); return; }
+    if(f.size > 2*1024*1024){ msg.textContent = dichLoi('file_qua_lon'); msg.className='small text-danger'; inp.value=''; prev.classList.add('d-none'); return; }
+    // Dùng data: URL (CSP chỉ cho phép img-src 'self' data:, không có blob:)
+    const rd = new FileReader();
+    rd.onload = ()=>{ prev.src = rd.result; prev.classList.remove('d-none'); };
+    rd.onerror = ()=>{ prev.classList.add('d-none'); prev.removeAttribute('src'); };
+    rd.readAsDataURL(f);
+  };
+})();
+document.getElementById('q_them').onclick = async()=>{
+  const btn = document.getElementById('q_them');
+  const ten = document.getElementById('q_ten').value.trim();
+  const gia = parseInt(document.getElementById('q_gia').value,10)||0;
+  const ton = parseInt(document.getElementById('q_ton').value,10)||0;
+  const anhEl = document.getElementById('q_anh');
+  const anh = anhEl ? anhEl.value.trim() : '';
+  const fileEl = document.getElementById('q_anh_file');
+  const file = fileEl && fileEl.files && fileEl.files[0] ? fileEl.files[0] : null;
+  const msg = document.getElementById('q_anh_msg');
+  btn.disabled = true;
+  try {
+    const j = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ten, gia_diem:gia, ton_kho:ton, anh_url:anh})});
+    if(!j.ok){ thongBao(dichLoi(j.thong_bao), {loai:'canh_bao'}); return; }
+    let anhLoi = false;
+    if(file){
+      const fd = new FormData(); fd.append('qua_tang_id', j.du_lieu.id); fd.append('file', file);
+      const r = await fetch('../api/upload_qua.php', { method:'POST', body: fd }); const ju = await r.json();
+      if(!ju.ok){ anhLoi = true; if(msg){ msg.textContent = 'Đã tạo quà nhưng tải ảnh lên lỗi: ' + dichLoi(ju.thong_bao); msg.className='small text-danger'; } }
+    }
+    toast(anhLoi ? 'Đã thêm quà (ảnh chưa lên được)' : 'Đã thêm quà tặng', {loai: anhLoi ? 'canh_bao' : 'success'});
+    document.getElementById('q_ten').value='';
+    if(anhEl) anhEl.value='';
+    if(fileEl) fileEl.value='';
+    const prev = document.getElementById('q_anh_preview'); if(prev){ prev.classList.add('d-none'); prev.removeAttribute('src'); }
+    if(msg && msg.className.indexOf('text-danger')===-1){ msg.textContent=''; }
+    qNap();
+  } finally { btn.disabled = false; }
+};
 
 // Lớp học
 async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if(!j.ok) return; const tb = document.getElementById('l_ds'); tb.innerHTML='';
@@ -413,21 +496,21 @@ async function lNap(){ const j = await jfetch('../api/lop_hoc_quan_tri.php'); if
       if(!res) return;
       const body = { id:x.id, ten:res.ten };
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok) lNap(); else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     btnToggle.onclick = async()=>{
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=bat_tat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id, dang_hoat_dong:x.dang_hoat_dong?0:1})});
-      if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok) lNap(); else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     btnXoa.onclick = async()=>{
-      if(!confirm('Xóa lớp học này?')) return;
+      if(!(await xacNhan('Xóa lớp học này?', {loai:'nguy_hiem', nhanDongY:'Xóa', nguyHiem:true}))) return;
       const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=xoa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id})});
-      if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao)); };
+      if(jj.ok){ toast('Đã xoá lớp học', {loai:'success'}); lNap(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'}); };
     tb.appendChild(tr);
   });
 }
 document.getElementById('l_them').onclick = async()=>{
   const ten = document.getElementById('l_ten').value.trim();
   const j = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=them',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ten})});
-  if(j.ok){ document.getElementById('l_ten').value=''; lNap(); } else alert(dichLoi(j.thong_bao));
+  if(j.ok){ document.getElementById('l_ten').value=''; toast('Đã thêm lớp học', {loai:'success'}); lNap(); hsNapThemLopOptions && hsNapThemLopOptions(); } else thongBao(dichLoi(j.thong_bao), {loai:'canh_bao'});
 };
 
 // Học sinh
@@ -517,18 +600,75 @@ function hsToVNDate(v){
   }
   return v;
 }
+// Nạp danh sách lớp vào ô chọn lớp của form "Thêm học sinh".
+async function hsNapThemLopOptions(){
+  const sel=document.getElementById('them_lop'); const hint=document.getElementById('them_lop_hint'); const btn=document.getElementById('them');
+  if(!sel) return;
+  try{
+    const j=await jfetch('../api/lop_hoc_quan_tri.php');
+    const ds=(j.ok && Array.isArray(j.du_lieu)) ? j.du_lieu.filter(l=>Number(l.dang_hoat_dong)===1) : [];
+    const cu=sel.value;
+    sel.innerHTML='<option value="">Chọn lớp học...</option>';
+    ds.forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=l.ten; sel.appendChild(o); });
+    if(cu && ds.some(l=>String(l.id)===String(cu))) sel.value=cu;
+    const trong=ds.length===0;
+    if(hint) hint.classList.toggle('d-none', !trong);
+    if(btn) btn.disabled=trong;
+  }catch(_e){}
+}
+hsNapThemLopOptions();
+// Lớp có thể vừa được tạo ở tab "Lớp học" -> nạp lại khi quay lại tab "Học sinh".
+document.querySelectorAll('#tab button[data-bs-target="#tab-hoc-sinh"]').forEach(b=>{
+  b.addEventListener('shown.bs.tab', hsNapThemLopOptions);
+});
+
 const hsBtnThem = document.getElementById('them');
 if(hsBtnThem) hsBtnThem.onclick=async()=>{
+  const lop=document.getElementById('them_lop').value;
+  if(!lop){ toast('Hãy chọn lớp học cho học sinh', {loai:'canh_bao'}); return; }
   const body = {
     ma: document.getElementById('ma').value,
     ho_ten: document.getElementById('ho_ten').value,
+    lop_hoc_id: lop,
     anh_dai_dien_url: document.getElementById('anh_dai_dien_url').value,
     gioi_tinh: document.getElementById('gioi_tinh').value,
     ngay_sinh: hsToISODate(document.getElementById('ngay_sinh').value)
   };
   const r=await fetch('../api/hoc_sinh.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const j=await r.json(); const ms=document.getElementById('msg'); if(j.ok){ if(ms) ms.textContent='Đã thêm'; document.getElementById('ho_ten').value=''; document.getElementById('ma').value=''; hsNap(); } else if(ms) ms.textContent=j.thong_bao||'Lỗi';
+  const j=await r.json();
+  if(j.ok){
+    toast('Đã thêm học sinh', {loai:'success'});
+    document.getElementById('ho_ten').value=''; document.getElementById('ma').value='';
+    document.getElementById('anh_dai_dien_url').value=''; hsResetAnhUpload(); hsNap();
+  } else {
+    toast(dichLoi(j.thong_bao) || 'Không thêm được học sinh', {loai:'nguy_hiem'});
+  }
 };
+
+// Tải ảnh đại diện lên (endpoint chung upload_anh.php) rồi điền URL vào ô "Ảnh đại diện URL".
+function hsResetAnhUpload(){
+  const fi=document.getElementById('hs_anh_file'); const pv=document.getElementById('hs_anh_preview'); const mg=document.getElementById('hs_anh_msg');
+  if(fi) fi.value=''; if(pv){ pv.classList.add('d-none'); pv.removeAttribute('src'); } if(mg){ mg.textContent=''; mg.className='small text-muted'; }
+}
+(function(){
+  const fi=document.getElementById('hs_anh_file'); if(!fi) return;
+  const pv=document.getElementById('hs_anh_preview'); const mg=document.getElementById('hs_anh_msg');
+  const urlEl=document.getElementById('anh_dai_dien_url');
+  fi.onchange=async()=>{
+    mg.textContent=''; mg.className='small text-muted';
+    const f=fi.files && fi.files[0];
+    if(!f){ pv.classList.add('d-none'); pv.removeAttribute('src'); return; }
+    if(f.size > 2*1024*1024){ mg.textContent=dichLoi('file_qua_lon'); mg.className='small text-danger'; fi.value=''; pv.classList.add('d-none'); return; }
+    const rd=new FileReader(); rd.onload=()=>{ pv.src=rd.result; pv.classList.remove('d-none'); }; rd.readAsDataURL(f);
+    mg.textContent='Đang tải ảnh lên...';
+    const fd=new FormData(); fd.append('file', f);
+    try{
+      const rr=await fetch('../api/upload_anh.php',{method:'POST',body:fd}); const jj=await rr.json();
+      if(jj.ok){ urlEl.value=jj.du_lieu.url; mg.textContent='Đã tải ảnh lên'; mg.className='small text-success'; }
+      else { mg.textContent='Lỗi tải ảnh: '+dichLoi(jj.thong_bao); mg.className='small text-danger'; }
+    }catch(_e){ mg.textContent='Lỗi mạng khi tải ảnh'; mg.className='small text-danger'; }
+  };
+})();
 hsNap();
 
 // Toggle trạng thái
@@ -541,24 +681,24 @@ if(hsBtnToggle) hsBtnToggle.onclick = async()=>{
   const j = await r.json(); if(j.ok){
     if(newState===0 && document.getElementById('hien_tat_ca')) document.getElementById('hien_tat_ca').checked=true;
     hsDangChon.dang_hoat_dong = !!newState;
-    if(msg) msg.textContent='Đã cập nhật trạng thái';
+    toast(newState ? 'Đã bật học sinh' : 'Đã tắt học sinh', {loai:'success'});
     await hsNap(hsDangChon.id);
     hsSetChiTietInputs();
-  } else { if(msg) msg.textContent=j.thong_bao||'Lỗi'; }
+  } else { toast(dichLoi(j.thong_bao)||'Không cập nhật được', {loai:'nguy_hiem'}); }
 };
 
 // Upload avatar
 const hsBtnUpAnh = document.getElementById('btn_up_anh');
 if(hsBtnUpAnh) hsBtnUpAnh.onclick = async()=>{
-  const f = document.getElementById('up_anh').files[0]; const msg = document.getElementById('ct_msg'); if(!hsDangChon) return;
-  if(!f){ if(msg) msg.textContent='Chọn ảnh để upload'; return; }
+  const f = document.getElementById('up_anh').files[0]; if(!hsDangChon) return;
+  if(!f){ toast('Chọn ảnh để tải lên', {loai:'canh_bao'}); return; }
   const fd = new FormData(); fd.append('hoc_sinh_id', hsDangChon.id); fd.append('file', f);
   const r = await fetch('../api/upload_avatar.php', { method:'POST', body: fd });
   let j = null;
   try { j = await r.json(); }
-  catch(_e){ if(msg) msg.textContent = 'Upload thất bại (phản hồi không hợp lệ)'; return; }
-  if(j.ok){ hsDangChon = { ...hsDangChon, anh_dai_dien_url: hsResolveAvatar(j.du_lieu.url) }; hsHienChiTiet(); hsSetChiTietInputs(); if(msg) msg.textContent='Đã cập nhật ảnh'; document.getElementById('up_anh').value=''; }
-  else { if(msg) msg.textContent = j.thong_bao || 'Lỗi upload ảnh'; }
+  catch(_e){ toast('Tải ảnh thất bại (phản hồi không hợp lệ)', {loai:'nguy_hiem'}); return; }
+  if(j.ok){ hsDangChon = { ...hsDangChon, anh_dai_dien_url: hsResolveAvatar(j.du_lieu.url) }; hsHienChiTiet(); hsSetChiTietInputs(); toast('Đã cập nhật ảnh đại diện', {loai:'success'}); document.getElementById('up_anh').value=''; }
+  else { toast(dichLoi(j.thong_bao) || 'Lỗi tải ảnh', {loai:'nguy_hiem'}); }
 };
 
 // CSV handlers
@@ -582,13 +722,13 @@ if(hsBtnNhapCsv) hsBtnNhapCsv.onclick = async()=>{
   let previewText = mau.map((it,i)=>`${i+1}. ${it.ho_ten||''} | ${it.ma||''} | ${it.ngay_sinh||''} | ${it.gioi_tinh||''}`).join('\n');
   if (!previewText) previewText = '(không có dữ liệu xem trước)';
   const ask = `Đọc được ${tong} dòng (bỏ qua dòng trống).\nMẫu:\n${previewText}\n\nTiếp tục nhập?`;
-  if (!confirm(ask)) { msgEl.textContent = 'Đã hủy nhập CSV'; return; }
+  if (!(await xacNhan(ask, {tieuDe:'Nhập CSV', loai:'hoi', nhanDongY:'Nhập'}))) { msgEl.textContent = 'Đã hủy nhập CSV'; return; }
   msgEl.textContent = 'Đang nhập...';
   const fd = new FormData(); fd.append('file', f);
   const r = await fetch('../api/hoc_sinh_csv.php?hanh_dong=nhap', { method:'POST', body: fd });
   const j = await r.json();
-  if (j.ok) { msgEl.textContent = 'Nhập CSV xong: ' + (j.du_lieu?.tong_dong||0) + ' dòng'; hsNap(); }
-  else { msgEl.textContent = j.thong_bao || 'Lỗi nhập CSV'; }
+  if (j.ok) { msgEl.textContent=''; toast('Nhập CSV xong: ' + (j.du_lieu?.tong_dong||0) + ' dòng', {loai:'success'}); hsNap(); }
+  else { msgEl.textContent=''; toast(j.thong_bao || 'Lỗi nhập CSV', {loai:'nguy_hiem'}); }
   if (fileInput) {
     const lbl = document.getElementById('csv_file_label');
     if (lbl) lbl.textContent = 'Chưa chọn tệp';
@@ -628,8 +768,8 @@ if(hsBtnLuu) hsBtnLuu.onclick = async()=>{
     lop_hoc_id: (document.querySelector('select#ct_lop')?.value||'')
   };
   const r = await fetch('../api/hoc_sinh.php?hanh_dong=sua',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  const j = await r.json(); if(j.ok){ if(msg) msg.textContent='Đã lưu'; await hsNap(); }
-  else { if(msg) msg.textContent=j.thong_bao||'Lỗi lưu'; }
+  const j = await r.json(); if(j.ok){ toast('Đã lưu thay đổi', {loai:'success'}); await hsNap(); }
+  else { toast(dichLoi(j.thong_bao)||'Không lưu được', {loai:'nguy_hiem'}); }
 };
 
 function hsSyncLopSelectOnce(){
@@ -638,14 +778,14 @@ function hsSyncLopSelectOnce(){
   let tries = 0;
   const h = setInterval(()=>{
     tries++;
-    if (sel.options && sel.options.length) {
-      if (hsDangChon && typeof hsDangChon==='object') {
-        const v = (hsDangChon.lop_hoc_id===null || hsDangChon.lop_hoc_id===undefined || hsDangChon.lop_hoc_id==='') ? '' : String(hsDangChon.lop_hoc_id);
-        sel.value = v;
-      }
-      clearInterval(h);
+    const want = (hsDangChon && hsDangChon.lop_hoc_id!=null && hsDangChon.lop_hoc_id!=='') ? String(hsDangChon.lop_hoc_id) : '';
+    // Chỉ dừng khi option cần chọn ĐÃ có trong select và set được đúng value
+    // (tránh set value khi options chưa nạp xong -> selectedIndex=-1, hiển thị trống).
+    if ([...sel.options].some(o=>o.value===want)) {
+      sel.value = want;
+      if (sel.value === want) { clearInterval(h); }
     }
-    if (tries > 30) clearInterval(h);
+    if (tries > 50) clearInterval(h);
   }, 100);
 }
 
@@ -712,7 +852,7 @@ function hsSyncLopSelectOnce(){
 
   btnTao.onclick = async()=>{
     msg.textContent=''; box.classList.add('d-none');
-    if (!confirm('Tạo token mới sẽ vô hiệu token cũ (nếu có) trên mọi thiết bị đang dùng. Tiếp tục?')) return;
+    if (!(await xacNhan('Tạo token mới sẽ vô hiệu token cũ (nếu có) trên mọi thiết bị đang dùng. Tiếp tục?', {tieuDe:'Tạo token API', loai:'canh_bao', nhanDongY:'Tạo mới'}))) return;
     const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=tao_token_api',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     if (j.ok) {
       gtEl.textContent = j.du_lieu.token;
@@ -724,7 +864,7 @@ function hsSyncLopSelectOnce(){
 
   btnThuHoi.onclick = async()=>{
     msg.textContent='';
-    if (!confirm('Thu hồi token hiện tại? Ứng dụng di động đang dùng token này sẽ không đăng nhập được nữa.')) return;
+    if (!(await xacNhan('Thu hồi token hiện tại? Ứng dụng di động đang dùng token này sẽ không đăng nhập được nữa.', {tieuDe:'Thu hồi token API', loai:'nguy_hiem', nhanDongY:'Thu hồi', nguyHiem:true}))) return;
     const j = await jfetch('../api/giao_vien_quan_tri.php?hanh_dong=thu_hoi_token_api',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
     if (j.ok) { box.classList.add('d-none'); ve(false); msg.textContent='Đã thu hồi token'; }
     else { msg.textContent = j.thong_bao || 'Lỗi'; }
@@ -801,7 +941,7 @@ document.getElementById('ld_ds').addEventListener('click', async (e) => {
   ]});
   if(!res) return;
   const jj = await jfetch('../api/ly_do_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, tieu_de:String(res.tieu_de||'').trim(), bien_diem:parseInt(res.bien_diem,10)||0})});
-  if(jj.ok) ldNap(); else alert(dichLoi(jj.thong_bao));
+  if(jj.ok){ toast('Đã lưu lý do', {loai:'success'}); ldNap(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'});
 }, true);
 
 document.getElementById('q_ds').addEventListener('click', async (e) => {
@@ -814,7 +954,7 @@ document.getElementById('q_ds').addEventListener('click', async (e) => {
   ]});
   if(!res) return;
   const jj = await jfetch('../api/qua_tang_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, ten:String(res.ten||'').trim(), gia_diem:parseInt(res.gia_diem,10)||0, ton_kho:parseInt(res.ton_kho,10)||0})});
-  if(jj.ok) qNap(); else alert(dichLoi(jj.thong_bao));
+  if(jj.ok){ toast('Đã lưu quà tặng', {loai:'success'}); qNap(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'});
 }, true);
 
 document.getElementById('l_ds').addEventListener('click', async (e) => {
@@ -823,7 +963,7 @@ document.getElementById('l_ds').addEventListener('click', async (e) => {
   const res = await openClassModal({ id: parseInt(tr.dataset.id,10)||0, ten: tr.dataset.ten || '' });
   if(!res) return;
   const jj = await jfetch('../api/lop_hoc_quan_tri.php?hanh_dong=sua',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:parseInt(tr.dataset.id,10)||0, ten:String(res.ten||'').trim()})});
-  if(jj.ok) lNap(); else alert(dichLoi(jj.thong_bao));
+  if(jj.ok){ toast('Đã lưu lớp học', {loai:'success'}); lNap(); hsNapThemLopOptions && hsNapThemLopOptions(); } else thongBao(dichLoi(jj.thong_bao), {loai:'canh_bao'});
 }, true);
 
 // Load

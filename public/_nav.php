@@ -17,6 +17,7 @@ $active = basename($_SERVER['PHP_SELF'] ?? '');
     </div>
   </div>
 </nav>
+<script src="vendor/thong_bao.js"></script>
 <script>
   (function(){
     const btn = document.getElementById('dang_xuat');

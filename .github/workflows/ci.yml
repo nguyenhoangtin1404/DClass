@@ -17,7 +17,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: sqlite3, pdo_sqlite
+          # gd + exif + mbstring: các endpoint upload ảnh (api/upload_avatar|qua|anh.php) cần;
+          # curl: tests/ApiHttpTest.php gọi endpoint qua HTTP thật.
+          extensions: sqlite3, pdo_sqlite, gd, exif, mbstring, curl
           coverage: none
 
       - name: Install Composer dependencies

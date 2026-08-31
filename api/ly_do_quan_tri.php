@@ -24,8 +24,10 @@ if ($method === 'POST') {
     if ($tieu_de === '') return json_phan_hoi(false, null, 'thieu_tieu_de');
     $st = $pdo->prepare('INSERT INTO ly_do(tieu_de, bien_diem, dang_hoat_dong, nguoi_tao_id) VALUES(?,?,1,?)');
     $st->execute([$tieu_de, $bien_diem, $gv_id]);
-    ghi_log($pdo, $gv_id, 'them_ly_do', 'Thêm lý do '.$tieu_de.' (id '.$pdo->lastInsertId().')');
-    return json_phan_hoi(true, ['id' => (int)$pdo->lastInsertId()]);
+    // Lấy id NGAY sau INSERT: ghi_log() chèn thêm 1 dòng nhat_ky, khiến lastInsertId() trả về id của nhat_ky.
+    $ly_do_id = (int)$pdo->lastInsertId();
+    ghi_log($pdo, $gv_id, 'them_ly_do', 'Thêm lý do '.$tieu_de.' (id '.$ly_do_id.')');
+    return json_phan_hoi(true, ['id' => $ly_do_id]);
   }
   if ($hanh_dong === 'sua') {
     $id = (int)($b['id'] ?? 0);
