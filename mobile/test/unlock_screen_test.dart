@@ -52,4 +52,29 @@ void main() {
       expect(find.text('Dùng sinh trắc học'), findsNothing);
     },
   );
+
+  testWidgets(
+    '5 wrong PINs in a row locks out entry, even with the correct PIN',
+    (tester) async {
+      var daMoKhoa = false;
+      await tester.pumpWidget(boc(() => daMoKhoa = true));
+      await tester.pump();
+
+      for (var i = 0; i < 5; i++) {
+        await tester.enterText(find.byType(TextField), '0000');
+        await tester.tap(find.widgetWithText(FilledButton, 'Mở khoá'));
+        await tester.pump();
+        await tester.pump();
+      }
+
+      expect(find.textContaining('Thử lại sau'), findsOneWidget);
+      final oNhap = tester.widget<TextField>(find.byType(TextField));
+      expect(oNhap.enabled, isFalse);
+      final nut = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Mở khoá'),
+      );
+      expect(nut.onPressed, isNull);
+      expect(daMoKhoa, isFalse);
+    },
+  );
 }

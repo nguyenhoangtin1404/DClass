@@ -8,13 +8,23 @@ void main() {
       QuaTang(id: 1, ten: 'Bút chì', giaDiem: 5, tonKho: 3, anhUrl: null);
   final quaHetHang =
       QuaTang(id: 2, ten: 'Sticker', giaDiem: 2, tonKho: 0, anhUrl: null);
+  final quaDat =
+      QuaTang(id: 3, ten: 'Gấu bông', giaDiem: 100, tonKho: 5, anhUrl: null);
 
-  Widget boc(List<QuaTang> ds, void Function(QuaTang?) onKetQua) {
+  Widget boc(
+    List<QuaTang> ds,
+    void Function(QuaTang?) onKetQua, {
+    int soDuHienTai = 999,
+  }) {
     return MaterialApp(
       home: Builder(
         builder: (context) => ElevatedButton(
           onPressed: () async {
-            final ketQua = await chonQuaTangDeDoi(context, ds);
+            final ketQua = await chonQuaTangDeDoi(
+              context,
+              ds,
+              soDuHienTai: soDuHienTai,
+            );
             onKetQua(ketQua);
           },
           child: const Text('Mở'),
@@ -42,6 +52,40 @@ void main() {
     final tile = tester.widget<ListTile>(find.byType(ListTile));
     expect(tile.enabled, isFalse);
   });
+
+  testWidgets(
+    'a gift costing more than the student balance is disabled',
+    (tester) async {
+      await tester.pumpWidget(
+        boc([quaDat], (_) {}, soDuHienTai: 10),
+      );
+      await tester.tap(find.text('Mở'));
+      await tester.pumpAndSettle();
+
+      final tile = tester.widget<ListTile>(find.byType(ListTile));
+      expect(tile.enabled, isFalse);
+      expect(find.text('Không đủ điểm'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a gift the student can exactly afford stays enabled',
+    (tester) async {
+      QuaTang? chon;
+      await tester.pumpWidget(
+        boc([quaConCon], (kq) => chon = kq, soDuHienTai: 5),
+      );
+      await tester.tap(find.text('Mở'));
+      await tester.pumpAndSettle();
+
+      final tile = tester.widget<ListTile>(find.byType(ListTile));
+      expect(tile.enabled, isTrue);
+
+      await tester.tap(find.text('Bút chì'));
+      await tester.pumpAndSettle();
+      expect(chon?.id, quaConCon.id);
+    },
+  );
 
   testWidgets('tapping an available gift resolves the future with it', (
     tester,
