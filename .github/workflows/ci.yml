@@ -22,6 +22,10 @@ jobs:
           extensions: sqlite3, pdo_sqlite, gd, exif, mbstring, curl
           coverage: none
 
+      # php2shell (CVE-2026-109618/109619, RCE không cần xác thực): chỉ 8.2.35+ đã được vá.
+      - name: Require patched PHP
+        run: php -r 'exit(version_compare(PHP_VERSION, "8.2.35", ">=") ? 0 : 1);'
+
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 

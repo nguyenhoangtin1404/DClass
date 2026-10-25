@@ -1,7 +1,7 @@
 # Hướng dẫn vận hành & deploy
 
 - **Chuẩn bị môi trường**
-  - Yêu cầu: PHP 8.2+ có `pdo_sqlite`, quyền ghi thư mục `data/`, `upload/`.
+  - Yêu cầu: PHP **8.2.35+ / 8.3.36+ / 8.4.27+ / 8.5.12+** (bản vá lỗi RCE nghiêm trọng "php2shell" CVE-2026-109618 và CVE-2026-109619, công bố 21/10/2026; PHP 8.1 trở xuống không còn được vá — nâng cấp hoặc dùng bản backport của distro). Cần có `pdo_sqlite`, quyền ghi thư mục `data/`, `upload/`.
   - Sao chép cấu hình: `cp config/env.php.example config/env.php`, chỉnh `db_path`, `session_name` nếu cần chạy song song nhiều môi trường.
 
 - **Khởi tạo/migrate CSDL**
